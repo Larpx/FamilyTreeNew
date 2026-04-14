@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "树形结构 - " + (ViewBag.FamilyTree?.Name ?? "家谱");
+    var familyTree = ViewBag.FamilyTree as FamilyTreeNew.Models.DTOs.FamilyTreeDto;
+    var members = ViewBag.Members as List<FamilyTreeNew.Models.DTOs.FamilyMemberDto>;
+}
+
+<div class="chart-page tree-view-page">
+    <div class="chart-toolbar">
+        <div class="toolbar-left">
+            <h3 class="chart-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8.416.223a.5.5 0 0 0-.832 0l-3 4.5A.5.5 0 0 0 5 5.5h.098L3.076 8.735A.5.5 0 0 0 3.5 9.5h.191l-1.638 3.276a.5.5 0 0 0 .447.724H7V16h2v-2.5h4.5a.5.5 0 0 0 .447-.724L12.31 9.5h.191a.5.5 0 0 0 .424-.765L10.902 5.5H11a.5.5 0 0 0 .416-.777l-3-4.5zM6 4.5 8 1.5l2 3H6zm-1.5 4L6.5 8h3l2 1h-7zm-.5 4 1-2h5l1 2H4z"/>
+                </svg>
+                树形结构展示
+            </h3>
+        </div>
+        <div class="toolbar-right">
+            <button class="toolbar-btn" id="expand-all" title="全部展开">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8zM7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708l2-2zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10z"/>
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="collapse-all" title="全部折叠">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13A.5.5 0 0 1 1 8zM7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708l2-2zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10z"/>
+                </svg>
+            </button>
+            <div class="search-box">
+                <input type="text" id="tree-search" placeholder="搜索成员..." />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="tree-container" id="tree-container">
+        <div class="tree-stats">
+            <div class="stat-item">
+                <span class="stat-label">总成员数</span>
+                <span class="stat-value" id="total-members">@(members?.Count ?? 0)</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">世代数</span>
+                <span class="stat-value" id="total-generations">0</span>
+            </div>
+        </div>
+        <div class="tree-content" id="tree-content">
+            <ul class="tree-root" id="tree-root"></ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.familyTreeId = '@familyTree?.Id';
+        window.membersData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(members ?? new List<FamilyTreeNew.Models.DTOs.FamilyMemberDto>()));
+    </script>
+    <script src="~/js/charts/chart-utils.js" asp-append-version="true"></script>
+    <script src="~/js/charts/tree-view.js" asp-append-version="true"></script>
+}

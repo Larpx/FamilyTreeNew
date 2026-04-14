@@ -1,0 +1,131 @@
+@model FamilyTreeNew.Models.DTOs.DatabaseStatusDto
+@{
+    ViewData["Title"] = "数据库状态";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">系统设置</a></li>
+                    <li class="breadcrumb-item active">数据库状态</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">数据库状态</h1>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">连接信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label fw-bold">连接状态</label>
+                    <div class="col-sm-8">
+                        <p class="form-control-plaintext">
+                            @if (Model.IsConnected)
+                            {
+                                <span class="badge bg-success fs-6">
+                                    <i class="bi bi-check-circle-fill me-1"></i>已连接
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger fs-6">
+                                    <i class="bi bi-x-circle-fill me-1"></i>未连接
+                                </span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.DatabaseName))
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label fw-bold">数据库名称</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-plaintext">@Model.DatabaseName</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrEmpty(Model.ServerVersion))
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label fw-bold">服务器版本</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-plaintext">@Model.ServerVersion</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (Model.TotalTables > 0)
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label fw-bold">数据表数量</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-plaintext">@Model.TotalTables</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (Model.TotalRecords > 0)
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label fw-bold">总记录数</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-plaintext">@Model.TotalRecords.ToString("N0")</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (Model.DatabaseSize > 0)
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-4 col-form-label fw-bold">数据库大小</label>
+                        <div class="col-sm-8">
+                            <p class="form-control-plaintext">
+                                @if (Model.DatabaseSize < 1024)
+                                {
+                                    @($"{Model.DatabaseSize:F2} KB")
+                                }
+                                else if (Model.DatabaseSize < 1024 * 1024)
+                                {
+                                    @($"{Model.DatabaseSize / 1024:F2} MB")
+                                }
+                                else
+                                {
+                                    @($"{Model.DatabaseSize / 1024 / 1024:F2} GB")
+                                }
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">快捷操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-controller="Backup" asp-action="Index" class="btn btn-outline-primary">
+                        <i class="bi bi-cloud-arrow-down me-1"></i>数据备份
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>返回设置
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

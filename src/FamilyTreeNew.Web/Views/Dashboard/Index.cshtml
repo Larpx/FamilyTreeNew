@@ -1,0 +1,199 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "仪表盘";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <h1 class="page-title">仪表盘</h1>
+    <p class="page-subtitle">欢迎回来，@Context.Session.GetString("Username")</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-diagram-3-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value">@Model.TotalFamilyTrees</h3>
+                    <p class="stat-label">家谱总数</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-success">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value">@Model.TotalMembers</h3>
+                    <p class="stat-label">成员总数</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-info">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-images"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value">@Model.TotalAlbums</h3>
+                    <p class="stat-label">相册总数</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card stat-card-warning">
+            <div class="stat-card-body">
+                <div class="stat-icon">
+                    <i class="bi bi-database-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value">@(Model.DatabaseStatus?.IsConnected == true ? "正常" : "异常")</h3>
+                    <p class="stat-label">数据库状态</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-clock-history me-2"></i>最近创建的家谱
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentFamilyTrees.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>家谱名称</th>
+                                    <th>成员数量</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var tree in Model.RecentFamilyTrees)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-controller="FamilyTreeManagement" asp-action="Details" asp-route-id="@tree.Id">
+                                                @tree.Name
+                                            </a>
+                                        </td>
+                                        <td>@tree.MemberCount</td>
+                                        <td>
+                                            @if (tree.IsEnabled)
+                                            {
+                                                <span class="badge bg-success">已启用</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">已禁用</span>
+                                            }
+                                        </td>
+                                        <td>@tree.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>
+                                            <a asp-controller="MemberManagement" asp-action="Index" asp-route-familyTreeId="@tree.Id" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-people"></i> 成员
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        <p>暂无家谱数据</p>
+                        <a asp-controller="FamilyTreeManagement" asp-action="Create" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i>创建家谱
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="bi bi-lightning-fill me-2"></i>快捷操作
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-controller="FamilyTreeManagement" asp-action="Create" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle me-2"></i>创建新家谱
+                    </a>
+                    <a asp-controller="MemberManagement" asp-action="Index" class="btn btn-outline-success">
+                        <i class="bi bi-person-plus me-2"></i>添加成员
+                    </a>
+                    <a asp-controller="ExcelImport" asp-action="Index" class="btn btn-outline-info">
+                        <i class="bi bi-file-earmark-excel me-2"></i>Excel导入
+                    </a>
+                    <a asp-controller="Backup" asp-action="Index" class="btn btn-outline-warning">
+                        <i class="bi bi-cloud-arrow-up me-2"></i>数据备份
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        @if (Model.DatabaseStatus != null)
+        {
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="bi bi-database me-2"></i>数据库信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>连接状态</span>
+                            <span class="badge @(Model.DatabaseStatus.IsConnected ? "bg-success" : "bg-danger")">
+                                @(Model.DatabaseStatus.IsConnected ? "已连接" : "未连接")
+                            </span>
+                        </li>
+                        @if (!string.IsNullOrEmpty(Model.DatabaseStatus.DatabaseName))
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>数据库名称</span>
+                                <span>@Model.DatabaseStatus.DatabaseName</span>
+                            </li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DatabaseStatus.ServerVersion))
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>服务器版本</span>
+                                <span>@Model.DatabaseStatus.ServerVersion</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+</div>

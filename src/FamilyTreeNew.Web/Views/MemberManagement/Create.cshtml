@@ -1,0 +1,205 @@
+@model FamilyTreeNew.Models.DTOs.FamilyMemberCreateDto
+@{
+    ViewData["Title"] = "添加成员";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-route-familyTreeId="@ViewBag.FamilyTreeId">成员管理</a></li>
+                    <li class="breadcrumb-item active">添加成员</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">添加成员</h1>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="FamilyTreeId" />
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">基本信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Surname" class="form-label">姓氏 <span class="text-danger">*</span></label>
+                                <input asp-for="Surname" class="form-control" placeholder="请输入姓氏">
+                                <span asp-validation-for="Surname" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="FirstName" class="form-label">名字 <span class="text-danger">*</span></label>
+                                <input asp-for="FirstName" class="form-control" placeholder="请输入名字">
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Alias" class="form-label">字号别称</label>
+                                <input asp-for="Alias" class="form-control" placeholder="请输入字号或别称">
+                                <span asp-validation-for="Alias" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ParentId" class="form-label">父/母</label>
+                                <select asp-for="ParentId" class="form-select">
+                                    <option value="">-- 无 --</option>
+                                    @if (ViewBag.Parents != null)
+                                    {
+                                        foreach (var parent in ViewBag.Parents)
+                                        {
+                                            <option value="@parent.Id">@parent.FullName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="GenerationName" class="form-label">字辈</label>
+                                <input asp-for="GenerationName" class="form-control" placeholder="请输入字辈">
+                                <span asp-validation-for="GenerationName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Ranking" class="form-label">排行</label>
+                                <input asp-for="Ranking" class="form-control" placeholder="如：长子、次子">
+                                <span asp-validation-for="Ranking" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Occupation" class="form-label">职业</label>
+                                <input asp-for="Occupation" class="form-control" placeholder="请输入职业">
+                                <span asp-validation-for="Occupation" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">出生信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="BirthDateSolar" class="form-label">出生日期（公历）</label>
+                                <input asp-for="BirthDateSolar" class="form-control" type="date">
+                                <span asp-validation-for="BirthDateSolar" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="BirthDateLunar" class="form-label">出生日期（农历）</label>
+                                <input asp-for="BirthDateLunar" class="form-control" placeholder="如：甲子年正月初一">
+                                <span asp-validation-for="BirthDateLunar" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Residence" class="form-label">居住地</label>
+                        <input asp-for="Residence" class="form-control" placeholder="请输入居住地">
+                        <span asp-validation-for="Residence" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">其他信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="PersonalInfo" class="form-label">个人信息</label>
+                        <textarea asp-for="PersonalInfo" class="form-control" rows="3" placeholder="请输入个人信息..."></textarea>
+                        <span asp-validation-for="PersonalInfo" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Note" class="form-label">小注</label>
+                        <textarea asp-for="Note" class="form-control" rows="2" placeholder="请输入小注..."></textarea>
+                        <span asp-validation-for="Note" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Remarks" class="form-label">备注</label>
+                        <textarea asp-for="Remarks" class="form-control" rows="2" placeholder="请输入备注..."></textarea>
+                        <span asp-validation-for="Remarks" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">状态设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsDeceased" class="form-check-input" type="checkbox">
+                            <label asp-for="IsDeceased" class="form-check-label">已故</label>
+                        </div>
+                    </div>
+                    
+                    <div id="deathInfo" style="display: none;">
+                        <hr>
+                        <h6 class="mb-3">卒亡信息</h6>
+                        <div class="mb-3">
+                            <label asp-for="DeathDateSolar" class="form-label">卒亡日期（公历）</label>
+                            <input asp-for="DeathDateSolar" class="form-control" type="date">
+                            <span asp-validation-for="DeathDateSolar" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="DeathDateLunar" class="form-label">卒亡日期（农历）</label>
+                            <input asp-for="DeathDateLunar" class="form-control" placeholder="如：甲子年正月初一">
+                            <span asp-validation-for="DeathDateLunar" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>保存
+                </button>
+                <a asp-action="Index" asp-route-familyTreeId="@ViewBag.FamilyTreeId" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>取消
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('IsDeceased').addEventListener('change', function() {
+            document.getElementById('deathInfo').style.display = this.checked ? 'block' : 'none';
+        });
+    </script>
+}

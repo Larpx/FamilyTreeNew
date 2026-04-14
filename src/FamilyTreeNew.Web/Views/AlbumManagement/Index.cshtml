@@ -1,0 +1,187 @@
+@model FamilyTreeNew.Models.DTOs.PagedResult<FamilyTreeNew.Models.DTOs.AlbumDto>
+@{
+    ViewData["Title"] = "相册管理";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1 class="page-title">相册管理</h1>
+            <p class="page-subtitle">管理家谱相册和照片</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>创建相册
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">选择家谱</label>
+                <select name="familyTreeId" class="form-select" onchange="this.form.submit()">
+                    <option value="">全部家谱</option>
+                    @if (ViewBag.FamilyTrees != null)
+                    {
+                        foreach (var tree in ViewBag.FamilyTrees)
+                        {
+                            <option value="@tree.Id" selected="@(ViewBag.SelectedFamilyTreeId?.ToString() == tree.Id.ToString())">
+                                @tree.Name
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">关键词搜索</label>
+                <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="搜索相册名称...">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-search me-1"></i>搜索
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>重置
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="card-body">
+        @if (Model.Items.Any())
+        {
+            <div class="row g-4">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="col-md-4 col-lg-3">
+                        <div class="card album-card h-100">
+                            <div class="album-cover">
+                                @if (!string.IsNullOrEmpty(item.CoverPhotoPath))
+                                {
+                                    <img data-src="@item.CoverPhotoPath" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="@item.Name" class="card-img-top lazy-img">
+                                }
+                                else
+                                {
+                                    <div class="album-placeholder">
+                                        <i class="bi bi-images"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title">@item.Name</h6>
+                                <p class="card-text small text-muted">
+                                    @(item.Description?.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description ?? "暂无描述")
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-info">@item.PhotoCount 张照片</span>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="详情">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary" title="编辑">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" 
+                                              onsubmit="return confirm('确定要删除这个相册吗？');" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger" title="删除">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.PageIndex > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(Model.PageIndex - 1)" 
+                                   asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId"
+                                   asp-route-keyword="@ViewBag.Keyword">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+                        
+                        @for (int i = Math.Max(1, Model.PageIndex - 2); i <= Math.Min(Model.TotalPages, Model.PageIndex + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@i" 
+                                   asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId"
+                                   asp-route-keyword="@ViewBag.Keyword">@i</a>
+                            </li>
+                        }
+                        
+                        @if (Model.PageIndex < Model.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(Model.PageIndex + 1)" 
+                                   asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId"
+                                   asp-route-keyword="@ViewBag.Keyword">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-images fs-1 d-block mb-3"></i>
+                <p>暂无相册数据</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>创建第一个相册
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .album-card { transition: transform 0.2s; }
+        .album-card:hover { transform: translateY(-5px); }
+        .album-cover { height: 150px; overflow: hidden; }
+        .album-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .album-placeholder {
+            width: 100%; height: 150px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 48px;
+        }
+        .lazy-img {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .lazy-img.lazy-loaded {
+            opacity: 1;
+        }
+        .lazy-img.lazy-loading {
+            background: #f0f0f0;
+        }
+        .lazy-img.lazy-error {
+            background: #ffebee;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/lazy-load.js" asp-append-version="true"></script>
+}

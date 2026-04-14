@@ -1,0 +1,167 @@
+@model FamilyTreeNew.Models.DTOs.BackupListDto
+@{
+    ViewData["Title"] = "数据备份";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1 class="page-title">数据备份</h1>
+            <p class="page-subtitle">管理数据库备份和恢复</p>
+        </div>
+        <div class="col-auto">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>创建备份
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">备份列表</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Backups.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>文件名</th>
+                                    <th>大小</th>
+                                    <th>创建时间</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var backup in Model.Backups)
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-file-earmark-zip text-primary me-2"></i>
+                                            @backup.FileName
+                                        </td>
+                                        <td>
+                                            @if (backup.FileSize < 1024)
+                                            {
+                                                @($"{backup.FileSize} B")
+                                            }
+                                            else if (backup.FileSize < 1024 * 1024)
+                                            {
+                                                @($"{backup.FileSize / 1024:F2} KB")
+                                            }
+                                            else
+                                            {
+                                                @($"{backup.FileSize / 1024 / 1024:F2} MB")
+                                            }
+                                        </td>
+                                        <td>@backup.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                        <td>
+                                            @if (backup.IsSuccess)
+                                            {
+                                                <span class="badge bg-success">成功</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">失败</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <form asp-action="Restore" method="post" 
+                                                      onsubmit="return confirm('确定要恢复这个备份吗？当前数据将被覆盖！');" 
+                                                      style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="fileName" value="@backup.FileName" />
+                                                    <button type="submit" class="btn btn-outline-success" title="恢复">
+                                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                                    </button>
+                                                </form>
+                                                <form asp-action="Delete" method="post" 
+                                                      onsubmit="return confirm('确定要删除这个备份吗？');" 
+                                                      style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="fileName" value="@backup.FileName" />
+                                                    <button type="submit" class="btn btn-outline-danger" title="删除">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-cloud-slash fs-1 d-block mb-3"></i>
+                        <p>暂无备份文件</p>
+                        <form asp-action="Create" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-1"></i>创建第一个备份
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">备份统计</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>备份总数</span>
+                        <span class="badge bg-primary">@Model.TotalCount</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>成功备份</span>
+                        <span class="badge bg-success">@Model.Backups.Count(b => b.IsSuccess)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>失败备份</span>
+                        <span class="badge bg-danger">@Model.Backups.Count(b => !b.IsSuccess)</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">注意事项</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                        恢复备份将覆盖当前数据
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                        建议定期创建备份
+                    </li>
+                    <li>
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                        重要操作前请先备份
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,202 @@
+@model FamilyTreeNew.Models.DTOs.PagedResult<FamilyTreeNew.Models.DTOs.FamilyMemberDto>
+@{
+    ViewData["Title"] = "成员管理";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1 class="page-title">成员管理</h1>
+            <p class="page-subtitle">管理家谱成员信息</p>
+        </div>
+        <div class="col-auto">
+            @if (ViewBag.SelectedFamilyTreeId != null)
+            {
+                <a asp-action="Create" asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>添加成员
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">选择家谱</label>
+                <select name="familyTreeId" class="form-select" onchange="this.form.submit()">
+                    @if (ViewBag.FamilyTrees != null)
+                    {
+                        foreach (var tree in ViewBag.FamilyTrees)
+                        {
+                            <option value="@tree.Id" selected="@(ViewBag.SelectedFamilyTreeId == tree.Id)">
+                                @tree.Name
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">关键词搜索</label>
+                <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="搜索姓名...">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-search me-1"></i>搜索
+                </button>
+                <a asp-action="Index" asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>重置
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="card-body">
+        @if (Model.Items.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>字辈</th>
+                            <th>世代</th>
+                            <th>排行</th>
+                            <th>出生日期</th>
+                            <th>居住地</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.FullName</strong>
+                                    @if (!string.IsNullOrEmpty(item.Alias))
+                                    {
+                                        <br><small class="text-muted">(@item.Alias)</small>
+                                    }
+                                </td>
+                                <td>@(item.GenerationName ?? "-")</td>
+                                <td>
+                                    @if (item.Generation.HasValue)
+                                    {
+                                        <span class="badge bg-secondary">第@(item.Generation)世</span>
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </td>
+                                <td>@(item.Ranking ?? "-")</td>
+                                <td>
+                                    @if (item.BirthDateSolar.HasValue)
+                                    {
+                                        @item.BirthDateSolar.Value.ToString("yyyy-MM-dd")
+                                    }
+                                    else if (!string.IsNullOrEmpty(item.BirthDateLunar))
+                                    {
+                                        <span class="text-muted">@item.BirthDateLunar (农历)</span>
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </td>
+                                <td>@(item.Residence ?? "-")</td>
+                                <td>
+                                    @if (item.IsDeceased)
+                                    {
+                                        <span class="badge bg-secondary">已故</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">在世</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="详情">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary" title="编辑">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId" 
+                                              method="post" onsubmit="return confirm('确定要删除这个成员吗？');" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger" title="删除">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.PageIndex > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(Model.PageIndex - 1)" 
+                                   asp-route-pageSize="@ViewBag.PageSize"
+                                   asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId"
+                                   asp-route-keyword="@ViewBag.Keyword">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+                        
+                        @for (int i = Math.Max(1, Model.PageIndex - 2); i <= Math.Min(Model.TotalPages, Model.PageIndex + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@i" 
+                                   asp-route-pageSize="@ViewBag.PageSize"
+                                   asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId"
+                                   asp-route-keyword="@ViewBag.Keyword">@i</a>
+                            </li>
+                        }
+                        
+                        @if (Model.PageIndex < Model.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(Model.PageIndex + 1)" 
+                                   asp-route-pageSize="@ViewBag.PageSize"
+                                   asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId"
+                                   asp-route-keyword="@ViewBag.Keyword">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-people fs-1 d-block mb-3"></i>
+                <p>暂无成员数据</p>
+                @if (ViewBag.SelectedFamilyTreeId != null)
+                {
+                    <a asp-action="Create" asp-route-familyTreeId="@ViewBag.SelectedFamilyTreeId" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>添加第一个成员
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>

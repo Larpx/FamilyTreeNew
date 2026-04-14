@@ -1,0 +1,62 @@
+@model List<FamilyTreeNew.Models.DTOs.FamilyTreeDto>
+@{
+    ViewData["Title"] = "家谱列表";
+}
+
+<div class="tree-page">
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">家谱列表</h1>
+            <p class="page-subtitle">选择一个家谱查看详细信息</p>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                    </svg>
+                </div>
+                <h3 class="empty-title">暂无家谱数据</h3>
+                <p class="empty-desc">请先创建家谱数据</p>
+            </div>
+        }
+        else
+        {
+            <div class="family-tree-grid">
+                @foreach (var tree in Model)
+                {
+                    <div class="tree-card">
+                        <div class="tree-card-header">
+                            <h3 class="tree-name">@tree.Name</h3>
+                            <span class="tree-date">@tree.CreatedAt.ToString("yyyy-MM-dd")</span>
+                        </div>
+                        <div class="tree-card-body">
+                            <p class="tree-desc">@(tree.Description ?? "暂无简介")</p>
+                            <div class="tree-stats">
+                                <span class="stat-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                    </svg>
+                                    @tree.MemberCount 位成员
+                                </span>
+                                <span class="stat-item status-@(tree.IsEnabled ? "active" : "inactive")">
+                                    @(tree.IsEnabled ? "已启用" : "已禁用")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="tree-card-footer">
+                            <a href="@Url.Action("Detail", new { id = tree.Id })" class="btn-view">
+                                查看详情
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

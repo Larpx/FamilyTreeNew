@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "吊线图 - " + (ViewBag.FamilyTree?.Name ?? "家谱");
+    var familyTree = ViewBag.FamilyTree as FamilyTreeNew.Models.DTOs.FamilyTreeDto;
+    var members = ViewBag.Members as List<FamilyTreeNew.Models.DTOs.FamilyMemberDto>;
+}
+
+<div class="chart-page lineage-chart-page">
+    <div class="chart-toolbar">
+        <div class="toolbar-left">
+            <h3 class="chart-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5Zm-2-4a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5Z"/>
+                </svg>
+                吊线图展示
+            </h3>
+        </div>
+        <div class="toolbar-right">
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoom-in" title="放大">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                    </svg>
+                </button>
+                <span class="zoom-level" id="zoom-level">100%</span>
+                <button class="zoom-btn" id="zoom-out" title="缩小">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+                    </svg>
+                </button>
+                <button class="zoom-btn" id="zoom-reset" title="重置">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                    </svg>
+                </button>
+            </div>
+            <button class="toolbar-btn" id="fullscreen-btn" title="全屏">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="chart-container" id="lineage-chart-container">
+        <div class="chart-hint">
+            <p>使用鼠标滚轮缩放，拖拽移动图表</p>
+        </div>
+        <svg id="lineage-chart"></svg>
+    </div>
+
+    <div class="legend-panel">
+        <div class="legend-title">图例说明</div>
+        <div class="legend-items">
+            <div class="legend-item">
+                <span class="legend-color male"></span>
+                <span class="legend-text">男性成员</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color female"></span>
+                <span class="legend-text">女性成员</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color deceased"></span>
+                <span class="legend-text">已故成员</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+    <script>
+        window.familyTreeId = '@familyTree?.Id';
+        window.membersData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(members ?? new List<FamilyTreeNew.Models.DTOs.FamilyMemberDto>()));
+    </script>
+    <script src="~/js/charts/chart-utils.js" asp-append-version="true"></script>
+    <script src="~/js/charts/lineage-chart.js" asp-append-version="true"></script>
+}

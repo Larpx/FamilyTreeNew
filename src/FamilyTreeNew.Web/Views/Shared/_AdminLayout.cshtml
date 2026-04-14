@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - 家族族谱管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.min.css" />
+    <link href="https://fonts.font.im/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <nav class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/Dashboard" class="sidebar-brand">
+                    <i class="bi bi-tree-fill"></i>
+                    <span>族谱管理系统</span>
+                </a>
+            </div>
+            
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>仪表盘</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="FamilyTreeManagement" asp-action="Index">
+                        <i class="bi bi-diagram-3-fill"></i>
+                        <span>家谱管理</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="MemberManagement" asp-action="Index">
+                        <i class="bi bi-people-fill"></i>
+                        <span>成员管理</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="ExcelImport" asp-action="Index">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        <span>Excel导入</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="AlbumManagement" asp-action="Index">
+                        <i class="bi bi-images"></i>
+                        <span>相册管理</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="VerificationManagement" asp-action="Index">
+                        <i class="bi bi-question-circle-fill"></i>
+                        <span>验证问题</span>
+                    </a>
+                </li>
+                
+                @if (Context.Session.GetString("PermissionLevel") == "3")
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Admin" asp-action="Index">
+                            <i class="bi bi-person-badge-fill"></i>
+                            <span>管理员管理</span>
+                        </a>
+                    </li>
+                }
+                
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Settings" asp-action="Index">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>系统设置</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Backup" asp-action="Index">
+                        <i class="bi bi-cloud-arrow-down-fill"></i>
+                        <span>数据备份</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="admin-content">
+            <nav class="admin-topbar">
+                <button class="btn btn-link sidebar-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                
+                <div class="topbar-right">
+                    <div class="dropdown">
+                        <a class="dropdown-toggle user-dropdown" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <span>@Context.Session.GetString("Username")</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" asp-controller="Admin" asp-action="ChangePassword">
+                                    <i class="bi bi-key"></i> 修改密码
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-controller="Admin" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-box-arrow-right"></i> 退出登录
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            
+            <main class="admin-main">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                
+                @RenderBody()
+            </main>
+            
+            <footer class="admin-footer">
+                <div class="container-fluid">
+                    <span>&copy; 2026 家族族谱管理系统</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
+    <script nonce="@Context.Items["CspNonce"]" src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
+    <script nonce="@Context.Items["CspNonce"]" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script nonce="@Context.Items["CspNonce"]" src="~/js/admin.js" asp-append-version="true"></script>
+    <script nonce="@Context.Items["CspNonce"]" src="~/js/lazy-load.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

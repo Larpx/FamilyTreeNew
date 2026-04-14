@@ -1,0 +1,154 @@
+@{
+    ViewData["Title"] = "Excel导入";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1 class="page-title">Excel导入</h1>
+            <p class="page-subtitle">批量导入家谱成员数据</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">上传Excel文件</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="mb-3">
+                        <label class="form-label">选择家谱 <span class="text-danger">*</span></label>
+                        <select name="familyTreeId" class="form-select" required>
+                            <option value="">-- 请选择家谱 --</option>
+                            @if (ViewBag.FamilyTrees != null)
+                            {
+                                foreach (var tree in ViewBag.FamilyTrees)
+                                {
+                                    <option value="@tree.Id">@tree.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">选择Excel文件 <span class="text-danger">*</span></label>
+                        <input type="file" name="excelFile" class="form-control" accept=".xlsx,.xls" required>
+                        <div class="form-text">支持 .xlsx 和 .xls 格式的Excel文件</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload me-1"></i>开始导入
+                        </button>
+                        <a asp-action="DownloadTemplate" class="btn btn-outline-info">
+                            <i class="bi bi-download me-1"></i>下载模板
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        @if (TempData["ImportResult"] is string importResultJson && !string.IsNullOrWhiteSpace(importResultJson))
+        {
+            var importResult = Newtonsoft.Json.JsonConvert.DeserializeObject<FamilyTreeNew.Models.DTOs.ExcelImportResultDto>(importResultJson);
+            if (importResult != null)
+            {
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">导入结果</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert @(importResult.Success ? "alert-success" : "alert-warning")">
+                            <h6><i class="bi @(importResult.Success ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") me-2"></i>@importResult.Message</h6>
+                            <hr>
+                            <p class="mb-0">
+                                成功导入：<strong>@importResult.ImportedCount</strong> 条记录<br>
+                                跳过记录：<strong>@importResult.SkippedCount</strong> 条
+                            </p>
+                        </div>
+                        
+                        @if (importResult.Errors != null && importResult.Errors.Any())
+                        {
+                            <div class="mt-3">
+                                <h6>错误详情：</h6>
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>行号</th>
+                                                <th>错误信息</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var error in importResult.Errors.Take(50))
+                                            {
+                                                <tr>
+                                                    <td>@error.RowNumber</td>
+                                                    <td>@error.ErrorMessage</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @if (importResult.Errors.Count > 50)
+                                {
+                                    <p class="text-muted small mt-2">仅显示前50条错误，共 @importResult.Errors.Count 条错误</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">使用说明</h5>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">点击"下载模板"获取Excel模板文件</li>
+                    <li class="mb-2">按照模板格式填写成员数据</li>
+                    <li class="mb-2">选择要导入的家谱</li>
+                    <li class="mb-2">选择填写好的Excel文件</li>
+                    <li class="mb-2">点击"开始导入"按钮</li>
+                    <li>查看导入结果</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">注意事项</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                        请确保Excel文件格式正确
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                        姓氏和名字为必填项
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                        日期格式建议使用：yyyy-MM-dd
+                    </li>
+                    <li>
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                        导入前请先备份数据
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

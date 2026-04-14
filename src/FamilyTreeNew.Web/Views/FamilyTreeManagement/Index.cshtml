@@ -1,0 +1,187 @@
+@model FamilyTreeNew.Models.DTOs.PagedResult<FamilyTreeNew.Models.DTOs.FamilyTreeDto>
+@{
+    ViewData["Title"] = "家谱管理";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1 class="page-title">家谱管理</h1>
+            <p class="page-subtitle">管理所有家谱信息</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>创建家谱
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">关键词搜索</label>
+                <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="搜索家谱名称...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">状态</label>
+                <select name="isEnabled" class="form-select">
+                    <option value="">全部</option>
+                    <option value="true" selected="@(ViewBag.IsEnabled == true)">已启用</option>
+                    <option value="false" selected="@(ViewBag.IsEnabled == false)">已禁用</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-search me-1"></i>搜索
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>重置
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="card-body">
+        @if (Model.Items.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>家谱名称</th>
+                            <th>简介</th>
+                            <th>成员数量</th>
+                            <th>状态</th>
+                            <th>验证</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.Name</strong>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Description))
+                                    {
+                                        @(item.Description.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@item.MemberCount</span>
+                                </td>
+                                <td>
+                                    @if (item.IsEnabled)
+                                    {
+                                        <span class="badge bg-success">已启用</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">已禁用</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.RequireVerification)
+                                    {
+                                        <span class="badge bg-warning">需要验证</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark">无需验证</span>
+                                    }
+                                </td>
+                                <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="详情">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary" title="编辑">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-controller="MemberManagement" asp-action="Index" asp-route-familyTreeId="@item.Id" 
+                                           class="btn btn-outline-success" title="成员管理">
+                                            <i class="bi bi-people"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" 
+                                              onsubmit="return confirm('确定要删除这个家谱吗？此操作不可恢复！');" 
+                                              style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger" title="删除">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.PageIndex > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(Model.PageIndex - 1)" 
+                                   asp-route-pageSize="@ViewBag.PageSize"
+                                   asp-route-keyword="@ViewBag.Keyword"
+                                   asp-route-isEnabled="@ViewBag.IsEnabled">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+                        
+                        @for (int i = Math.Max(1, Model.PageIndex - 2); i <= Math.Min(Model.TotalPages, Model.PageIndex + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@i" 
+                                   asp-route-pageSize="@ViewBag.PageSize"
+                                   asp-route-keyword="@ViewBag.Keyword"
+                                   asp-route-isEnabled="@ViewBag.IsEnabled">@i</a>
+                            </li>
+                        }
+                        
+                        @if (Model.PageIndex < Model.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(Model.PageIndex + 1)" 
+                                   asp-route-pageSize="@ViewBag.PageSize"
+                                   asp-route-keyword="@ViewBag.Keyword"
+                                   asp-route-isEnabled="@ViewBag.IsEnabled">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                <p>暂无家谱数据</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>创建第一个家谱
+                </a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,212 @@
+@model FamilyTreeNew.Models.DTOs.UpdateSystemSettingsDto
+@{
+    ViewData["Title"] = "系统设置";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1 class="page-title">系统设置</h1>
+            <p class="page-subtitle">配置网站基本信息和系统参数</p>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Index" method="post">
+    @Html.AntiForgeryToken()
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">基本信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="SiteName" class="form-label">网站名称 <span class="text-danger">*</span></label>
+                                <input asp-for="SiteName" class="form-control">
+                                <span asp-validation-for="SiteName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ThemeColor" class="form-label">主题颜色 <span class="text-danger">*</span></label>
+                                <input asp-for="ThemeColor" class="form-control" type="color">
+                                <span asp-validation-for="ThemeColor" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="SiteDescription" class="form-label">网站描述</label>
+                        <textarea asp-for="SiteDescription" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="SiteDescription" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="LogoUrl" class="form-label">Logo URL</label>
+                                <input asp-for="LogoUrl" class="form-control" placeholder="https://example.com/logo.png">
+                                <span asp-validation-for="LogoUrl" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="FaviconUrl" class="form-label">Favicon URL</label>
+                                <input asp-for="FaviconUrl" class="form-control" placeholder="https://example.com/favicon.ico">
+                                <span asp-validation-for="FaviconUrl" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">展示设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input asp-for="ShowStatistics" class="form-check-input" type="checkbox">
+                                    <label asp-for="ShowStatistics" class="form-check-label">显示统计信息</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input asp-for="AllowGuestBrowse" class="form-check-input" type="checkbox">
+                                    <label asp-for="AllowGuestBrowse" class="form-check-label">允许游客浏览</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input asp-for="RequireVerification" class="form-check-input" type="checkbox">
+                                    <label asp-for="RequireVerification" class="form-check-label">需要验证问题</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">安全设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="MaxLoginAttempts" class="form-label">最大登录尝试次数</label>
+                                <input asp-for="MaxLoginAttempts" class="form-control" type="number" min="1" max="10">
+                                <span asp-validation-for="MaxLoginAttempts" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="LockoutDuration" class="form-label">锁定时间（分钟）</label>
+                                <input asp-for="LockoutDuration" class="form-control" type="number" min="5" max="1440">
+                                <span asp-validation-for="LockoutDuration" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="SessionTimeout" class="form-label">会话超时（分钟）</label>
+                                <input asp-for="SessionTimeout" class="form-control" type="number" min="15" max="1440">
+                                <span asp-validation-for="SessionTimeout" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input asp-for="EnableOperationLog" class="form-check-input" type="checkbox">
+                                    <label asp-for="EnableOperationLog" class="form-check-label">启用操作日志</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="LogRetentionDays" class="form-label">日志保留天数</label>
+                                <input asp-for="LogRetentionDays" class="form-control" type="number" min="7" max="365">
+                                <span asp-validation-for="LogRetentionDays" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">联系方式</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="ContactEmail" class="form-label">联系邮箱</label>
+                                <input asp-for="ContactEmail" class="form-control" type="email">
+                                <span asp-validation-for="ContactEmail" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="ContactPhone" class="form-label">联系电话</label>
+                                <input asp-for="ContactPhone" class="form-control">
+                                <span asp-validation-for="ContactPhone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="ContactAddress" class="form-label">联系地址</label>
+                                <input asp-for="ContactAddress" class="form-control">
+                                <span asp-validation-for="ContactAddress" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="FooterText" class="form-label">页脚文字</label>
+                        <textarea asp-for="FooterText" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="FooterText" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">保存设置</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">修改设置后请点击保存按钮</p>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>保存设置
+                        </button>
+                        <a asp-action="DatabaseStatus" class="btn btn-outline-info">
+                            <i class="bi bi-database me-1"></i>数据库状态
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

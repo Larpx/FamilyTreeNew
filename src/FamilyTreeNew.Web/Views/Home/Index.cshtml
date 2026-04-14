@@ -1,0 +1,112 @@
+@using System.Linq
+@model IEnumerable<FamilyTreeNew.Models.Entities.Family>
+@{
+    ViewData["Title"] = "首页";
+    var familyList = (Model ?? Enumerable.Empty<FamilyTreeNew.Models.Entities.Family>())
+        .OrderByDescending(f => f.CreatedAt)
+        .ToList();
+    var latestCreatedAt = familyList.FirstOrDefault()?.CreatedAt;
+}
+
+<div class="home-page">
+    <section class="home-hero">
+        <div class="container">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <span class="home-badge">数字化家谱平台</span>
+                    <h1 class="home-title">让家族记忆可传承、可检索、可分享</h1>
+                    <p class="home-description">
+                        从家族成员记录到世系关系展示，统一沉淀家族历史资料，帮助后代快速了解血脉脉络与家风传承。
+                    </p>
+                    <div class="home-actions">
+                        <a asp-controller="FamilyTree" asp-action="Index" class="home-btn home-btn-primary">浏览家谱</a>
+                        <a asp-controller="Admin" asp-action="Login" class="home-btn home-btn-outline">进入管理后台</a>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="home-stat-panel">
+                        <h2 class="home-stat-title">数据概览</h2>
+                        <div class="home-stat-grid">
+                            <article class="home-stat-item">
+                                <span class="home-stat-label">收录家谱</span>
+                                <strong class="home-stat-value">@familyList.Count</strong>
+                            </article>
+                            <article class="home-stat-item">
+                                <span class="home-stat-label">最近更新</span>
+                                <strong class="home-stat-value small">@(latestCreatedAt?.ToString("yyyy-MM-dd") ?? "暂无")</strong>
+                            </article>
+                        </div>
+                        <p class="home-stat-tip">持续完善家族资料，让每一份记忆都有迹可循。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-value">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <article class="home-value-card">
+                        <h3>结构化管理</h3>
+                        <p>统一维护成员档案、生卒信息与亲属关系，避免纸质资料分散和遗失。</p>
+                    </article>
+                </div>
+                <div class="col-md-4">
+                    <article class="home-value-card">
+                        <h3>关系可视化</h3>
+                        <p>通过家谱展示页面快速查看世代关系，便于追溯和沟通家族历史。</p>
+                    </article>
+                </div>
+                <div class="col-md-4">
+                    <article class="home-value-card">
+                        <h3>长期传承</h3>
+                        <p>沉淀家风故事与家庭记忆，帮助后代理解来处，建立家族认同感。</p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-families">
+        <div class="container">
+            <div class="home-section-header">
+                <h2>最新家谱</h2>
+                <p>优先展示最近收录的家谱信息</p>
+            </div>
+
+            @if (familyList.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var family in familyList.Take(6))
+                    {
+                        <div class="col-lg-4 col-md-6">
+                            <article class="home-family-card">
+                                <div class="home-family-head">
+                                    <h3>@family.FamilyName</h3>
+                                    <span>@family.CreatedAt.ToString("yyyy-MM-dd")</span>
+                                </div>
+                                <p>@(string.IsNullOrWhiteSpace(family.Description) ? "暂无简介" : family.Description)</p>
+                                <a asp-controller="FamilyTree" asp-action="Index" class="home-family-link">查看族谱</a>
+                            </article>
+                        </div>
+                    }
+                </div>
+
+                @if (familyList.Count > 6)
+                {
+                    <div class="home-more-wrap">
+                        <a asp-controller="FamilyTree" asp-action="Index" class="home-btn home-btn-primary">查看全部家谱</a>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="home-empty">
+                    <h3>暂无家谱数据</h3>
+                    <p>当前尚未收录家谱信息，请稍后再来查看。</p>
+                </div>
+            }
+        </div>
+    </section>
+</div>

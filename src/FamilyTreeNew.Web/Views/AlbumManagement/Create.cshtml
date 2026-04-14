@@ -1,0 +1,98 @@
+@model FamilyTreeNew.Models.DTOs.AlbumCreateDto
+@{
+    ViewData["Title"] = "创建相册";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">相册管理</a></li>
+                    <li class="breadcrumb-item active">创建相册</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">创建相册</h1>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">基本信息</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="mb-3">
+                        <label asp-for="FamilyTreeId" class="form-label">所属家谱 <span class="text-danger">*</span></label>
+                        <select asp-for="FamilyTreeId" class="form-select">
+                            <option value="">-- 请选择家谱 --</option>
+                            @if (ViewBag.FamilyTrees != null)
+                            {
+                                foreach (var tree in ViewBag.FamilyTrees)
+                                {
+                                    <option value="@tree.Id">@tree.Name</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="FamilyTreeId" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">相册名称 <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" placeholder="请输入相册名称">
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">相册描述</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="请输入相册描述..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>创建
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i>取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">帮助说明</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-info-circle text-primary me-2"></i>
+                        相册需要关联到家谱
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-info-circle text-primary me-2"></i>
+                        创建相册后可以上传照片
+                    </li>
+                    <li>
+                        <i class="bi bi-info-circle text-primary me-2"></i>
+                        相册描述可以记录照片背景
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

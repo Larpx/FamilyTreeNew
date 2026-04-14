@@ -1,0 +1,104 @@
+@model FamilyTreeNew.Models.DTOs.FamilyTreeUpdateDto
+@{
+    ViewData["Title"] = "编辑家谱";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">家谱管理</a></li>
+                    <li class="breadcrumb-item active">编辑家谱</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">编辑家谱</h1>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">基本信息</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" asp-route-id="@ViewBag.FamilyTreeId" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">家谱名称 <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" placeholder="请输入家谱名称">
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">家谱简介</label>
+                        <textarea asp-for="Description" class="form-control" rows="5" placeholder="请输入家谱简介..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input asp-for="RequireVerification" class="form-check-input" type="checkbox">
+                                    <label asp-for="RequireVerification" class="form-check-label">需要验证问题</label>
+                                </div>
+                                <small class="text-muted">开启后，访客需要回答验证问题才能查看家谱</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsEnabled" class="form-check-input" type="checkbox">
+                                    <label asp-for="IsEnabled" class="form-check-label">启用家谱</label>
+                                </div>
+                                <small class="text-muted">禁用后，家谱将不会在前台显示</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>保存
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i>取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">快捷操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-controller="MemberManagement" asp-action="Index" asp-route-familyTreeId="@ViewBag.FamilyTreeId" 
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-people me-1"></i>管理成员
+                    </a>
+                    <a asp-controller="AlbumManagement" asp-action="Index" asp-route-familyTreeId="@ViewBag.FamilyTreeId" 
+                       class="btn btn-outline-success">
+                        <i class="bi bi-images me-1"></i>管理相册
+                    </a>
+                    <a asp-controller="ExcelImport" asp-action="Index" 
+                       class="btn btn-outline-info">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Excel导入
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

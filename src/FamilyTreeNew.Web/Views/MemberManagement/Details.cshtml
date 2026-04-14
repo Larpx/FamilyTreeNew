@@ -1,0 +1,248 @@
+@model FamilyTreeNew.Models.DTOs.FamilyMemberDto
+@{
+    ViewData["Title"] = "成员详情";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index" asp-route-familyTreeId="@Model.FamilyTreeId">成员管理</a></li>
+                    <li class="breadcrumb-item active">成员详情</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">@Model.FullName</h1>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>编辑
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">基本信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label fw-bold">姓名</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-plaintext">
+                            @Model.FullName
+                            @if (!string.IsNullOrEmpty(Model.Alias))
+                            {
+                                <span class="text-muted">(@Model.Alias)</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.GenerationName))
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">字辈</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">@Model.GenerationName</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (Model.Generation.HasValue)
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">世代</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">
+                                <span class="badge bg-secondary">第@(Model.Generation)世</span>
+                            </p>
+                        </div>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrEmpty(Model.Ranking))
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">排行</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">@Model.Ranking</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrEmpty(Model.ParentName))
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">父/母</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">@Model.ParentName</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrEmpty(Model.Occupation))
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">职业</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">@Model.Occupation</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">出生信息</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.BirthDateSolar.HasValue)
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">出生日期（公历）</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">@Model.BirthDateSolar.Value.ToString("yyyy年MM月dd日")</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrEmpty(Model.BirthDateLunar))
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">出生日期（农历）</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">@Model.BirthDateLunar</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrEmpty(Model.Residence))
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">居住地</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">@Model.Residence</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(Model.PersonalInfo) || !string.IsNullOrEmpty(Model.Note) || !string.IsNullOrEmpty(Model.Remarks))
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">其他信息</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.PersonalInfo))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">个人信息</label>
+                            <p class="mb-0">@Model.PersonalInfo</p>
+                        </div>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.Note))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">小注</label>
+                            <p class="mb-0">@Model.Note</p>
+                        </div>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.Remarks))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">备注</label>
+                            <p class="mb-0">@Model.Remarks</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">状态信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">生命状态</label>
+                    <p>
+                        @if (Model.IsDeceased)
+                        {
+                            <span class="badge bg-secondary">已故</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">在世</span>
+                        }
+                    </p>
+                </div>
+                
+                @if (Model.IsDeceased)
+                {
+                    @if (Model.DeathDateSolar.HasValue)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">卒亡日期（公历）</label>
+                            <p>@Model.DeathDateSolar.Value.ToString("yyyy年MM月dd日")</p>
+                        </div>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(Model.DeathDateLunar))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">卒亡日期（农历）</label>
+                            <p>@Model.DeathDateLunar</p>
+                        </div>
+                    }
+                }
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">创建时间</label>
+                    <p>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                </div>
+                
+                @if (Model.UpdatedAt.HasValue)
+                {
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">更新时间</label>
+                        <p>@Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">快捷操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil me-1"></i>编辑信息
+                    </a>
+                    <form asp-action="Delete" asp-route-id="@Model.Id" asp-route-familyTreeId="@Model.FamilyTreeId" 
+                          method="post" onsubmit="return confirm('确定要删除这个成员吗？');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-trash me-1"></i>删除成员
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

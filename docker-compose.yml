@@ -1,0 +1,119 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: familytree-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-familytree_root_2024}
+      MYSQL_DATABASE: FamilyTreeDb
+      MYSQL_USER: ${MYSQL_USER:-familytree}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-familytree_pass_2024}
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - mysql_backup:/backup
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max_connections=500
+      - --innodb_buffer_pool_size=256M
+      - --innodb_log_file_size=64M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-familytree_root_2024}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - familytree-network
+
+  api:
+    build:
+      context: .
+      dockerfile: src/FamilyTreeNew.Api/Dockerfile
+    container_name: familytree-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - DB_CONNECTION_STRING=Server=mysql;Port=3306;Database=FamilyTreeDb;User=familytree;Password=${MYSQL_PASSWORD:-familytree_pass_2024};CharSet=utf8mb4;
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-YourSuperSecretKeyForJwtTokenGeneration2024!@#$%}
+      - JWT_ISSUER=FamilyTreeNew
+      - JWT_AUDIENCE=FamilyTreeNewUsers
+      - JWT_EXPIRATION_MINUTES=120
+    ports:
+      - "${API_PORT:-5000}:5000"
+    volumes:
+      - api_uploads:/app/wwwroot/uploads
+      - api_backups:/app/wwwroot/backups
+      - api_dataprotection:/app/DataProtection-Keys
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/system/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - familytree-network
+
+  web:
+    build:
+      context: .
+      dockerfile: src/FamilyTreeNew.Web/Dockerfile
+    container_name: familytree-web
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5002
+      - DB_CONNECTION_STRING=Server=mysql;Port=3306;Database=FamilyTreeDb;User=familytree;Password=${MYSQL_PASSWORD:-familytree_pass_2024};CharSet=utf8mb4;
+      - API_BASE_URL=http://api:5000
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-YourSuperSecretKeyForJwtTokenGeneration2024!@#$%}
+      - JWT_ISSUER=FamilyTreeNew
+      - JWT_AUDIENCE=FamilyTreeNewUsers
+    ports:
+      - "${WEB_PORT:-5002}:5002"
+    volumes:
+      - web_dataprotection:/app/DataProtection-Keys
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - familytree-network
+
+volumes:
+  mysql_data:
+    driver: local
+    name: familytree_mysql_data
+  mysql_backup:
+    driver: local
+    name: familytree_mysql_backup
+  api_uploads:
+    driver: local
+    name: familytree_api_uploads
+  api_backups:
+    driver: local
+    name: familytree_api_backups
+  api_dataprotection:
+    driver: local
+    name: familytree_api_dataprotection
+  web_dataprotection:
+    driver: local
+    name: familytree_web_dataprotection
+
+networks:
+  familytree-network:
+    driver: bridge
+    name: familytree-network

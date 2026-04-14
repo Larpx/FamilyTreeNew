@@ -1,0 +1,11 @@
+- [x] 所有Nuget包已升级到最新稳定版
+- [x] dotnet restore执行成功
+- [x] 所有项目编译成功（dotnet build）
+- [x] 编译无警告
+- [x] Docker构建成功
+- [x] Models项目所有公共成员有XML注释
+- [ ] DAL项目所有公共成员有XML注释
+- [ ] BLL项目所有公共成员有XML注释
+- [ ] Api项目所有公共成员有XML注释
+- [ ] 所有单元测试通过
+- [ ] 测试覆盖主要代码路径

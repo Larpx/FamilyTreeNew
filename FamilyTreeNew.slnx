@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FamilyTreeNew.Api/FamilyTreeNew.Api.csproj" />
+    <Project Path="src/FamilyTreeNew.BLL/FamilyTreeNew.BLL.csproj" />
+    <Project Path="src/FamilyTreeNew.DAL/FamilyTreeNew.DAL.csproj" />
+    <Project Path="src/FamilyTreeNew.Models/FamilyTreeNew.Models.csproj" />
+    <Project Path="src/FamilyTreeNew.Web/FamilyTreeNew.Web.csproj" />
+    <Project Path="src/FamilyTreeNew.Tests/FamilyTreeNew.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,149 @@
+@model CreateAdminDto
+@{
+    ViewData["Title"] = "添加管理员";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">管理员管理</a></li>
+                    <li class="breadcrumb-item active">添加管理员</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">添加管理员</h1>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">账户信息</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                        <input asp-for="Username" class="form-control" placeholder="请输入用户名">
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">密码 <span class="text-danger">*</span></label>
+                        <input asp-for="Password" class="form-control" type="password" placeholder="请输入密码">
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="RealName" class="form-label">真实姓名</label>
+                        <input asp-for="RealName" class="form-control" placeholder="请输入真实姓名">
+                        <span asp-validation-for="RealName" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">邮箱</label>
+                        <input asp-for="Email" class="form-control" type="email" placeholder="请输入邮箱">
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="PermissionLevel" class="form-label">权限级别</label>
+                        <select asp-for="PermissionLevel" class="form-select">
+                            <option value="1">普通管理员</option>
+                            <option value="2">高级管理员</option>
+                            <option value="3">超级管理员</option>
+                        </select>
+                        <div class="form-text">
+                            普通管理员：基本管理权限<br>
+                            高级管理员：可管理内容<br>
+                            超级管理员：完全控制权限
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>添加
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i>取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">权限说明</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>功能</th>
+                            <th class="text-center">普通</th>
+                            <th class="text-center">高级</th>
+                            <th class="text-center">超级</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>查看仪表盘</td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>管理家谱</td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>管理成员</td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>管理相册</td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>系统设置</td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>管理管理员</td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td>数据备份</td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
+                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

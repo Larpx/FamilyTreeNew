@@ -1,0 +1,159 @@
+@model FamilyTreeNew.Models.DTOs.FamilyTreeDto
+@{
+    ViewData["Title"] = "家谱详情";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">家谱管理</a></li>
+                    <li class="breadcrumb-item active">家谱详情</li>
+                </ol>
+            </nav>
+            <h1 class="page-title">@Model.Name</h1>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>编辑
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">基本信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label fw-bold">家谱名称</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-plaintext">@Model.Name</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label fw-bold">家谱简介</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-plaintext">
+                            @if (!string.IsNullOrEmpty(Model.Description))
+                            {
+                                @Model.Description
+                            }
+                            else
+                            {
+                                <span class="text-muted">暂无简介</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label fw-bold">成员数量</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-plaintext">
+                            <span class="badge bg-info fs-6">@Model.MemberCount 人</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label fw-bold">状态</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-plaintext">
+                            @if (Model.IsEnabled)
+                            {
+                                <span class="badge bg-success">已启用</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">已禁用</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label fw-bold">验证要求</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-plaintext">
+                            @if (Model.RequireVerification)
+                            {
+                                <span class="badge bg-warning">需要验证</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark">无需验证</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label fw-bold">创建时间</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-plaintext">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                    </div>
+                </div>
+                
+                @if (Model.UpdatedAt.HasValue)
+                {
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">更新时间</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext">@Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">快捷操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-controller="MemberManagement" asp-action="Index" asp-route-familyTreeId="@Model.Id" 
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-people me-1"></i>管理成员
+                    </a>
+                    <a asp-controller="MemberManagement" asp-action="Create" asp-route-familyTreeId="@Model.Id" 
+                       class="btn btn-outline-success">
+                        <i class="bi bi-person-plus me-1"></i>添加成员
+                    </a>
+                    <a asp-controller="AlbumManagement" asp-action="Index" asp-route-familyTreeId="@Model.Id" 
+                       class="btn btn-outline-info">
+                        <i class="bi bi-images me-1"></i>管理相册
+                    </a>
+                    <a asp-controller="ExcelImport" asp-action="Index" 
+                       class="btn btn-outline-warning">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Excel导入
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">危险操作</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" 
+                      onsubmit="return confirm('确定要删除这个家谱吗？此操作将同时删除所有成员数据，且不可恢复！');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="bi bi-trash me-1"></i>删除家谱
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

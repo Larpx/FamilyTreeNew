@@ -1,0 +1,17 @@
+- [x] EPPlus已替换为MiniExcel，ExcelImportService功能正常
+- [x] SixLabors.ImageSharp已替换为SkiaSharp，缩略图生成功能正常
+- [x] MySql.Data已替换为MySqlConnector，数据库连接正常
+- [x] dotnet build成功，无编译错误
+- [x] dotnet restore成功
+- [x] BackupService命令注入漏洞已修复
+- [x] BackupService路径遍历漏洞已修复
+- [x] 所有敏感API端点已添加授权控制
+- [x] 全局异常处理中间件已实现，生产环境不泄露异常详情
+- [x] 分页参数范围验证已添加（PageIndex≥1, 1≤PageSize≤100）
+- [x] 文件上传Magic Number验证已实现
+- [x] CSP安全策略已改进（移除unsafe-eval）
+- [x] 限流中间件内存泄漏已修复
+- [x] 所有修改文件的注释已同步更新
+- [x] 所有单元测试通过（dotnet test）
+- [x] 新增安全测试覆盖命令注入、路径遍历、输入验证
+- [x] README.md已更新，反映技术栈和安全改进变更
