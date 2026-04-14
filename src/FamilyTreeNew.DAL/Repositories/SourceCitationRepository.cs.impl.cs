@@ -1,0 +1,25 @@
+using FamilyTreeNew.Models.Entities;
+using FamilyTreeNew.DAL.Context;
+
+namespace FamilyTreeNew.DAL.Repositories;
+
+public class SourceCitationRepository : BaseRepositoryGuid<SourceCitation>, ISourceCitationRepository
+{
+    public SourceCitationRepository(SqlSugarContext context) : base(context) { }
+
+    public async Task<List<SourceCitation>> GetBySourceIdAsync(Guid sourceId)
+    {
+        return await Db.Queryable<SourceCitation>()
+            .Include(sc => sc.Source)
+            .Where(sc => sc.SourceId == sourceId)
+            .ToListAsync();
+    }
+
+    public async Task<List<SourceCitation>> GetByTargetAsync(string targetType, Guid targetId)
+    {
+        return await Db.Queryable<SourceCitation>()
+            .Include(sc => sc.Source)
+            .Where(sc => sc.TargetType == targetType && sc.TargetId == targetId)
+            .ToListAsync();
+    }
+}

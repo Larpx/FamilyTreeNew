@@ -34,6 +34,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IMenuService, MenuService>();
         services.AddScoped<ISpousalRelationService, SpousalRelationService>();
+        services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IEventTypeService, EventTypeService>();
+        services.AddScoped<IPlaceService, PlaceService>();
+        services.AddScoped<ISourceService, SourceService>();
+        services.AddScoped<ISourceCitationService, SourceCitationService>();
+        services.AddScoped<IGedcomService, GedcomService>();
+        services.AddScoped<IReportService, ReportService>();
         return services;
     }
 }

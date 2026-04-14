@@ -23,6 +23,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<ISpousalRelationRepository, SpousalRelationRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IEventTypeRepository, EventTypeRepository>();
+        services.AddScoped<IPlaceRepository, PlaceRepository>();
+        services.AddScoped<ISourceRepository, SourceRepository>();
+        services.AddScoped<ISourceCitationRepository, SourceCitationRepository>();
         services.AddScoped<DatabaseInitializer>();
         
         return services;

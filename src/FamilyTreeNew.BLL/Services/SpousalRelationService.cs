@@ -1,0 +1,117 @@
+using FamilyTreeNew.DAL.Repositories;
+using FamilyTreeNew.Models.DTOs;
+using FamilyTreeNew.Models.Entities;
+
+namespace FamilyTreeNew.BLL.Services;
+
+public class SpousalRelationService : ISpousalRelationService
+{
+    private readonly ISpousalRelationRepository _spousalRelationRepository;
+    private readonly IFamilyMemberRepository _familyMemberRepository;
+
+    public SpousalRelationService(ISpousalRelationRepository spousalRelationRepository, 
+        IFamilyMemberRepository familyMemberRepository)
+    {
+        _spousalRelationRepository = spousalRelationRepository;
+        _familyMemberRepository = familyMemberRepository;
+    }
+
+    public async Task<List<SpousalRelationResponseDto>> GetByFamilyTreeIdAsync(Guid familyTreeId)
+    {
+        var relations = await _spousalRelationRepository.GetByFamilyTreeIdAsync(familyTreeId);
+        return await MapToDtosAsync(relations);
+    }
+
+    public async Task<List<SpousalRelationResponseDto>> GetByMemberIdAsync(Guid memberId)
+    {
+        var relations = await _spousalRelationRepository.GetByMemberIdAsync(memberId);
+        return await MapToDtosAsync(relations);
+    }
+
+    public async Task<SpousalRelationResponseDto?> GetByIdAsync(Guid id)
+    {
+        var entity = await _spousalRelationRepository.GetByIdAsync(id);
+        return entity != null ? await MapToDtoAsync(entity) : null;
+    }
+
+    public async Task<SpousalRelationResponseDto> CreateAsync(SpousalRelationCreateRequestDto dto)
+    {
+        var entity = new SpousalRelation
+        {
+            FamilyTreeId = dto.FamilyTreeId,
+            HusbandId = dto.HusbandId,
+            WifeId = dto.WifeId,
+            MarriageDateSolar = dto.MarriageDateSolar,
+            MarriageDateLunar = dto.MarriageDateLunar,
+            Status = dto.Status,
+            IsDivorced = dto.IsDivorced,
+            DivorceDateSolar = dto.DivorceDateSolar,
+            DivorceDateLunar = dto.DivorceDateLunar,
+            Remarks = dto.Remarks,
+            CreatedAt = DateTime.Now
+        };
+
+        await _spousalRelationRepository.InsertAsync(entity);
+        return await MapToDtoAsync(entity);
+    }
+
+    public async Task<SpousalRelationResponseDto?> UpdateAsync(Guid id, SpousalRelationUpdateRequestDto dto)
+    {
+        var entity = await _spousalRelationRepository.GetByIdAsync(id);
+        if (entity == null) return null;
+
+        entity.MarriageDateSolar = dto.MarriageDateSolar;
+        entity.MarriageDateLunar = dto.MarriageDateLunar;
+        entity.Status = dto.Status;
+        entity.IsDivorced = dto.IsDivorced;
+        entity.DivorceDateSolar = dto.DivorceDateSolar;
+        entity.DivorceDateLunar = dto.DivorceDateLunar;
+        entity.Remarks = dto.Remarks;
+        entity.UpdatedAt = DateTime.Now;
+
+        await _spousalRelationRepository.UpdateAsync(entity);
+        return await MapToDtoAsync(entity);
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        if (!await _spousalRelationRepository.ExistsAsync(id)) return false;
+        await _spousalRelationRepository.DeleteAsync(id);
+        return true;
+    }
+
+    private async Task<List<SpousalRelationResponseDto>> MapToDtosAsync(List<SpousalRelation> entities)
+    {
+        var dtos = new List<SpousalRelationResponseDto>();
+        foreach (var entity in entities)
+        {
+            dtos.Add(await MapToDtoAsync(entity));
+        }
+        return dtos;
+    }
+
+    private async Task<SpousalRelationResponseDto> MapToDtoAsync(SpousalRelation entity)
+    {
+        var husband = await _familyMemberRepository.GetByIdAsync(entity.HusbandId);
+        var wife = await _familyMemberRepository.GetByIdAsync(entity.WifeId);
+
+        return new SpousalRelationResponseDto
+        {
+            Id = entity.Id,
+            FamilyTreeId = entity.FamilyTreeId,
+            HusbandId = entity.HusbandId,
+            HusbandName = husband != null ? $"{husband.Surname}{husband.FirstName}" : string.Empty,
+            WifeId = entity.WifeId,
+            WifeName = wife != null ? $"{wife.Surname}{wife.FirstName}" : string.Empty,
+            MarriageDateSolar = entity.MarriageDateSolar,
+            MarriageDateLunar = entity.MarriageDateLunar,
+            Status = entity.Status,
+            IsDivorced = entity.IsDivorced,
+            DivorceDateSolar = entity.DivorceDateSolar,
+            DivorceDateLunar = entity.DivorceDateLunar,
+            Remarks = entity.Remarks,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt
+        };
+    }
+}

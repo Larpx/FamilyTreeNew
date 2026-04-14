@@ -301,7 +301,106 @@ CREATE TABLE IF NOT EXISTS `SpousalRelations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配偶关系表';
 
 -- =============================================
--- 16. 初始与测试数据
+-- 16. 事件类型表 (EventTypes)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `EventTypes` (
+    `Id` CHAR(36) NOT NULL COMMENT '事件类型ID',
+    `Name` VARCHAR(100) NOT NULL COMMENT '事件类型名称',
+    `Code` VARCHAR(50) NOT NULL COMMENT '事件类型编码',
+    `Description` VARCHAR(500) NULL COMMENT '事件类型描述',
+    `SortOrder` INT NOT NULL DEFAULT 0 COMMENT '排序号',
+    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`Id`),
+    UNIQUE INDEX `idx_event_types_code` (`Code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='事件类型表';
+
+-- =============================================
+-- 17. 事件表 (Events)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `Events` (
+    `Id` CHAR(36) NOT NULL COMMENT '事件ID',
+    `EventTypeId` CHAR(36) NOT NULL COMMENT '事件类型ID',
+    `FamilyTreeId` CHAR(36) NOT NULL COMMENT '家谱ID',
+    `MemberId` CHAR(36) NOT NULL COMMENT '关联成员ID',
+    `PlaceId` CHAR(36) NULL COMMENT '地点ID',
+    `DateSolar` DATETIME NULL COMMENT '日期（公历）',
+    `DateLunar` VARCHAR(50) NULL COMMENT '日期（农历）',
+    `Description` VARCHAR(500) NULL COMMENT '事件描述',
+    `IsPrimary` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否主要事件',
+    `Remarks` TEXT NULL COMMENT '备注',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UpdatedAt` DATETIME NULL COMMENT '更新时间',
+    PRIMARY KEY (`Id`),
+    INDEX `idx_events_family_tree_id` (`FamilyTreeId`),
+    INDEX `idx_events_member_id` (`MemberId`),
+    INDEX `idx_events_event_type_id` (`EventTypeId`),
+    INDEX `idx_events_place_id` (`PlaceId`),
+    CONSTRAINT `fk_events_family_tree` FOREIGN KEY (`FamilyTreeId`) REFERENCES `FamilyTrees` (`Id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_events_member` FOREIGN KEY (`MemberId`) REFERENCES `FamilyMembers` (`Id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_events_event_type` FOREIGN KEY (`EventTypeId`) REFERENCES `EventTypes` (`Id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_events_place` FOREIGN KEY (`PlaceId`) REFERENCES `Places` (`Id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='事件表';
+
+-- =============================================
+-- 18. 地点表 (Places)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `Places` (
+    `Id` CHAR(36) NOT NULL COMMENT '地点ID',
+    `Name` VARCHAR(200) NOT NULL COMMENT '地点名称',
+    `Address` VARCHAR(500) NULL COMMENT '详细地址',
+    `Province` VARCHAR(100) NULL COMMENT '行政区划-省',
+    `City` VARCHAR(100) NULL COMMENT '行政区划-市',
+    `District` VARCHAR(100) NULL COMMENT '行政区划-县/区',
+    `Latitude` DECIMAL(10, 7) NULL COMMENT '纬度',
+    `Longitude` DECIMAL(10, 7) NULL COMMENT '经度',
+    `Description` TEXT NULL COMMENT '地点描述',
+    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UpdatedAt` DATETIME NULL COMMENT '更新时间',
+    PRIMARY KEY (`Id`),
+    INDEX `idx_places_province` (`Province`),
+    INDEX `idx_places_city` (`City`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='地点表';
+
+-- =============================================
+-- 19. 来源表 (Sources)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `Sources` (
+    `Id` CHAR(36) NOT NULL COMMENT '来源ID',
+    `Title` VARCHAR(200) NOT NULL COMMENT '来源标题',
+    `Author` VARCHAR(100) NULL COMMENT '作者',
+    `Publisher` VARCHAR(200) NULL COMMENT '出版社',
+    `Year` INT NULL COMMENT '出版年份',
+    `Url` VARCHAR(500) NULL COMMENT '来源URL',
+    `Type` VARCHAR(100) NULL COMMENT '来源类型',
+    `Description` TEXT NULL COMMENT '来源描述',
+    `Citation` VARCHAR(200) NULL COMMENT '引用信息',
+    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UpdatedAt` DATETIME NULL COMMENT '更新时间',
+    PRIMARY KEY (`Id`),
+    INDEX `idx_sources_type` (`Type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='来源表';
+
+-- =============================================
+-- 20. 来源引用表 (SourceCitations)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `SourceCitations` (
+    `Id` CHAR(36) NOT NULL COMMENT '引用ID',
+    `SourceId` CHAR(36) NOT NULL COMMENT '来源ID',
+    `TargetType` VARCHAR(50) NOT NULL COMMENT '目标类型(Member/Event/FamilyTree)',
+    `TargetId` CHAR(36) NOT NULL COMMENT '目标ID',
+    `Note` VARCHAR(500) NULL COMMENT '引用说明',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`Id`),
+    INDEX `idx_source_citations_source_id` (`SourceId`),
+    INDEX `idx_source_citations_target` (`TargetType`, `TargetId`),
+    CONSTRAINT `fk_source_citations_source` FOREIGN KEY (`SourceId`) REFERENCES `Sources` (`Id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='来源引用表';
+
+-- =============================================
+-- 21. 初始与测试数据
 -- =============================================
 
 -- 默认管理员账户

@@ -56,8 +56,40 @@ FamilyTreeNew/
 
 ### 数据导入导出
 - Excel 批量导入成员数据
+- GEDCOM 标准格式导入导出
 - 数据库备份与恢复
 - 系统设置管理
+
+### 角色权限管理
+- RBAC 角色权限体系
+- 角色创建、编辑、删除
+- 权限分配与管理
+- 动态菜单配置
+
+### 家庭关系扩展
+- 配偶关系管理
+- 婚姻状况记录
+
+### 事件管理
+- 事件类型定义（出生、婚姻、死亡等）
+- 事件与成员关联
+- 支持公历/农历日期
+
+### 地点管理
+- 地点信息管理
+- 行政区划（省/市/区）
+- 经纬度记录
+
+### 来源管理
+- 资料来源记录
+- 来源类型分类
+- 来源引用关联
+
+### 报告功能
+- 祖先图谱报告
+- 后代图谱报告
+- 家族统计报告
+- HTML 报告导出
 
 ### 安全特性
 - JWT 身份认证与授权
@@ -88,6 +120,16 @@ FamilyTreeNew/
 | VerificationController | `/api/verification` | 家谱访问验证 |
 | VerificationQuestionsController | `/api/verificationquestions` | 验证问题管理 |
 | SystemController | `/api/system` | 系统管理、备份恢复 |
+| RolesController | `/api/roles` | 角色管理 |
+| PermissionsController | `/api/permissions` | 权限管理 |
+| MenusController | `/api/menus` | 菜单管理 |
+| SpousalRelationsController | `/api/SpousalRelations` | 配偶关系管理 |
+| EventsController | `/api/events` | 事件管理 |
+| EventTypesController | `/api/eventtypes` | 事件类型管理 |
+| PlacesController | `/api/places` | 地点管理 |
+| SourcesController | `/api/sources` | 来源管理 |
+| GedcomController | `/api/gedcom` | GEDCOM导入导出 |
+| ReportsController | `/api/reports` | 报告生成 |
 
 ## 快速开始
 
