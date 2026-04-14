@@ -236,14 +236,14 @@ WHERE NOT EXISTS (SELECT 1 FROM `SystemSettings`);
 
 -- 家族
 INSERT INTO `Families` (`FamilyName`, `Description`, `RootMemberId`, `CreatedAt`)
-SELECT '赵氏家族', '赵氏宗族测试数据', NULL, NOW()
-WHERE NOT EXISTS (SELECT 1 FROM `Families` WHERE `FamilyName` = '赵氏家族');
+SELECT '张氏家族', '张氏宗族测试数据', NULL, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM `Families` WHERE `FamilyName` = '张氏家族');
 
 -- 家谱
 INSERT INTO `FamilyTrees` (`Id`, `Name`, `Description`, `CreatedAt`, `RequireVerification`, `IsEnabled`, `UpdatedAt`)
 SELECT
     '20000000-0000-0000-0000-000000000001',
-    '赵氏家谱（测试）',
+    '张氏家谱（测试）',
     '用于开发环境的测试家谱数据',
     NOW(),
     1,
@@ -259,7 +259,7 @@ SELECT
     '20000000-0000-0000-0000-000000000001',
     NULL,
     1,
-    '赵',
+    '张',
     '德山',
     '仲岳',
     '长子',
@@ -268,7 +268,7 @@ SELECT
     '乙酉年二月初五',
     '河南郑州',
     '教师',
-    '赵氏家族第一代代表人物。',
+    '张氏家族第一代代表人物。',
     '热心家族事务',
     0,
     NULL,
@@ -285,7 +285,7 @@ SELECT
     '20000000-0000-0000-0000-000000000001',
     '30000000-0000-0000-0000-000000000001',
     2,
-    '赵',
+    '张',
     '明远',
     '子衡',
     '次子',
@@ -294,7 +294,7 @@ SELECT
     '壬子年五月廿一',
     '北京',
     '工程师',
-    '赵德山之子，长期从事信息化建设。',
+    '张德山之子，长期从事信息化建设。',
     '负责整理电子家谱',
     0,
     NULL,
@@ -309,7 +309,7 @@ INSERT INTO `VerificationQuestions` (`Id`, `FamilyTreeId`, `Question`, `AnswerKe
 SELECT
     '40000000-0000-0000-0000-000000000001',
     '20000000-0000-0000-0000-000000000001',
-    '赵氏家族祠堂位于哪个城市？',
+    '张氏家族祠堂位于哪个城市？',
     '郑州',
     1,
     1,
