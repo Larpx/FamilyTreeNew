@@ -19,6 +19,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOperationLogRepository, OperationLogRepository>();
         services.AddScoped<IAlbumRepository, AlbumRepository>();
         services.AddScoped<IPhotoRepository, PhotoRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IMenuRepository, MenuRepository>();
+        services.AddScoped<ISpousalRelationRepository, SpousalRelationRepository>();
         services.AddScoped<DatabaseInitializer>();
         
         return services;

@@ -190,7 +190,118 @@ CREATE TABLE IF NOT EXISTS `Families` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='家族表';
 
 -- =============================================
--- 10. 初始与测试数据
+-- 10. 角色表 (Roles)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `Roles` (
+    `Id` CHAR(36) NOT NULL COMMENT '角色ID',
+    `Name` VARCHAR(50) NOT NULL COMMENT '角色名称',
+    `Description` VARCHAR(200) NULL COMMENT '角色描述',
+    `Code` VARCHAR(50) NOT NULL COMMENT '角色编码',
+    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UpdatedAt` DATETIME NULL COMMENT '更新时间',
+    PRIMARY KEY (`Id`),
+    UNIQUE INDEX `idx_roles_code` (`Code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色表';
+
+-- =============================================
+-- 11. 权限表 (Permissions)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `Permissions` (
+    `Id` CHAR(36) NOT NULL COMMENT '权限ID',
+    `Code` VARCHAR(100) NOT NULL COMMENT '权限编码',
+    `Name` VARCHAR(100) NOT NULL COMMENT '权限名称',
+    `Type` VARCHAR(50) NOT NULL COMMENT '权限类型(menu/button/api)',
+    `Url` VARCHAR(200) NULL COMMENT '权限URL',
+    `Method` VARCHAR(10) NULL COMMENT 'HTTP方法',
+    `ParentId` CHAR(36) NULL COMMENT '父权限ID',
+    `SortOrder` INT NOT NULL DEFAULT 0 COMMENT '排序号',
+    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`Id`),
+    UNIQUE INDEX `idx_permissions_code` (`Code`),
+    INDEX `idx_permissions_parent_id` (`ParentId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='权限表';
+
+-- =============================================
+-- 12. 用户角色关联表 (UserRoles)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `UserRoles` (
+    `Id` CHAR(36) NOT NULL COMMENT '主键ID',
+    `AdminId` CHAR(36) NOT NULL COMMENT '管理员ID',
+    `RoleId` CHAR(36) NOT NULL COMMENT '角色ID',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`Id`),
+    UNIQUE INDEX `idx_user_roles_admin_role` (`AdminId`, `RoleId`),
+    INDEX `idx_user_roles_admin_id` (`AdminId`),
+    INDEX `idx_user_roles_role_id` (`RoleId`),
+    CONSTRAINT `fk_user_roles_admin` FOREIGN KEY (`AdminId`) REFERENCES `Admins` (`Id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_user_roles_role` FOREIGN KEY (`RoleId`) REFERENCES `Roles` (`Id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户角色关联表';
+
+-- =============================================
+-- 13. 角色权限关联表 (RolePermissions)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `RolePermissions` (
+    `Id` CHAR(36) NOT NULL COMMENT '主键ID',
+    `RoleId` CHAR(36) NOT NULL COMMENT '角色ID',
+    `PermissionId` CHAR(36) NOT NULL COMMENT '权限ID',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`Id`),
+    UNIQUE INDEX `idx_role_permissions_role_permission` (`RoleId`, `PermissionId`),
+    INDEX `idx_role_permissions_role_id` (`RoleId`),
+    INDEX `idx_role_permissions_permission_id` (`PermissionId`),
+    CONSTRAINT `fk_role_permissions_role` FOREIGN KEY (`RoleId`) REFERENCES `Roles` (`Id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_role_permissions_permission` FOREIGN KEY (`PermissionId`) REFERENCES `Permissions` (`Id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色权限关联表';
+
+-- =============================================
+-- 14. 菜单表 (Menus)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `Menus` (
+    `Id` CHAR(36) NOT NULL COMMENT '菜单ID',
+    `ParentId` CHAR(36) NULL COMMENT '父菜单ID',
+    `Name` VARCHAR(100) NOT NULL COMMENT '菜单名称',
+    `Url` VARCHAR(200) NULL COMMENT '菜单URL',
+    `Icon` VARCHAR(100) NULL COMMENT '图标样式',
+    `PermissionCode` VARCHAR(100) NULL COMMENT '权限编码',
+    `SortOrder` INT NOT NULL DEFAULT 0 COMMENT '排序号',
+    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
+    `IsVisible` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否显示',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UpdatedAt` DATETIME NULL COMMENT '更新时间',
+    PRIMARY KEY (`Id`),
+    INDEX `idx_menus_parent_id` (`ParentId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单表';
+
+-- =============================================
+-- 15. 配偶关系表 (SpousalRelations)
+-- =============================================
+CREATE TABLE IF NOT EXISTS `SpousalRelations` (
+    `Id` CHAR(36) NOT NULL COMMENT '配偶关系ID',
+    `FamilyTreeId` CHAR(36) NOT NULL COMMENT '家谱ID',
+    `HusbandId` CHAR(36) NOT NULL COMMENT '丈夫ID',
+    `WifeId` CHAR(36) NOT NULL COMMENT '妻子ID',
+    `MarriageDateSolar` DATETIME NULL COMMENT '结婚日期（公历）',
+    `MarriageDateLunar` VARCHAR(50) NULL COMMENT '结婚日期（农历）',
+    `Status` VARCHAR(200) NULL COMMENT '婚姻状况说明',
+    `IsDivorced` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否离异',
+    `DivorceDateSolar` DATETIME NULL COMMENT '离婚日期（公历）',
+    `DivorceDateLunar` VARCHAR(50) NULL COMMENT '离婚日期（农历）',
+    `Remarks` TEXT NULL COMMENT '备注',
+    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `UpdatedAt` DATETIME NULL COMMENT '更新时间',
+    PRIMARY KEY (`Id`),
+    INDEX `idx_spousal_relations_family_tree_id` (`FamilyTreeId`),
+    INDEX `idx_spousal_relations_husband_id` (`HusbandId`),
+    INDEX `idx_spousal_relations_wife_id` (`WifeId`),
+    CONSTRAINT `fk_spousal_relations_family_tree` FOREIGN KEY (`FamilyTreeId`) REFERENCES `FamilyTrees` (`Id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_spousal_relations_husband` FOREIGN KEY (`HusbandId`) REFERENCES `FamilyMembers` (`Id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_spousal_relations_wife` FOREIGN KEY (`WifeId`) REFERENCES `FamilyMembers` (`Id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配偶关系表';
+
+-- =============================================
+-- 16. 初始与测试数据
 -- =============================================
 
 -- 默认管理员账户
@@ -355,6 +466,129 @@ SELECT
     1,
     NULL
 WHERE NOT EXISTS (SELECT 1 FROM `OperationLogs` WHERE `Id` = '70000000-0000-0000-0000-000000000001');
+
+-- 角色数据
+INSERT INTO `Roles` (`Id`, `Name`, `Description`, `Code`, `IsEnabled`, `CreatedAt`)
+SELECT
+    '80000000-0000-0000-0000-000000000001',
+    '超级管理员',
+    '拥有系统最高权限',
+    'SuperAdmin',
+    1,
+    NOW()
+WHERE NOT EXISTS (SELECT 1 FROM `Roles` WHERE `Code` = 'SuperAdmin');
+
+INSERT INTO `Roles` (`Id`, `Name`, `Description`, `Code`, `IsEnabled`, `CreatedAt`)
+SELECT
+    '80000000-0000-0000-0000-000000000002',
+    '管理员',
+    '拥有大部分管理权限',
+    'Admin',
+    1,
+    NOW()
+WHERE NOT EXISTS (SELECT 1 FROM `Roles` WHERE `Code` = 'Admin');
+
+INSERT INTO `Roles` (`Id`, `Name`, `Description`, `Code`, `IsEnabled`, `CreatedAt`)
+SELECT
+    '80000000-0000-0000-0000-000000000003',
+    '编辑',
+    '拥有家谱编辑权限',
+    'Editor',
+    1,
+    NOW()
+WHERE NOT EXISTS (SELECT 1 FROM `Roles` WHERE `Code` = 'Editor');
+
+-- 用户角色关联
+INSERT INTO `UserRoles` (`Id`, `AdminId`, `RoleId`, `CreatedAt`)
+SELECT
+    '90000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000001',
+    '80000000-0000-0000-0000-000000000001',
+    NOW()
+WHERE NOT EXISTS (SELECT 1 FROM `UserRoles` WHERE `AdminId` = '10000000-0000-0000-0000-000000000001');
+
+-- 权限数据
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000001', 'family_tree', '家谱管理', 'menu', '/familytrees', NULL, NULL, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000002', 'family_tree_list', '查看家谱列表', 'button', '/api/familytrees', 'GET', 'a0000000-0000-0000-0000-000000000001', 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree_list');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000003', 'family_tree_create', '创建家谱', 'button', '/api/familytrees', 'POST', 'a0000000-0000-0000-0000-000000000001', 2, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree_create');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000004', 'family_tree_edit', '编辑家谱', 'button', '/api/familytrees/{id}', 'PUT', 'a0000000-0000-0000-0000-000000000001', 3, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree_edit');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000005', 'family_tree_delete', '删除家谱', 'button', '/api/familytrees/{id}', 'DELETE', 'a0000000-0000-0000-0000-000000000001', 4, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree_delete');
+
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000006', 'member_management', '成员管理', 'menu', '/members', NULL, NULL, 2, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'member_management');
+
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000007', 'role_management', '角色管理', 'menu', '/roles', NULL, NULL, 3, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'role_management');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000008', 'role_list', '查看角色列表', 'button', '/api/roles', 'GET', 'a0000000-0000-0000-0000-000000000007', 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'role_list');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000009', 'role_create', '创建角色', 'button', '/api/roles', 'POST', 'a0000000-0000-0000-0000-000000000007', 2, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'role_create');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000010', 'role_edit', '编辑角色', 'button', '/api/roles/{id}', 'PUT', 'a0000000-0000-0000-0000-000000000007', 3, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'role_edit');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000011', 'role_delete', '删除角色', 'button', '/api/roles/{id}', 'DELETE', 'a0000000-0000-0000-0000-000000000007', 4, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'role_delete');
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000012', 'role_assign_permission', '分配角色权限', 'button', '/api/roles/{id}/permissions', 'PUT', 'a0000000-0000-0000-0000-000000000007', 5, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'role_assign_permission');
+
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000013', 'permission_management', '权限管理', 'menu', '/permissions', NULL, NULL, 4, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'permission_management');
+
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000014', 'menu_management', '菜单管理', 'menu', '/menus', NULL, NULL, 5, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'menu_management');
+
+INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`)
+SELECT 'a0000000-0000-0000-0000-000000000015', 'system_settings', '系统设置', 'menu', '/settings', NULL, NULL, 6, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'system_settings');
+
+-- 角色权限关联
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000001');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000002');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000003', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000003', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000003');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000004', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000004', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000004');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000005', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000005');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000006', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000006', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000006');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000007', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000007', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000007');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000008', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000008', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000008');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000009', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000009', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000009');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000010', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000010', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000010');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000011', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000011', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000011');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000012', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000012', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000012');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000013', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000013', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000013');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000014', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000014', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000014');
+INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`)
+SELECT 'b0000000-0000-0000-0000-000000000015', '80000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000015', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = '80000000-0000-0000-0000-000000000001' AND `PermissionId` = 'a0000000-0000-0000-0000-000000000015');
+
+-- 菜单数据
+INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`)
+SELECT 'c0000000-0000-0000-0000-000000000001', NULL, '家谱管理', '/familytrees', 'fa-solid fa-tree', 'family_tree', 1, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/familytrees');
+INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`)
+SELECT 'c0000000-0000-0000-0000-000000000002', NULL, '成员管理', '/members', 'fa-solid fa-users', 'member_management', 2, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/members');
+INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`)
+SELECT 'c0000000-0000-0000-0000-000000000003', NULL, '角色管理', '/roles', 'fa-solid fa-user-tag', 'role_management', 3, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/roles');
+INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`)
+SELECT 'c0000000-0000-0000-0000-000000000004', NULL, '权限管理', '/permissions', 'fa-solid fa-key', 'permission_management', 4, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/permissions');
+INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`)
+SELECT 'c0000000-0000-0000-0000-000000000005', NULL, '菜单管理', '/menus', 'fa-solid fa-bars', 'menu_management', 5, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/menus');
+INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`)
+SELECT 'c0000000-0000-0000-0000-000000000006', NULL, '系统设置', '/settings', 'fa-solid fa-cog', 'system_settings', 6, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/settings');
 
 -- =============================================
 -- 完成

@@ -30,6 +30,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJwtHelper, JwtHelper>();
         services.AddScoped<IAlbumService, AlbumService>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<IMenuService, MenuService>();
+        services.AddScoped<ISpousalRelationService, SpousalRelationService>();
         return services;
     }
 }
