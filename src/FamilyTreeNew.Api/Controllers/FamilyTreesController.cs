@@ -70,9 +70,9 @@ public class FamilyTreesController : ControllerBase
             
             return Ok(ApiResponse<PagedResult<FamilyTreeDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PagedResult<FamilyTreeDto>>.Fail($"获取家谱列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PagedResult<FamilyTreeDto>>.Fail("获取家谱列表失败，请稍后重试"));
         }
     }
 
@@ -111,9 +111,9 @@ public class FamilyTreesController : ControllerBase
             
             return Ok(ApiResponse<FamilyTreeDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<FamilyTreeDto>.Fail($"获取家谱详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<FamilyTreeDto>.Fail("获取家谱详情失败，请稍后重试"));
         }
     }
 
@@ -145,9 +145,9 @@ public class FamilyTreesController : ControllerBase
             InvalidateFamilyTreeCache();
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<FamilyTreeDto>.Ok(result, "家谱创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<FamilyTreeDto>.Fail($"创建家谱失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<FamilyTreeDto>.Fail("创建家谱失败，请稍后重试"));
         }
     }
 
@@ -187,9 +187,9 @@ public class FamilyTreesController : ControllerBase
             InvalidateFamilyTreeCache(id);
             return Ok(ApiResponse<FamilyTreeDto>.Ok(result, "家谱更新成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<FamilyTreeDto>.Fail($"更新家谱失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<FamilyTreeDto>.Fail("更新家谱失败，请稍后重试"));
         }
     }
 
@@ -217,9 +217,9 @@ public class FamilyTreesController : ControllerBase
             InvalidateFamilyTreeCache(id);
             return Ok(ApiResponse.Ok("家谱删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除家谱失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除家谱失败，请稍后重试"));
         }
     }
 
@@ -267,9 +267,9 @@ public class FamilyTreesController : ControllerBase
             var result = await _memberService.GetPagedAsync(query);
             return Ok(ApiResponse<PagedResult<FamilyMemberDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PagedResult<FamilyMemberDto>>.Fail($"获取家谱成员失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PagedResult<FamilyMemberDto>>.Fail("获取家谱成员失败，请稍后重试"));
         }
     }
 
@@ -310,13 +310,13 @@ public class FamilyTreesController : ControllerBase
             InvalidateFamilyTreeCache(id);
             return CreatedAtAction(nameof(FamilyMembersController.GetById), "FamilyMembers", new { id = result.Id }, ApiResponse<FamilyMemberDto>.Ok(result, "成员添加成功"));
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
-            return BadRequest(ApiResponse<FamilyMemberDto>.Fail(ex.Message));
+            return BadRequest(ApiResponse<FamilyMemberDto>.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail($"添加成员失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail("添加成员失败，请稍后重试"));
         }
     }
 
@@ -367,9 +367,9 @@ public class FamilyTreesController : ControllerBase
                 return BadRequest(ApiResponse<ExcelImportResultDto>.Fail(result.Message, 400, result.Errors.Select(e => $"行{e.RowNumber}: {e.ErrorMessage}").ToList()));
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<ExcelImportResultDto>.Fail($"导入失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<ExcelImportResultDto>.Fail("导入失败，请稍后重试"));
         }
     }
 
@@ -387,9 +387,9 @@ public class FamilyTreesController : ControllerBase
             var template = _excelImportService.GenerateTemplate();
             return File(template, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "成员导入模板.xlsx");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"生成模板失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("生成模板失败，请稍后重试"));
         }
     }
 

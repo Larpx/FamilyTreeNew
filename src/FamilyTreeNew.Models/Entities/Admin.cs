@@ -68,4 +68,10 @@ public class Admin
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "是否启用")]
     public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// 管理员拥有的角色列表
+    /// </summary>
+    [Navigate(typeof(UserRole), nameof(UserRole.AdminId), nameof(UserRole.RoleId), new string[0])]
+    public List<Role>? Roles { get; set; }
 }

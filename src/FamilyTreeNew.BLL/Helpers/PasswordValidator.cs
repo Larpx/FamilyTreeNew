@@ -42,6 +42,12 @@ public static class PasswordValidator
             result.Errors.Add($"密码长度至少需要{minLength}个字符");
         }
 
+        if (password.Length > 128)
+        {
+            result.IsValid = false;
+            result.Errors.Add("密码长度不能超过128个字符");
+        }
+
         if (requireUppercase && !UppercasePattern.IsMatch(password))
         {
             result.IsValid = false;

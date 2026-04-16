@@ -54,7 +54,7 @@ public class SecurityHeadersMiddleware
         // CSP策略中已移除'unsafe-eval'：'unsafe-eval'允许eval()/new Function()等动态代码执行，
         // 是XSS攻击的常见利用途径。移除后可能影响依赖eval的旧代码，需确保前端不使用动态代码执行
         var cspPolicy = "default-src 'self'; " +
-                        $"script-src 'self' 'nonce-{nonce}' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+                        $"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net; " +
                         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.font.im https://cdn.jsdelivr.net; " +
                         "font-src 'self' https://fonts.gstatic.com https://fonts.font.im https://cdn.jsdelivr.net; " +
                         "img-src 'self' data: blob:; " +

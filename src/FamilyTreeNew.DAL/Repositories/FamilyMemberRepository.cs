@@ -85,6 +85,13 @@ public interface IFamilyMemberRepository
     Task<bool> HasChildrenAsync(Guid parentId);
 
     /// <summary>
+    /// 获取指定父成员的子成员列表
+    /// </summary>
+    /// <param name="parentId">父成员ID</param>
+    /// <returns>子成员列表</returns>
+    Task<List<FamilyMember>> GetChildrenAsync(Guid parentId);
+
+    /// <summary>
     /// 批量插入成员
     /// </summary>
     /// <param name="members">成员列表</param>

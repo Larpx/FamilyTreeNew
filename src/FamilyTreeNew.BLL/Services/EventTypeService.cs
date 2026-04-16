@@ -7,10 +7,12 @@ namespace FamilyTreeNew.BLL.Services;
 public class EventTypeService : IEventTypeService
 {
     private readonly IEventTypeRepository _eventTypeRepository;
+    private readonly IEventRepository _eventRepository;
 
-    public EventTypeService(IEventTypeRepository eventTypeRepository)
+    public EventTypeService(IEventTypeRepository eventTypeRepository, IEventRepository eventRepository)
     {
         _eventTypeRepository = eventTypeRepository;
+        _eventRepository = eventRepository;
     }
 
     public async Task<List<EventTypeResponseDto>> GetAllAsync()
@@ -39,6 +41,12 @@ public class EventTypeService : IEventTypeService
 
     public async Task<EventTypeResponseDto> CreateAsync(EventTypeCreateRequestDto dto)
     {
+        var existingType = await _eventTypeRepository.GetByCodeAsync(dto.Code);
+        if (existingType != null)
+        {
+            throw new InvalidOperationException($"事件类型编码 '{dto.Code}' 已存在");
+        }
+
         var entity = new EventType
         {
             Name = dto.Name,
@@ -46,7 +54,7 @@ public class EventTypeService : IEventTypeService
             Description = dto.Description,
             SortOrder = dto.SortOrder,
             IsEnabled = dto.IsEnabled,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _eventTypeRepository.InsertAsync(entity);
@@ -70,6 +78,13 @@ public class EventTypeService : IEventTypeService
     public async Task<bool> DeleteAsync(Guid id)
     {
         if (!await _eventTypeRepository.ExistsAsync(id)) return false;
+
+        var relatedEvents = await _eventRepository.GetByEventTypeIdAsync(id);
+        if (relatedEvents.Count > 0)
+        {
+            throw new InvalidOperationException("该事件类型下存在关联事件，无法删除");
+        }
+
         await _eventTypeRepository.DeleteAsync(id);
         return true;
     }

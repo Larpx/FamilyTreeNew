@@ -26,9 +26,9 @@ public class EventTypesController : ControllerBase
             var result = await _eventTypeService.GetAllAsync();
             return Ok(ApiResponse<List<EventTypeResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<EventTypeResponseDto>>.Fail($"获取事件类型列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<EventTypeResponseDto>>.Fail("获取事件类型列表失败，请稍后重试"));
         }
     }
 
@@ -41,9 +41,9 @@ public class EventTypesController : ControllerBase
             var result = await _eventTypeService.GetEnabledTypesAsync();
             return Ok(ApiResponse<List<EventTypeResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<EventTypeResponseDto>>.Fail($"获取启用的事件类型失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<EventTypeResponseDto>>.Fail("获取启用的事件类型失败，请稍后重试"));
         }
     }
 
@@ -61,9 +61,9 @@ public class EventTypesController : ControllerBase
             }
             return Ok(ApiResponse<EventTypeResponseDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<EventTypeResponseDto>.Fail($"获取事件类型详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<EventTypeResponseDto>.Fail("获取事件类型详情失败，请稍后重试"));
         }
     }
 
@@ -86,9 +86,9 @@ public class EventTypesController : ControllerBase
             var result = await _eventTypeService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<EventTypeResponseDto>.Ok(result, "事件类型创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<EventTypeResponseDto>.Fail($"创建事件类型失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<EventTypeResponseDto>.Fail("创建事件类型失败，请稍后重试"));
         }
     }
 
@@ -116,9 +116,9 @@ public class EventTypesController : ControllerBase
             }
             return Ok(ApiResponse<EventTypeResponseDto>.Ok(result, "事件类型更新成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<EventTypeResponseDto>.Fail($"更新事件类型失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<EventTypeResponseDto>.Fail("更新事件类型失败，请稍后重试"));
         }
     }
 
@@ -136,9 +136,9 @@ public class EventTypesController : ControllerBase
             }
             return Ok(ApiResponse.Ok("事件类型删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除事件类型失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除事件类型失败，请稍后重试"));
         }
     }
 }

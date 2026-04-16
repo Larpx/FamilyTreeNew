@@ -68,9 +68,9 @@ public class FamilyMembersController : ControllerBase
 
             return Ok(ApiResponse<PagedResult<FamilyMemberDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PagedResult<FamilyMemberDto>>.Fail($"获取成员列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PagedResult<FamilyMemberDto>>.Fail("获取成员列表失败，请稍后重试"));
         }
     }
 
@@ -110,9 +110,9 @@ public class FamilyMembersController : ControllerBase
 
             return Ok(ApiResponse<FamilyMemberDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail($"获取成员详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail("获取成员详情失败，请稍后重试"));
         }
     }
 
@@ -151,13 +151,13 @@ public class FamilyMembersController : ControllerBase
             InvalidateMemberCache(dto.FamilyTreeId);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<FamilyMemberDto>.Ok(result, "成员创建成功"));
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
-            return BadRequest(ApiResponse<FamilyMemberDto>.Fail(ex.Message));
+            return BadRequest(ApiResponse<FamilyMemberDto>.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail($"创建成员失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail("创建成员失败，请稍后重试"));
         }
     }
 
@@ -197,13 +197,13 @@ public class FamilyMembersController : ControllerBase
             InvalidateMemberCache(result.FamilyTreeId, id);
             return Ok(ApiResponse<FamilyMemberDto>.Ok(result, "成员更新成功"));
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
-            return BadRequest(ApiResponse<FamilyMemberDto>.Fail(ex.Message));
+            return BadRequest(ApiResponse<FamilyMemberDto>.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail($"更新成员失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail("更新成员失败，请稍后重试"));
         }
     }
 
@@ -239,13 +239,13 @@ public class FamilyMembersController : ControllerBase
             InvalidateMemberCache(member.FamilyTreeId, id);
             return Ok(ApiResponse.Ok("成员删除成功"));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return BadRequest(ApiResponse.Fail(ex.Message));
+            return BadRequest(ApiResponse.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除成员失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除成员失败，请稍后重试"));
         }
     }
 

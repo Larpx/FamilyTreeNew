@@ -11,7 +11,7 @@ public class EventService : IEventService
     private readonly IPlaceRepository _placeRepository;
     private readonly IFamilyMemberRepository _familyMemberRepository;
 
-    public EventService(IEventRepository eventRepository, 
+    public EventService(IEventRepository eventRepository,
         IEventTypeRepository eventTypeRepository,
         IPlaceRepository placeRepository,
         IFamilyMemberRepository familyMemberRepository)
@@ -25,19 +25,24 @@ public class EventService : IEventService
     public async Task<List<EventResponseDto>> GetByFamilyTreeIdAsync(Guid familyTreeId)
     {
         var events = await _eventRepository.GetByFamilyTreeIdAsync(familyTreeId);
-        return await MapToDtosAsync(events);
+        return events.Select(MapToDto).ToList();
     }
 
     public async Task<List<EventResponseDto>> GetByMemberIdAsync(Guid memberId)
     {
         var events = await _eventRepository.GetByMemberIdAsync(memberId);
-        return await MapToDtosAsync(events);
+        return events.Select(MapToDto).ToList();
     }
 
     public async Task<EventResponseDto?> GetByIdAsync(Guid id)
     {
         var entity = await _eventRepository.GetByIdAsync(id);
-        return entity != null ? await MapToDtoAsync(entity) : null;
+        if (entity == null) return null;
+
+        var eventType = await _eventTypeRepository.GetByIdAsync(entity.EventTypeId);
+        var place = entity.PlaceId.HasValue ? await _placeRepository.GetByIdAsync(entity.PlaceId.Value) : null;
+        var member = await _familyMemberRepository.GetByIdAsync(entity.MemberId);
+        return MapToDtoWithDetails(entity, eventType, place, member);
     }
 
     public async Task<EventResponseDto> CreateAsync(EventCreateRequestDto dto)
@@ -53,11 +58,15 @@ public class EventService : IEventService
             Description = dto.Description,
             IsPrimary = dto.IsPrimary,
             Remarks = dto.Remarks,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _eventRepository.InsertAsync(entity);
-        return await MapToDtoAsync(entity);
+
+        var eventType = await _eventTypeRepository.GetByIdAsync(entity.EventTypeId);
+        var place = entity.PlaceId.HasValue ? await _placeRepository.GetByIdAsync(entity.PlaceId.Value) : null;
+        var member = await _familyMemberRepository.GetByIdAsync(entity.MemberId);
+        return MapToDtoWithDetails(entity, eventType, place, member);
     }
 
     public async Task<EventResponseDto?> UpdateAsync(Guid id, EventUpdateRequestDto dto)
@@ -72,10 +81,14 @@ public class EventService : IEventService
         entity.Description = dto.Description;
         entity.IsPrimary = dto.IsPrimary;
         entity.Remarks = dto.Remarks;
-        entity.UpdatedAt = DateTime.Now;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _eventRepository.UpdateAsync(entity);
-        return await MapToDtoAsync(entity);
+
+        var eventType = await _eventTypeRepository.GetByIdAsync(entity.EventTypeId);
+        var place = entity.PlaceId.HasValue ? await _placeRepository.GetByIdAsync(entity.PlaceId.Value) : null;
+        var member = await _familyMemberRepository.GetByIdAsync(entity.MemberId);
+        return MapToDtoWithDetails(entity, eventType, place, member);
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -85,22 +98,30 @@ public class EventService : IEventService
         return true;
     }
 
-    private async Task<List<EventResponseDto>> MapToDtosAsync(List<Event> entities)
+    private static EventResponseDto MapToDto(Event entity)
     {
-        var dtos = new List<EventResponseDto>();
-        foreach (var entity in entities)
+        return new EventResponseDto
         {
-            dtos.Add(await MapToDtoAsync(entity));
-        }
-        return dtos;
+            Id = entity.Id,
+            EventTypeId = entity.EventTypeId,
+            EventTypeName = entity.EventType?.Name ?? string.Empty,
+            FamilyTreeId = entity.FamilyTreeId,
+            MemberId = entity.MemberId,
+            MemberName = entity.Member != null ? $"{entity.Member.Surname}{entity.Member.FirstName}" : string.Empty,
+            PlaceId = entity.PlaceId,
+            PlaceName = entity.Place?.Name,
+            DateSolar = entity.DateSolar,
+            DateLunar = entity.DateLunar,
+            Description = entity.Description,
+            IsPrimary = entity.IsPrimary,
+            Remarks = entity.Remarks,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt
+        };
     }
 
-    private async Task<EventResponseDto> MapToDtoAsync(Event entity)
+    private static EventResponseDto MapToDtoWithDetails(Event entity, EventType? eventType, Place? place, FamilyMember? member)
     {
-        var eventType = await _eventTypeRepository.GetByIdAsync(entity.EventTypeId);
-        var place = entity.PlaceId.HasValue ? await _placeRepository.GetByIdAsync(entity.PlaceId.Value) : null;
-        var member = await _familyMemberRepository.GetByIdAsync(entity.MemberId);
-
         return new EventResponseDto
         {
             Id = entity.Id,

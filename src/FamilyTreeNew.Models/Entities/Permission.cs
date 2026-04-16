@@ -35,6 +35,18 @@ public class Permission
     [SugarColumn(IsNullable = false, ColumnDescription = "创建时间")]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-    [Navigate(NavigateType.ManyToMany, nameof(RolePermission), nameof(PermissionId), nameof(RoleId))]
+    [Navigate(typeof(RolePermission), nameof(RolePermission.PermissionId), nameof(RolePermission.RoleId), new string[0])]
     public List<Role>? Roles { get; set; }
+
+    /// <summary>
+    /// 父权限
+    /// </summary>
+    [Navigate(NavigateType.OneToOne, nameof(ParentId))]
+    public Permission? Parent { get; set; }
+
+    /// <summary>
+    /// 子权限列表
+    /// </summary>
+    [Navigate(NavigateType.OneToMany, nameof(ParentId))]
+    public List<Permission>? Children { get; set; }
 }

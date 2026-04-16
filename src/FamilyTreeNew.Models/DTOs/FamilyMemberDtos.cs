@@ -51,6 +51,12 @@ public class FamilyMemberCreateDto
     public string? GenerationName { get; set; }
 
     /// <summary>
+    /// 性别（M-男，F-女）
+    /// </summary>
+    [StringLength(10, ErrorMessage = "性别不能超过10个字符")]
+    public string? Gender { get; set; }
+
+    /// <summary>
     /// 出生日期（公历）
     /// </summary>
     public DateTime? BirthDateSolar { get; set; }
@@ -149,6 +155,12 @@ public class FamilyMemberUpdateDto
     /// </summary>
     [StringLength(50, ErrorMessage = "字辈不能超过50个字符")]
     public string? GenerationName { get; set; }
+
+    /// <summary>
+    /// 性别（M-男，F-女）
+    /// </summary>
+    [StringLength(10, ErrorMessage = "性别不能超过10个字符")]
+    public string? Gender { get; set; }
 
     /// <summary>
     /// 出生日期（公历）
@@ -262,6 +274,11 @@ public class FamilyMemberDto
     /// 字辈
     /// </summary>
     public string? GenerationName { get; set; }
+
+    /// <summary>
+    /// 性别（M-男，F-女）
+    /// </summary>
+    public string? Gender { get; set; }
 
     /// <summary>
     /// 出生日期（公历）

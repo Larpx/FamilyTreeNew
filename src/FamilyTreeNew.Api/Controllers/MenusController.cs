@@ -26,9 +26,9 @@ public class MenusController : ControllerBase
             var result = await _menuService.GetAllAsync();
             return Ok(ApiResponse<List<MenuResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<MenuResponseDto>>.Fail($"获取菜单列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<MenuResponseDto>>.Fail("获取菜单列表失败，请稍后重试"));
         }
     }
 
@@ -41,9 +41,9 @@ public class MenusController : ControllerBase
             var result = await _menuService.GetAllWithTreeAsync();
             return Ok(ApiResponse<List<MenuResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<MenuResponseDto>>.Fail($"获取菜单树失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<MenuResponseDto>>.Fail("获取菜单树失败，请稍后重试"));
         }
     }
 
@@ -56,9 +56,9 @@ public class MenusController : ControllerBase
             var result = await _menuService.GetEnabledMenusAsync();
             return Ok(ApiResponse<List<MenuResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<MenuResponseDto>>.Fail($"获取启用菜单失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<MenuResponseDto>>.Fail("获取启用菜单失败，请稍后重试"));
         }
     }
 
@@ -76,9 +76,9 @@ public class MenusController : ControllerBase
             }
             return Ok(ApiResponse<MenuResponseDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<MenuResponseDto>.Fail($"获取菜单详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<MenuResponseDto>.Fail("获取菜单详情失败，请稍后重试"));
         }
     }
 
@@ -101,9 +101,9 @@ public class MenusController : ControllerBase
             var result = await _menuService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<MenuResponseDto>.Ok(result, "菜单创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<MenuResponseDto>.Fail($"创建菜单失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<MenuResponseDto>.Fail("创建菜单失败，请稍后重试"));
         }
     }
 
@@ -131,9 +131,9 @@ public class MenusController : ControllerBase
             }
             return Ok(ApiResponse<MenuResponseDto>.Ok(result, "菜单更新成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<MenuResponseDto>.Fail($"更新菜单失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<MenuResponseDto>.Fail("更新菜单失败，请稍后重试"));
         }
     }
 
@@ -151,9 +151,9 @@ public class MenusController : ControllerBase
             }
             return Ok(ApiResponse.Ok("菜单删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除菜单失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除菜单失败，请稍后重试"));
         }
     }
 }

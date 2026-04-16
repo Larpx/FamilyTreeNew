@@ -91,6 +91,7 @@ public class FamilyMemberService : IFamilyMemberService
             Alias = dto.Alias,
             Ranking = dto.Ranking,
             GenerationName = dto.GenerationName,
+            Gender = dto.Gender,
             BirthDateSolar = dto.BirthDateSolar,
             BirthDateLunar = dto.BirthDateLunar,
             Residence = dto.Residence,
@@ -125,6 +126,7 @@ public class FamilyMemberService : IFamilyMemberService
         entity.Alias = dto.Alias;
         entity.Ranking = dto.Ranking;
         entity.GenerationName = dto.GenerationName;
+        entity.Gender = dto.Gender;
         entity.BirthDateSolar = dto.BirthDateSolar;
         entity.BirthDateLunar = dto.BirthDateLunar;
         entity.Residence = dto.Residence;
@@ -206,6 +208,7 @@ public class FamilyMemberService : IFamilyMemberService
             Alias = entity.Alias,
             Ranking = entity.Ranking,
             GenerationName = entity.GenerationName,
+            Gender = entity.Gender,
             BirthDateSolar = entity.BirthDateSolar,
             BirthDateLunar = entity.BirthDateLunar,
             Residence = entity.Residence,

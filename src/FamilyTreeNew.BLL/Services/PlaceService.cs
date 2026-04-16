@@ -7,10 +7,12 @@ namespace FamilyTreeNew.BLL.Services;
 public class PlaceService : IPlaceService
 {
     private readonly IPlaceRepository _placeRepository;
+    private readonly IEventRepository _eventRepository;
 
-    public PlaceService(IPlaceRepository placeRepository)
+    public PlaceService(IPlaceRepository placeRepository, IEventRepository eventRepository)
     {
         _placeRepository = placeRepository;
+        _eventRepository = eventRepository;
     }
 
     public async Task<List<PlaceResponseDto>> GetAllAsync()
@@ -56,7 +58,7 @@ public class PlaceService : IPlaceService
             Longitude = dto.Longitude,
             Description = dto.Description,
             IsEnabled = dto.IsEnabled,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _placeRepository.InsertAsync(entity);
@@ -77,7 +79,7 @@ public class PlaceService : IPlaceService
         entity.Longitude = dto.Longitude;
         entity.Description = dto.Description;
         entity.IsEnabled = dto.IsEnabled;
-        entity.UpdatedAt = DateTime.Now;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _placeRepository.UpdateAsync(entity);
         return MapToDto(entity);
@@ -86,6 +88,13 @@ public class PlaceService : IPlaceService
     public async Task<bool> DeleteAsync(Guid id)
     {
         if (!await _placeRepository.ExistsAsync(id)) return false;
+
+        var relatedEvents = await _eventRepository.GetByPlaceIdAsync(id);
+        if (relatedEvents.Count > 0)
+        {
+            throw new InvalidOperationException("该地点下存在关联事件，无法删除");
+        }
+
         await _placeRepository.DeleteAsync(id);
         return true;
     }

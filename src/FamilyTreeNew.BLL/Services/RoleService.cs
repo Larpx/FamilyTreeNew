@@ -45,13 +45,19 @@ public class RoleService : IRoleService
 
     public async Task<RoleResponseDto> CreateAsync(RoleCreateRequestDto dto)
     {
+        var existingRole = await _roleRepository.GetByCodeAsync(dto.Code);
+        if (existingRole != null)
+        {
+            throw new InvalidOperationException($"角色编码 '{dto.Code}' 已存在");
+        }
+
         var entity = new Role
         {
             Name = dto.Name,
             Description = dto.Description,
             Code = dto.Code,
             IsEnabled = dto.IsEnabled,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _roleRepository.InsertAsync(entity);
@@ -66,7 +72,7 @@ public class RoleService : IRoleService
         entity.Name = dto.Name;
         entity.Description = dto.Description;
         entity.IsEnabled = dto.IsEnabled;
-        entity.UpdatedAt = DateTime.Now;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _roleRepository.UpdateAsync(entity);
         return MapToDto(entity);
@@ -96,7 +102,7 @@ public class RoleService : IRoleService
                 {
                     RoleId = roleId,
                     PermissionId = pid,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 }).ToList();
 
                 await db.Insertable(rolePermissions).ExecuteCommandAsync();

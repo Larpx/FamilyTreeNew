@@ -74,6 +74,16 @@ public class FamilyMemberRepository : BaseRepositoryGuid<FamilyMember>, IFamilyM
     }
 
     /// <inheritdoc/>
+    public async Task<List<FamilyMember>> GetChildrenAsync(Guid parentId)
+    {
+        return await Db.Queryable<FamilyMember>()
+            .Where(m => m.ParentId == parentId)
+            .OrderBy(m => m.Generation, OrderByType.Asc)
+            .OrderBy(m => m.CreatedAt, OrderByType.Asc)
+            .ToListAsync();
+    }
+
+    /// <inheritdoc/>
     public async Task<int> BulkInsertAsync(List<FamilyMember> members)
     {
         return await Db.Insertable(members).ExecuteCommandAsync();

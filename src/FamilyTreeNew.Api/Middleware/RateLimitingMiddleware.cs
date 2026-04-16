@@ -35,7 +35,7 @@ public class RateLimitingMiddleware
     private const int MaxRequestsPerMinute = 60;
     private const int MaxLoginAttemptsPerMinute = 5;
     private static readonly TimeSpan WindowSize = TimeSpan.FromMinutes(1);
-    private static DateTime _lastCleanup = DateTime.UtcNow;
+    private static long _lastCleanupTicks = DateTime.UtcNow.Ticks;
     private static readonly TimeSpan CleanupInterval = TimeSpan.FromMinutes(5);
     private const int MaxEntries = 100000;
 
@@ -116,10 +116,11 @@ public class RateLimitingMiddleware
     /// <param name="now">当前UTC时间</param>
     private static void CleanupExpiredEntries(DateTime now)
     {
-        var lastCleanup = _lastCleanup;
+        var lastCleanupTicks = Interlocked.Read(ref _lastCleanupTicks);
+        var lastCleanup = new DateTime(lastCleanupTicks, DateTimeKind.Utc);
         if (now - lastCleanup < CleanupInterval) return;
 
-        if (Interlocked.CompareExchange(ref _lastCleanup, now, lastCleanup) != lastCleanup) return;
+        if (Interlocked.CompareExchange(ref _lastCleanupTicks, now.Ticks, lastCleanupTicks) != lastCleanupTicks) return;
 
         var keysToRemove = new List<string>();
         foreach (var kvp in _rateLimitStore)

@@ -39,6 +39,12 @@ public class PermissionService : IPermissionService
 
     public async Task<PermissionResponseDto> CreateAsync(PermissionCreateRequestDto dto)
     {
+        var existingPermission = await _permissionRepository.GetByCodeAsync(dto.Code);
+        if (existingPermission != null)
+        {
+            throw new InvalidOperationException($"权限编码 '{dto.Code}' 已存在");
+        }
+
         var entity = new Permission
         {
             Code = dto.Code,
@@ -49,7 +55,7 @@ public class PermissionService : IPermissionService
             ParentId = dto.ParentId,
             SortOrder = dto.SortOrder,
             IsEnabled = dto.IsEnabled,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _permissionRepository.InsertAsync(entity);
@@ -76,6 +82,13 @@ public class PermissionService : IPermissionService
     public async Task<bool> DeleteAsync(Guid id)
     {
         if (!await _permissionRepository.ExistsAsync(id)) return false;
+
+        var allPermissions = await _permissionRepository.GetAllAsync();
+        if (allPermissions.Any(p => p.ParentId == id))
+        {
+            throw new InvalidOperationException("该权限下存在子权限，无法删除");
+        }
+
         await _permissionRepository.DeleteAsync(id);
         return true;
     }
@@ -106,7 +119,7 @@ public class PermissionService : IPermissionService
     private static PermissionResponseDto MapToDtoWithChildren(Permission entity)
     {
         var dto = MapToDto(entity);
-        dto.Children = entity.Permissions?.Select(MapToDtoWithChildren).ToList();
+        dto.Children = entity.Children?.Select(MapToDtoWithChildren).ToList();
         return dto;
     }
 }

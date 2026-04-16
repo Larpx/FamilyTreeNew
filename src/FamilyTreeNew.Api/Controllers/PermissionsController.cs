@@ -26,9 +26,9 @@ public class PermissionsController : ControllerBase
             var result = await _permissionService.GetAllAsync();
             return Ok(ApiResponse<List<PermissionResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<PermissionResponseDto>>.Fail($"获取权限列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<PermissionResponseDto>>.Fail("获取权限列表失败，请稍后重试"));
         }
     }
 
@@ -41,9 +41,9 @@ public class PermissionsController : ControllerBase
             var result = await _permissionService.GetAllWithTreeAsync();
             return Ok(ApiResponse<List<PermissionResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<PermissionResponseDto>>.Fail($"获取权限树失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<PermissionResponseDto>>.Fail("获取权限树失败，请稍后重试"));
         }
     }
 
@@ -61,9 +61,9 @@ public class PermissionsController : ControllerBase
             }
             return Ok(ApiResponse<PermissionResponseDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PermissionResponseDto>.Fail($"获取权限详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PermissionResponseDto>.Fail("获取权限详情失败，请稍后重试"));
         }
     }
 
@@ -86,9 +86,9 @@ public class PermissionsController : ControllerBase
             var result = await _permissionService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<PermissionResponseDto>.Ok(result, "权限创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PermissionResponseDto>.Fail($"创建权限失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PermissionResponseDto>.Fail("创建权限失败，请稍后重试"));
         }
     }
 
@@ -116,9 +116,9 @@ public class PermissionsController : ControllerBase
             }
             return Ok(ApiResponse<PermissionResponseDto>.Ok(result, "权限更新成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PermissionResponseDto>.Fail($"更新权限失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PermissionResponseDto>.Fail("更新权限失败，请稍后重试"));
         }
     }
 
@@ -136,9 +136,9 @@ public class PermissionsController : ControllerBase
             }
             return Ok(ApiResponse.Ok("权限删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除权限失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除权限失败，请稍后重试"));
         }
     }
 }

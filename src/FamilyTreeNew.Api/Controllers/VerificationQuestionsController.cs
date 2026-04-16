@@ -30,7 +30,7 @@ public class VerificationQuestionsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取验证问题列表失败");
-            return StatusCode(500, ApiResponse<List<VerificationQuestionDto>>.Fail("获取验证问题列表失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<List<VerificationQuestionDto>>.Fail("获取验证问题列表失败"));
         }
     }
 
@@ -49,7 +49,7 @@ public class VerificationQuestionsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取验证问题详情失败，ID: {Id}", id);
-            return StatusCode(500, ApiResponse<VerificationQuestionDto>.Fail("获取验证问题详情失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<VerificationQuestionDto>.Fail("获取验证问题详情失败"));
         }
     }
 
@@ -71,12 +71,12 @@ public class VerificationQuestionsController : ControllerBase
         catch (ArgumentException ex)
         {
             _logger.LogWarning(ex, "创建验证问题失败：参数错误");
-            return BadRequest(ApiResponse<VerificationQuestionDto>.Fail(ex.Message));
+            return BadRequest(ApiResponse<VerificationQuestionDto>.Fail("操作失败，请稍后重试"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "创建验证问题失败");
-            return StatusCode(500, ApiResponse<VerificationQuestionDto>.Fail("创建验证问题失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<VerificationQuestionDto>.Fail("创建验证问题失败"));
         }
     }
 
@@ -101,7 +101,7 @@ public class VerificationQuestionsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新验证问题失败，ID: {Id}", id);
-            return StatusCode(500, ApiResponse<VerificationQuestionDto>.Fail("更新验证问题失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<VerificationQuestionDto>.Fail("更新验证问题失败"));
         }
     }
 
@@ -120,7 +120,7 @@ public class VerificationQuestionsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除验证问题失败，ID: {Id}", id);
-            return StatusCode(500, ApiResponse.Fail("删除验证问题失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse.Fail("删除验证问题失败"));
         }
     }
 }

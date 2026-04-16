@@ -1,5 +1,6 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.Entities;
+using System.Text;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -112,7 +113,7 @@ public class ReportService : IReportService
         var femaleCount = members.Count(m => m.Gender == "F");
         var unknownGenderCount = members.Count(m => string.IsNullOrEmpty(m.Gender));
 
-        var maxGeneration = members.Max(m => m.Generation ?? 1);
+        var maxGeneration = members.Count > 0 ? members.Max(m => m.Generation ?? 1) : 0;
 
         int totalAge = 0;
         int ageCount = 0;
@@ -149,7 +150,7 @@ public class ReportService : IReportService
             FemaleCount = femaleCount,
             UnknownGenderCount = unknownGenderCount,
             Generations = maxGeneration,
-            AverageAge = ageCount > 0 ? totalAge / ageCount : 0,
+            AverageAge = ageCount > 0 ? (double)totalAge / ageCount : 0,
             DeceasedCount = members.Count(m => m.IsDeceased),
             OccupationDistribution = occupationDistribution,
             ResidenceDistribution = residenceDistribution,

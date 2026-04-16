@@ -1,5 +1,8 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.Entities;
+using FamilyTreeNew.Models.DTOs;
+using System.Globalization;
+using System.Text;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -57,7 +60,7 @@ public class GedcomService : IGedcomService
             if (member.BirthDateSolar.HasValue)
             {
                 gedcom.AppendLine($"1 BIRT");
-                gedcom.AppendLine($"2 DATE {member.BirthDateSolar.Value.ToString("dd MMM yyyy")}");
+                gedcom.AppendLine($"2 DATE {member.BirthDateSolar.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)}");
             }
 
             if (!string.IsNullOrEmpty(member.BirthDateLunar))
@@ -70,7 +73,7 @@ public class GedcomService : IGedcomService
                 gedcom.AppendLine($"1 DEAT");
                 if (member.DeathDateSolar.HasValue)
                 {
-                    gedcom.AppendLine($"2 DATE {member.DeathDateSolar.Value.ToString("dd MMM yyyy")}");
+                    gedcom.AppendLine($"2 DATE {member.DeathDateSolar.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)}");
                 }
                 if (!string.IsNullOrEmpty(member.DeathDateLunar))
                 {
@@ -114,7 +117,7 @@ public class GedcomService : IGedcomService
             
             var memberMap = new Dictionary<string, Guid>();
             Guid? currentMemberId = null;
-            FamilyMemberCreateRequestDto? currentMember = null;
+            FamilyMemberCreateDto? currentMember = null;
             string currentTag = string.Empty;
 
             foreach (var line in lines)
@@ -125,23 +128,22 @@ public class GedcomService : IGedcomService
                 var parts = trimmedLine.Split(new[] { ' ' }, 3);
                 if (parts.Length < 2) continue;
 
-                int level = int.Parse(parts[0]);
+                if (!int.TryParse(parts[0], out int level)) continue;
                 string tag = parts[1];
-
                 string value = parts.Length > 2 ? parts[2] : string.Empty;
 
                 if (level == 0)
                 {
                     if (currentMember != null && currentMemberId.HasValue)
                     {
-                        await CreateMember(familyTreeId, currentMember, memberMap);
+                        await CreateMember(currentMember, memberMap);
                     }
 
-                    if (tag == "INDI" && value.StartsWith("@I") && value.EndsWith("@"))
+                    if (value == "INDI" && tag.StartsWith("@I") && tag.EndsWith("@"))
                     {
                         currentMemberId = Guid.NewGuid();
-                        memberMap[value] = currentMemberId.Value;
-                        currentMember = new FamilyMemberCreateRequestDto();
+                        memberMap[tag] = currentMemberId.Value;
+                        currentMember = new FamilyMemberCreateDto();
                         currentMember.FamilyTreeId = familyTreeId;
                     }
                     else
@@ -208,7 +210,7 @@ public class GedcomService : IGedcomService
 
             if (currentMember != null && currentMemberId.HasValue)
             {
-                await CreateMember(familyTreeId, currentMember, memberMap);
+                await CreateMember(currentMember, memberMap);
             }
 
             return (true, $"成功导入 {memberMap.Count} 个成员");
@@ -219,25 +221,25 @@ public class GedcomService : IGedcomService
         }
     }
 
-    private async Task CreateMember(Guid familyTreeId, FamilyMemberCreateRequestDto member, Dictionary<string, Guid> memberMap)
+    private async Task CreateMember(FamilyMemberCreateDto member, Dictionary<string, Guid> memberMap)
     {
-        var result = await _familyMemberService.CreateAsync(member);
         if (member.ParentId.HasValue && !memberMap.ContainsValue(member.ParentId.Value))
         {
             member.ParentId = null;
         }
+        await _familyMemberService.CreateAsync(member);
     }
 
     private string EscapeGedcomString(string input)
     {
         if (string.IsNullOrEmpty(input)) return string.Empty;
-        return input.Replace("\\", "\\\\").Replace("@", "\\@").Replace("\n", "\\n");
+        return input.Replace("@", "@@");
     }
 
     private string UnescapeGedcomString(string input)
     {
         if (string.IsNullOrEmpty(input)) return string.Empty;
-        return input.Replace("\\@", "@").Replace("\\n", "\n").Replace("\\\\", "\\");
+        return input.Replace("@@", "@");
     }
 
     private DateTime? ParseGedcomDate(string dateStr)
@@ -247,7 +249,7 @@ public class GedcomService : IGedcomService
         var formats = new[] { "dd MMM yyyy", "MMM yyyy", "yyyy" };
         foreach (var format in formats)
         {
-            if (DateTime.TryParseExact(dateStr, format, null, System.Globalization.DateTimeStyles.None, out DateTime result))
+            if (DateTime.TryParseExact(dateStr, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
             {
                 return result;
             }

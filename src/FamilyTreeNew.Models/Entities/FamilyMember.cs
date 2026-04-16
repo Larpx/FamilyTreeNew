@@ -64,6 +64,12 @@ public class FamilyMember
     public string? GenerationName { get; set; }
 
     /// <summary>
+    /// 性别（M-男，F-女）
+    /// </summary>
+    [SugarColumn(Length = 10, IsNullable = true, ColumnDescription = "性别")]
+    public string? Gender { get; set; }
+
+    /// <summary>
     /// 出生日期（公历）
     /// </summary>
     [SugarColumn(IsNullable = true, ColumnDescription = "生辰公历")]

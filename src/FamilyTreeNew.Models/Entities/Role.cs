@@ -26,9 +26,9 @@ public class Role
     [SugarColumn(IsNullable = true, ColumnDescription = "更新时间")]
     public DateTime? UpdatedAt { get; set; }
 
-    [Navigate(NavigateType.ManyToMany, nameof(RolePermission), nameof(RoleId), nameof(PermissionId))]
+    [Navigate(typeof(RolePermission), nameof(RolePermission.RoleId), nameof(RolePermission.PermissionId), new string[0])]
     public List<Permission>? Permissions { get; set; }
 
-    [Navigate(NavigateType.ManyToMany, nameof(UserRole), nameof(RoleId), nameof(AdminId))]
+    [Navigate(typeof(UserRole), nameof(UserRole.RoleId), nameof(UserRole.AdminId), new string[0])]
     public List<Admin>? Admins { get; set; }
 }

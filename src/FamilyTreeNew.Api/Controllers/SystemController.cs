@@ -45,7 +45,7 @@ public class SystemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting database status");
-            return StatusCode(500, ApiResponse<DatabaseStatusDto>.Fail("获取数据库状态失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<DatabaseStatusDto>.Fail("获取数据库状态失败"));
         }
     }
 
@@ -64,7 +64,7 @@ public class SystemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting system settings");
-            return StatusCode(500, ApiResponse<SystemSettingsDto>.Fail("获取系统设置失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<SystemSettingsDto>.Fail("获取系统设置失败"));
         }
     }
 
@@ -92,7 +92,7 @@ public class SystemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating system settings");
-            return StatusCode(500, ApiResponse<SystemSettingsDto>.Fail("更新系统设置失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<SystemSettingsDto>.Fail("更新系统设置失败"));
         }
     }
 
@@ -111,7 +111,7 @@ public class SystemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating backup");
-            return StatusCode(500, ApiResponse<BackupDto>.Fail("创建备份失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<BackupDto>.Fail("创建备份失败"));
         }
     }
 
@@ -126,7 +126,7 @@ public class SystemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting backup list");
-            return StatusCode(500, ApiResponse<BackupListDto>.Fail("获取备份列表失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<BackupListDto>.Fail("获取备份列表失败"));
         }
     }
 
@@ -150,7 +150,7 @@ public class SystemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error restoring backup");
-            return StatusCode(500, ApiResponse<RestoreDto>.Fail("恢复备份失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<RestoreDto>.Fail("恢复备份失败"));
         }
     }
 
@@ -174,7 +174,7 @@ public class SystemController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting backup");
-            return StatusCode(500, ApiResponse.Fail("删除备份失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse.Fail("删除备份失败"));
         }
     }
 }

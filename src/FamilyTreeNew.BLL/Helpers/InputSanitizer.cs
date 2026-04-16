@@ -76,13 +76,25 @@ public static class InputSanitizer
 
         foreach (var c in fileName)
         {
-            if (!invalidChars.Contains(c) && c != '.' && c != ' ')
+            if (!invalidChars.Contains(c))
             {
                 sanitized.Append(c);
             }
         }
 
-        return sanitized.ToString();
+        var result = sanitized.ToString();
+
+        if (result.StartsWith(".") || result.EndsWith("."))
+        {
+            result = result.Trim('.');
+        }
+
+        if (string.IsNullOrEmpty(result))
+        {
+            return "unnamed_file";
+        }
+
+        return result;
     }
 
     public static string SanitizePath(string? path)
@@ -116,15 +128,33 @@ public static class InputSanitizer
     {
         if (string.IsNullOrEmpty(input)) return false;
 
-        var sqlKeywords = new[]
+        var dangerousPatterns = new[]
         {
-            "SELECT", "INSERT", "UPDATE", "DELETE", "DROP", "UNION", "EXEC", "EXECUTE",
-            "XP_", "SP_", "TRUNCATE", "ALTER", "CREATE", "DESTROY", "--", "/*", "*/", ";--"
+            @";\s*DROP\s", @";\s*DELETE\s", @";\s*TRUNCATE\s",
+            @"'\s*OR\s+'[^']*'\s*=\s*'", @"'\s*;\s*--",
+            @"UNION\s+ALL\s+SELECT", @"UNION\s+SELECT",
+            @"EXEC\s*\(", @"EXECUTE\s*\(",
+            @"XP_)", @"0x[0-9A-Fa-f]+",
         };
 
         var upperInput = input.ToUpperInvariant();
 
-        return sqlKeywords.Any(keyword => upperInput.Contains(keyword));
+        foreach (var pattern in dangerousPatterns)
+        {
+            try
+            {
+                if (Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1)))
+                {
+                    return true;
+                }
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                continue;
+            }
+        }
+
+        return false;
     }
 
     public static string Truncate(string? input, int maxLength)

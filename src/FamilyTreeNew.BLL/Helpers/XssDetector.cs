@@ -44,7 +44,7 @@ public static class XssDetector
             }
             catch (RegexMatchTimeoutException)
             {
-                return true;
+                continue;
             }
         }
 

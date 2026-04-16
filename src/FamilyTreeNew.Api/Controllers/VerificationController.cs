@@ -40,7 +40,7 @@ public class VerificationController : ControllerBase
         {
             _logger.LogError(ex, "验证答案失败，家谱ID: {FamilyTreeId}, 问题ID: {QuestionId}",
                 dto.FamilyTreeId, dto.QuestionId);
-            return StatusCode(500, ApiResponse<VerificationResultDto>.Fail("验证答案失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<VerificationResultDto>.Fail("验证答案失败"));
         }
     }
 
@@ -55,12 +55,12 @@ public class VerificationController : ControllerBase
         catch (ArgumentException ex)
         {
             _logger.LogWarning(ex, "获取家谱验证状态失败：家谱不存在");
-            return NotFound(ApiResponse<FamilyTreeVerificationStatusDto>.Fail(ex.Message, 404));
+            return NotFound(ApiResponse<FamilyTreeVerificationStatusDto>.Fail("操作失败，请稍后重试", 404));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取家谱验证状态失败，家谱ID: {FamilyTreeId}", familyTreeId);
-            return StatusCode(500, ApiResponse<FamilyTreeVerificationStatusDto>.Fail("获取家谱验证状态失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<FamilyTreeVerificationStatusDto>.Fail("获取家谱验证状态失败"));
         }
     }
 
@@ -75,7 +75,7 @@ public class VerificationController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取家谱验证问题失败，家谱ID: {FamilyTreeId}", familyTreeId);
-            return StatusCode(500, ApiResponse<List<VerificationQuestionDto>>.Fail("获取验证问题失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<List<VerificationQuestionDto>>.Fail("获取验证问题失败"));
         }
     }
 
@@ -113,12 +113,12 @@ public class VerificationController : ControllerBase
         catch (ArgumentException ex)
         {
             _logger.LogWarning(ex, "添加验证问题失败：参数错误");
-            return BadRequest(ApiResponse.Fail(ex.Message));
+            return BadRequest(ApiResponse.Fail("操作失败，请稍后重试"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "添加验证问题失败，家谱ID: {FamilyTreeId}", familyTreeId);
-            return StatusCode(500, ApiResponse.Fail("添加验证问题失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse.Fail("添加验证问题失败"));
         }
     }
 
@@ -138,7 +138,7 @@ public class VerificationController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "验证令牌失败");
-            return StatusCode(500, ApiResponse<bool>.Fail("验证令牌失败", 500, [ex.Message]));
+            return StatusCode(500, ApiResponse<bool>.Fail("验证令牌失败"));
         }
     }
 }

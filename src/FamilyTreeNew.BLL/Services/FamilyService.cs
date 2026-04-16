@@ -1,49 +1,103 @@
+using FamilyTreeNew.DAL.Repositories;
+using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.BLL.Services;
 
 public interface IFamilyService
 {
-    Task<List<Family>> GetAllFamiliesAsync();
-    Task<Family?> GetFamilyByIdAsync(int id);
-    Task<int> CreateFamilyAsync(Family family);
-    Task<int> UpdateFamilyAsync(Family family);
-    Task<int> DeleteFamilyAsync(int id);
+    Task<List<FamilyResponseDto>> GetAllFamiliesAsync();
+    Task<FamilyResponseDto?> GetFamilyByIdAsync(int id);
+    Task<FamilyResponseDto> CreateFamilyAsync(FamilyCreateRequestDto dto);
+    Task<FamilyResponseDto?> UpdateFamilyAsync(int id, FamilyUpdateRequestDto dto);
+    Task<bool> DeleteFamilyAsync(int id);
 }
 
 public class FamilyService : IFamilyService
 {
-    private readonly DAL.Repositories.IFamilyRepository _familyRepository;
+    private readonly IFamilyRepository _familyRepository;
+    private readonly IFamilyMemberRepository _familyMemberRepository;
 
-    public FamilyService(DAL.Repositories.IFamilyRepository familyRepository)
+    public FamilyService(IFamilyRepository familyRepository, IFamilyMemberRepository familyMemberRepository)
     {
         _familyRepository = familyRepository;
+        _familyMemberRepository = familyMemberRepository;
     }
 
-    public async Task<List<Family>> GetAllFamiliesAsync()
+    public async Task<List<FamilyResponseDto>> GetAllFamiliesAsync()
     {
-        return await _familyRepository.GetFamiliesWithMemberCountAsync();
+        var families = await _familyRepository.GetFamiliesWithMemberCountAsync();
+        return families.Select(MapToDto).ToList();
     }
 
-    public async Task<Family?> GetFamilyByIdAsync(int id)
+    public async Task<FamilyResponseDto?> GetFamilyByIdAsync(int id)
     {
-        return await _familyRepository.GetByIdAsync(id);
+        var family = await _familyRepository.GetByIdAsync(id);
+        return family != null ? await MapToDtoAsync(family) : null;
     }
 
-    public async Task<int> CreateFamilyAsync(Family family)
+    public async Task<FamilyResponseDto> CreateFamilyAsync(FamilyCreateRequestDto dto)
     {
-        family.CreatedAt = DateTime.Now;
-        return await _familyRepository.InsertAsync(family);
+        var entity = new Family
+        {
+            FamilyTreeId = dto.FamilyTreeId,
+            FamilyName = dto.FamilyName,
+            HeadMemberId = dto.HeadMemberId,
+            Address = dto.Address,
+            Description = dto.Description,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _familyRepository.InsertAsync(entity);
+        return MapToDto(entity);
     }
 
-    public async Task<int> UpdateFamilyAsync(Family family)
+    public async Task<FamilyResponseDto?> UpdateFamilyAsync(int id, FamilyUpdateRequestDto dto)
     {
-        family.UpdatedAt = DateTime.Now;
-        return await _familyRepository.UpdateAsync(family);
+        var entity = await _familyRepository.GetByIdAsync(id);
+        if (entity == null) return null;
+
+        entity.FamilyName = dto.FamilyName;
+        entity.HeadMemberId = dto.HeadMemberId;
+        entity.Address = dto.Address;
+        entity.Description = dto.Description;
+        entity.UpdatedAt = DateTime.UtcNow;
+
+        await _familyRepository.UpdateAsync(entity);
+        return await MapToDtoAsync(entity);
     }
 
-    public async Task<int> DeleteFamilyAsync(int id)
+    public async Task<bool> DeleteFamilyAsync(int id)
     {
-        return await _familyRepository.DeleteAsync(id);
+        var entity = await _familyRepository.GetByIdAsync(id);
+        if (entity == null) return false;
+        await _familyRepository.DeleteAsync(id);
+        return true;
+    }
+
+    private static FamilyResponseDto MapToDto(Family entity)
+    {
+        return new FamilyResponseDto
+        {
+            Id = entity.Id,
+            FamilyTreeId = entity.FamilyTreeId ?? Guid.Empty,
+            FamilyName = entity.FamilyName,
+            HeadMemberId = entity.HeadMemberId,
+            Address = entity.Address,
+            Description = entity.Description,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt
+        };
+    }
+
+    private async Task<FamilyResponseDto> MapToDtoAsync(Family entity)
+    {
+        var dto = MapToDto(entity);
+        if (entity.HeadMemberId.HasValue)
+        {
+            var member = await _familyMemberRepository.GetByIdAsync(entity.HeadMemberId.Value);
+            dto.HeadMemberName = member != null ? $"{member.Surname}{member.FirstName}" : null;
+        }
+        return dto;
     }
 }

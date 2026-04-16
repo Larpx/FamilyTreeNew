@@ -1,4 +1,5 @@
 using FamilyTreeNew.BLL.Services;
+using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -58,7 +59,7 @@ public class GedcomController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ApiResponse.Fail($"导入失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("导入失败，请稍后重试"));
         }
     }
 

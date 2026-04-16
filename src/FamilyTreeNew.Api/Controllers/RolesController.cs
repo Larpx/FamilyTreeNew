@@ -29,9 +29,9 @@ public class RolesController : ControllerBase
             var result = await _roleService.GetPagedAsync(pageIndex, pageSize, keyword);
             return Ok(ApiResponse<PagedResult<RoleResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PagedResult<RoleResponseDto>>.Fail($"获取角色列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PagedResult<RoleResponseDto>>.Fail("获取角色列表失败，请稍后重试"));
         }
     }
 
@@ -49,9 +49,9 @@ public class RolesController : ControllerBase
             }
             return Ok(ApiResponse<RoleResponseDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<RoleResponseDto>.Fail($"获取角色详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<RoleResponseDto>.Fail("获取角色详情失败，请稍后重试"));
         }
     }
 
@@ -74,9 +74,9 @@ public class RolesController : ControllerBase
             var result = await _roleService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<RoleResponseDto>.Ok(result, "角色创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<RoleResponseDto>.Fail($"创建角色失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<RoleResponseDto>.Fail("创建角色失败，请稍后重试"));
         }
     }
 
@@ -104,9 +104,9 @@ public class RolesController : ControllerBase
             }
             return Ok(ApiResponse<RoleResponseDto>.Ok(result, "角色更新成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<RoleResponseDto>.Fail($"更新角色失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<RoleResponseDto>.Fail("更新角色失败，请稍后重试"));
         }
     }
 
@@ -124,9 +124,9 @@ public class RolesController : ControllerBase
             }
             return Ok(ApiResponse.Ok("角色删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除角色失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除角色失败，请稍后重试"));
         }
     }
 
@@ -145,9 +145,9 @@ public class RolesController : ControllerBase
             var result = await _roleService.GetByIdAsync(id);
             return Ok(ApiResponse<List<PermissionResponseDto>>.Ok(result?.Permissions ?? new List<PermissionResponseDto>()));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<PermissionResponseDto>>.Fail($"获取角色权限失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<PermissionResponseDto>>.Fail("获取角色权限失败，请稍后重试"));
         }
     }
 
@@ -165,9 +165,9 @@ public class RolesController : ControllerBase
             }
             return Ok(ApiResponse.Ok("权限分配成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"分配权限失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("分配权限失败，请稍后重试"));
         }
     }
 }

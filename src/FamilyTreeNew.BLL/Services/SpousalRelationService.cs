@@ -9,7 +9,7 @@ public class SpousalRelationService : ISpousalRelationService
     private readonly ISpousalRelationRepository _spousalRelationRepository;
     private readonly IFamilyMemberRepository _familyMemberRepository;
 
-    public SpousalRelationService(ISpousalRelationRepository spousalRelationRepository, 
+    public SpousalRelationService(ISpousalRelationRepository spousalRelationRepository,
         IFamilyMemberRepository familyMemberRepository)
     {
         _spousalRelationRepository = spousalRelationRepository;
@@ -19,23 +19,32 @@ public class SpousalRelationService : ISpousalRelationService
     public async Task<List<SpousalRelationResponseDto>> GetByFamilyTreeIdAsync(Guid familyTreeId)
     {
         var relations = await _spousalRelationRepository.GetByFamilyTreeIdAsync(familyTreeId);
-        return await MapToDtosAsync(relations);
+        return relations.Select(MapToDto).ToList();
     }
 
     public async Task<List<SpousalRelationResponseDto>> GetByMemberIdAsync(Guid memberId)
     {
         var relations = await _spousalRelationRepository.GetByMemberIdAsync(memberId);
-        return await MapToDtosAsync(relations);
+        return relations.Select(MapToDto).ToList();
     }
 
     public async Task<SpousalRelationResponseDto?> GetByIdAsync(Guid id)
     {
         var entity = await _spousalRelationRepository.GetByIdAsync(id);
-        return entity != null ? await MapToDtoAsync(entity) : null;
+        if (entity == null) return null;
+
+        var husband = await _familyMemberRepository.GetByIdAsync(entity.HusbandId);
+        var wife = await _familyMemberRepository.GetByIdAsync(entity.WifeId);
+        return MapToDtoWithMembers(entity, husband, wife);
     }
 
     public async Task<SpousalRelationResponseDto> CreateAsync(SpousalRelationCreateRequestDto dto)
     {
+        if (dto.HusbandId == dto.WifeId)
+        {
+            throw new ArgumentException("丈夫和妻子不能是同一个人");
+        }
+
         var entity = new SpousalRelation
         {
             FamilyTreeId = dto.FamilyTreeId,
@@ -48,11 +57,14 @@ public class SpousalRelationService : ISpousalRelationService
             DivorceDateSolar = dto.DivorceDateSolar,
             DivorceDateLunar = dto.DivorceDateLunar,
             Remarks = dto.Remarks,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _spousalRelationRepository.InsertAsync(entity);
-        return await MapToDtoAsync(entity);
+
+        var husband = await _familyMemberRepository.GetByIdAsync(entity.HusbandId);
+        var wife = await _familyMemberRepository.GetByIdAsync(entity.WifeId);
+        return MapToDtoWithMembers(entity, husband, wife);
     }
 
     public async Task<SpousalRelationResponseDto?> UpdateAsync(Guid id, SpousalRelationUpdateRequestDto dto)
@@ -67,10 +79,13 @@ public class SpousalRelationService : ISpousalRelationService
         entity.DivorceDateSolar = dto.DivorceDateSolar;
         entity.DivorceDateLunar = dto.DivorceDateLunar;
         entity.Remarks = dto.Remarks;
-        entity.UpdatedAt = DateTime.Now;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _spousalRelationRepository.UpdateAsync(entity);
-        return await MapToDtoAsync(entity);
+
+        var husband = await _familyMemberRepository.GetByIdAsync(entity.HusbandId);
+        var wife = await _familyMemberRepository.GetByIdAsync(entity.WifeId);
+        return MapToDtoWithMembers(entity, husband, wife);
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -80,21 +95,30 @@ public class SpousalRelationService : ISpousalRelationService
         return true;
     }
 
-    private async Task<List<SpousalRelationResponseDto>> MapToDtosAsync(List<SpousalRelation> entities)
+    private static SpousalRelationResponseDto MapToDto(SpousalRelation entity)
     {
-        var dtos = new List<SpousalRelationResponseDto>();
-        foreach (var entity in entities)
+        return new SpousalRelationResponseDto
         {
-            dtos.Add(await MapToDtoAsync(entity));
-        }
-        return dtos;
+            Id = entity.Id,
+            FamilyTreeId = entity.FamilyTreeId,
+            HusbandId = entity.HusbandId,
+            HusbandName = entity.Husband != null ? $"{entity.Husband.Surname}{entity.Husband.FirstName}" : string.Empty,
+            WifeId = entity.WifeId,
+            WifeName = entity.Wife != null ? $"{entity.Wife.Surname}{entity.Wife.FirstName}" : string.Empty,
+            MarriageDateSolar = entity.MarriageDateSolar,
+            MarriageDateLunar = entity.MarriageDateLunar,
+            Status = entity.Status,
+            IsDivorced = entity.IsDivorced,
+            DivorceDateSolar = entity.DivorceDateSolar,
+            DivorceDateLunar = entity.DivorceDateLunar,
+            Remarks = entity.Remarks,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt
+        };
     }
 
-    private async Task<SpousalRelationResponseDto> MapToDtoAsync(SpousalRelation entity)
+    private static SpousalRelationResponseDto MapToDtoWithMembers(SpousalRelation entity, FamilyMember? husband, FamilyMember? wife)
     {
-        var husband = await _familyMemberRepository.GetByIdAsync(entity.HusbandId);
-        var wife = await _familyMemberRepository.GetByIdAsync(entity.WifeId);
-
         return new SpousalRelationResponseDto
         {
             Id = entity.Id,

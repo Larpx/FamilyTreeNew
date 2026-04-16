@@ -30,7 +30,19 @@ public class DatabaseInitializer
             typeof(Album),
             typeof(Photo),
             typeof(OperationLog),
-            typeof(SystemSettings)
+            typeof(SystemSettings),
+            typeof(Family),
+            typeof(Role),
+            typeof(Permission),
+            typeof(UserRole),
+            typeof(RolePermission),
+            typeof(Menu),
+            typeof(SpousalRelation),
+            typeof(EventType),
+            typeof(Place),
+            typeof(Event),
+            typeof(Source),
+            typeof(SourceCitation)
         );
 
         return Task.CompletedTask;
@@ -97,7 +109,7 @@ public class DatabaseInitializer
         var adminExists = await _db.Queryable<Admin>().AnyAsync();
         if (!adminExists)
         {
-            var hashedPassword = PasswordHelper.HashPassword("admin123", out var salt);
+            var hashedPassword = PasswordHelper.HashPassword("Admin@2024!", out var salt);
 
             var defaultAdmin = new Admin
             {
@@ -107,7 +119,7 @@ public class DatabaseInitializer
                 PasswordSalt = salt,
                 PermissionLevel = 99,
                 RealName = "系统管理员",
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 IsEnabled = true
             };
 

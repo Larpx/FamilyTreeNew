@@ -28,13 +28,13 @@ public class PermissionRepository : BaseRepositoryGuid<Permission>, IPermissionR
     {
         foreach (var parent in parents)
         {
-            parent.Permissions = allPermissions
+            parent.Children = allPermissions
                 .Where(p => p.ParentId == parent.Id)
                 .ToList();
             
-            if (parent.Permissions?.Count > 0)
+            if (parent.Children?.Count > 0)
             {
-                BuildPermissionTree(parent.Permissions, allPermissions);
+                BuildPermissionTree(parent.Children, allPermissions);
             }
         }
     }

@@ -64,6 +64,8 @@ public partial class Program
                 options.LoginPath = "/Admin/Login";
                 options.ExpireTimeSpan = TimeSpan.FromHours(2);
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Cookie.HttpOnly = true;
             });
 
         var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
@@ -105,7 +107,7 @@ public partial class Program
             context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
 
             var cspPolicy = "default-src 'self'; " +
-                            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
+                            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
                             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.font.im https://cdn.jsdelivr.net; " +
                             "font-src 'self' https://fonts.gstatic.com https://fonts.font.im https://cdn.jsdelivr.net; " +
                             "img-src 'self' data: blob:; " +

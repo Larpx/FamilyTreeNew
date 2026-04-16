@@ -28,9 +28,9 @@ public class SourcesController : ControllerBase
             var result = await _sourceService.GetAllAsync();
             return Ok(ApiResponse<List<SourceResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<SourceResponseDto>>.Fail($"获取来源列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<SourceResponseDto>>.Fail("获取来源列表失败，请稍后重试"));
         }
     }
 
@@ -43,9 +43,9 @@ public class SourcesController : ControllerBase
             var result = await _sourceService.GetEnabledSourcesAsync();
             return Ok(ApiResponse<List<SourceResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<SourceResponseDto>>.Fail($"获取启用的来源失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<SourceResponseDto>>.Fail("获取启用的来源失败，请稍后重试"));
         }
     }
 
@@ -58,9 +58,9 @@ public class SourcesController : ControllerBase
             var result = await _sourceService.GetByTypeAsync(type);
             return Ok(ApiResponse<List<SourceResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<SourceResponseDto>>.Fail($"获取类型来源失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<SourceResponseDto>>.Fail("获取类型来源失败，请稍后重试"));
         }
     }
 
@@ -78,9 +78,9 @@ public class SourcesController : ControllerBase
             }
             return Ok(ApiResponse<SourceResponseDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<SourceResponseDto>.Fail($"获取来源详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<SourceResponseDto>.Fail("获取来源详情失败，请稍后重试"));
         }
     }
 
@@ -103,9 +103,9 @@ public class SourcesController : ControllerBase
             var result = await _sourceService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<SourceResponseDto>.Ok(result, "来源创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<SourceResponseDto>.Fail($"创建来源失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<SourceResponseDto>.Fail("创建来源失败，请稍后重试"));
         }
     }
 
@@ -133,9 +133,9 @@ public class SourcesController : ControllerBase
             }
             return Ok(ApiResponse<SourceResponseDto>.Ok(result, "来源更新成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<SourceResponseDto>.Fail($"更新来源失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<SourceResponseDto>.Fail("更新来源失败，请稍后重试"));
         }
     }
 
@@ -153,9 +153,9 @@ public class SourcesController : ControllerBase
             }
             return Ok(ApiResponse.Ok("来源删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除来源失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除来源失败，请稍后重试"));
         }
     }
 
@@ -168,9 +168,9 @@ public class SourcesController : ControllerBase
             var result = await _sourceCitationService.GetBySourceIdAsync(id);
             return Ok(ApiResponse<List<SourceCitationResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<SourceCitationResponseDto>>.Fail($"获取来源引用失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<SourceCitationResponseDto>>.Fail("获取来源引用失败，请稍后重试"));
         }
     }
 
@@ -192,9 +192,9 @@ public class SourcesController : ControllerBase
             var result = await _sourceCitationService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetCitations), new { id = result.SourceId }, ApiResponse<SourceCitationResponseDto>.Ok(result, "来源引用创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<SourceCitationResponseDto>.Fail($"创建来源引用失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<SourceCitationResponseDto>.Fail("创建来源引用失败，请稍后重试"));
         }
     }
 
@@ -211,9 +211,9 @@ public class SourcesController : ControllerBase
             }
             return Ok(ApiResponse.Ok("来源引用删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除来源引用失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除来源引用失败，请稍后重试"));
         }
     }
 }

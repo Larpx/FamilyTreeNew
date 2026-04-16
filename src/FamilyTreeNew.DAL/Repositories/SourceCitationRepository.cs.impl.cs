@@ -10,7 +10,7 @@ public class SourceCitationRepository : BaseRepositoryGuid<SourceCitation>, ISou
     public async Task<List<SourceCitation>> GetBySourceIdAsync(Guid sourceId)
     {
         return await Db.Queryable<SourceCitation>()
-            .Include(sc => sc.Source)
+            .Includes(sc => sc.Source)
             .Where(sc => sc.SourceId == sourceId)
             .ToListAsync();
     }
@@ -18,7 +18,7 @@ public class SourceCitationRepository : BaseRepositoryGuid<SourceCitation>, ISou
     public async Task<List<SourceCitation>> GetByTargetAsync(string targetType, Guid targetId)
     {
         return await Db.Queryable<SourceCitation>()
-            .Include(sc => sc.Source)
+            .Includes(sc => sc.Source)
             .Where(sc => sc.TargetType == targetType && sc.TargetId == targetId)
             .ToListAsync();
     }

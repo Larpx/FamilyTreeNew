@@ -36,15 +36,34 @@ public static class FileHelper
     /// <param name="relativePath">相对于wwwroot的文件路径</param>
     public static void DeleteWebFile(string relativePath)
     {
+        if (string.IsNullOrEmpty(relativePath)) return;
+
+        var sanitized = relativePath.Replace('\\', '/').TrimStart('/');
+        if (sanitized.Contains(".."))
+        {
+            return;
+        }
+
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", sanitized);
+        var fullDir = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"));
+        var resolvedPath = Path.GetFullPath(fullPath);
+
+        if (!resolvedPath.StartsWith(fullDir, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
         try
         {
-            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath.TrimStart('/'));
-            if (File.Exists(fullPath))
+            if (File.Exists(resolvedPath))
             {
-                File.Delete(fullPath);
+                File.Delete(resolvedPath);
             }
         }
-        catch
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (IOException)
         {
         }
     }

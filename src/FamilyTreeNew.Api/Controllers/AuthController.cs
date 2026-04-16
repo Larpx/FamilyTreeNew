@@ -68,7 +68,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "登录过程中发生异常：{Message}", ex.Message);
+            _logger.LogError(ex, "登录过程中发生异常");
             return StatusCode(500, new LoginResponseDto
             {
                 Success = false,
@@ -114,7 +114,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "获取管理员信息时发生异常：{Message}", ex.Message);
+            _logger.LogError(ex, "获取管理员信息时发生异常");
             return StatusCode(500, ApiResponse<object>.Fail("服务器内部错误", 500));
         }
     }
@@ -158,7 +158,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "修改密码时发生异常：{Message}", ex.Message);
+            _logger.LogError(ex, "修改密码时发生异常");
             return StatusCode(500, ApiResponse.Fail("服务器内部错误", 500));
         }
     }
@@ -189,7 +189,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "登出时发生异常：{Message}", ex.Message);
+            _logger.LogError(ex, "登出时发生异常");
             return StatusCode(500, ApiResponse.Fail("服务器内部错误", 500));
         }
     }

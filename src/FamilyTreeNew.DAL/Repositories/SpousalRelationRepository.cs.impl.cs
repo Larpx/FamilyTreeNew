@@ -10,6 +10,8 @@ public class SpousalRelationRepository : BaseRepositoryGuid<SpousalRelation>, IS
     public async Task<List<SpousalRelation>> GetByFamilyTreeIdAsync(Guid familyTreeId)
     {
         return await Db.Queryable<SpousalRelation>()
+            .Includes(sr => sr.Husband)
+            .Includes(sr => sr.Wife)
             .Where(sr => sr.FamilyTreeId == familyTreeId)
             .ToListAsync();
     }
@@ -17,6 +19,8 @@ public class SpousalRelationRepository : BaseRepositoryGuid<SpousalRelation>, IS
     public async Task<List<SpousalRelation>> GetByMemberIdAsync(Guid memberId)
     {
         return await Db.Queryable<SpousalRelation>()
+            .Includes(sr => sr.Husband)
+            .Includes(sr => sr.Wife)
             .Where(sr => sr.HusbandId == memberId || sr.WifeId == memberId)
             .ToListAsync();
     }
@@ -24,6 +28,8 @@ public class SpousalRelationRepository : BaseRepositoryGuid<SpousalRelation>, IS
     public async Task<SpousalRelation?> GetByHusbandIdAsync(Guid husbandId)
     {
         return await Db.Queryable<SpousalRelation>()
+            .Includes(sr => sr.Husband)
+            .Includes(sr => sr.Wife)
             .Where(sr => sr.HusbandId == husbandId)
             .FirstAsync();
     }
@@ -31,6 +37,8 @@ public class SpousalRelationRepository : BaseRepositoryGuid<SpousalRelation>, IS
     public async Task<SpousalRelation?> GetByWifeIdAsync(Guid wifeId)
     {
         return await Db.Queryable<SpousalRelation>()
+            .Includes(sr => sr.Husband)
+            .Includes(sr => sr.Wife)
             .Where(sr => sr.WifeId == wifeId)
             .FirstAsync();
     }

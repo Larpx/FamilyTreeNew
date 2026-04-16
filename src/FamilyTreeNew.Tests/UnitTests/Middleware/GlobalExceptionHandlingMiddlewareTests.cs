@@ -1,6 +1,8 @@
 using FamilyTreeNew.Api.Middleware;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -10,10 +12,13 @@ namespace FamilyTreeNew.Tests.UnitTests.Middleware;
 public class GlobalExceptionHandlingMiddlewareTests
 {
     private readonly Mock<ILogger<GlobalExceptionHandlingMiddleware>> _mockLogger;
+    private readonly Mock<IHostEnvironment> _mockEnv;
 
     public GlobalExceptionHandlingMiddlewareTests()
     {
         _mockLogger = new Mock<ILogger<GlobalExceptionHandlingMiddleware>>();
+        _mockEnv = new Mock<IHostEnvironment>();
+        _mockEnv.Setup(e => e.EnvironmentName).Returns("Development");
     }
 
     [Fact]
@@ -22,7 +27,8 @@ public class GlobalExceptionHandlingMiddlewareTests
         var nextCalled = false;
         var middleware = new GlobalExceptionHandlingMiddleware(
             _ => { nextCalled = true; return Task.CompletedTask; },
-            _mockLogger.Object);
+            _mockLogger.Object,
+            _mockEnv.Object);
 
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
@@ -37,7 +43,8 @@ public class GlobalExceptionHandlingMiddlewareTests
     {
         var middleware = new GlobalExceptionHandlingMiddleware(
             _ => throw new Exception("Test error"),
-            _mockLogger.Object);
+            _mockLogger.Object,
+            _mockEnv.Object);
 
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
@@ -52,7 +59,8 @@ public class GlobalExceptionHandlingMiddlewareTests
     {
         var middleware = new GlobalExceptionHandlingMiddleware(
             _ => throw new ArgumentException("Invalid argument"),
-            _mockLogger.Object);
+            _mockLogger.Object,
+            _mockEnv.Object);
 
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
@@ -67,7 +75,8 @@ public class GlobalExceptionHandlingMiddlewareTests
     {
         var middleware = new GlobalExceptionHandlingMiddleware(
             _ => throw new UnauthorizedAccessException("Not authorized"),
-            _mockLogger.Object);
+            _mockLogger.Object,
+            _mockEnv.Object);
 
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
@@ -82,7 +91,8 @@ public class GlobalExceptionHandlingMiddlewareTests
     {
         var middleware = new GlobalExceptionHandlingMiddleware(
             _ => throw new InvalidOperationException("Invalid operation"),
-            _mockLogger.Object);
+            _mockLogger.Object,
+            _mockEnv.Object);
 
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();

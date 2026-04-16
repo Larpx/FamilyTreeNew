@@ -49,7 +49,7 @@ public class MenuService : IMenuService
             SortOrder = dto.SortOrder,
             IsEnabled = dto.IsEnabled,
             IsVisible = dto.IsVisible,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _menuRepository.InsertAsync(entity);
@@ -69,7 +69,7 @@ public class MenuService : IMenuService
         entity.SortOrder = dto.SortOrder;
         entity.IsEnabled = dto.IsEnabled;
         entity.IsVisible = dto.IsVisible;
-        entity.UpdatedAt = DateTime.Now;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _menuRepository.UpdateAsync(entity);
         return MapToDto(entity);
@@ -78,6 +78,13 @@ public class MenuService : IMenuService
     public async Task<bool> DeleteAsync(Guid id)
     {
         if (!await _menuRepository.ExistsAsync(id)) return false;
+
+        var allMenus = await _menuRepository.GetAllAsync();
+        if (allMenus.Any(m => m.ParentId == id))
+        {
+            throw new InvalidOperationException("该菜单下存在子菜单，无法删除");
+        }
+
         await _menuRepository.DeleteAsync(id);
         return true;
     }

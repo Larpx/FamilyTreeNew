@@ -26,9 +26,9 @@ public class PlacesController : ControllerBase
             var result = await _placeService.GetAllAsync();
             return Ok(ApiResponse<List<PlaceResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<PlaceResponseDto>>.Fail($"获取地点列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<PlaceResponseDto>>.Fail("获取地点列表失败，请稍后重试"));
         }
     }
 
@@ -41,9 +41,9 @@ public class PlacesController : ControllerBase
             var result = await _placeService.GetEnabledPlacesAsync();
             return Ok(ApiResponse<List<PlaceResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<PlaceResponseDto>>.Fail($"获取启用的地点失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<PlaceResponseDto>>.Fail("获取启用的地点失败，请稍后重试"));
         }
     }
 
@@ -56,9 +56,9 @@ public class PlacesController : ControllerBase
             var result = await _placeService.GetByProvinceAsync(province);
             return Ok(ApiResponse<List<PlaceResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<PlaceResponseDto>>.Fail($"获取省份地点失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<PlaceResponseDto>>.Fail("获取省份地点失败，请稍后重试"));
         }
     }
 
@@ -71,9 +71,9 @@ public class PlacesController : ControllerBase
             var result = await _placeService.GetByCityAsync(city);
             return Ok(ApiResponse<List<PlaceResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<PlaceResponseDto>>.Fail($"获取城市地点失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<PlaceResponseDto>>.Fail("获取城市地点失败，请稍后重试"));
         }
     }
 
@@ -91,9 +91,9 @@ public class PlacesController : ControllerBase
             }
             return Ok(ApiResponse<PlaceResponseDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PlaceResponseDto>.Fail($"获取地点详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PlaceResponseDto>.Fail("获取地点详情失败，请稍后重试"));
         }
     }
 
@@ -116,9 +116,9 @@ public class PlacesController : ControllerBase
             var result = await _placeService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<PlaceResponseDto>.Ok(result, "地点创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PlaceResponseDto>.Fail($"创建地点失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PlaceResponseDto>.Fail("创建地点失败，请稍后重试"));
         }
     }
 
@@ -146,9 +146,9 @@ public class PlacesController : ControllerBase
             }
             return Ok(ApiResponse<PlaceResponseDto>.Ok(result, "地点更新成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<PlaceResponseDto>.Fail($"更新地点失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<PlaceResponseDto>.Fail("更新地点失败，请稍后重试"));
         }
     }
 
@@ -166,9 +166,9 @@ public class PlacesController : ControllerBase
             }
             return Ok(ApiResponse.Ok("地点删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除地点失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除地点失败，请稍后重试"));
         }
     }
 }

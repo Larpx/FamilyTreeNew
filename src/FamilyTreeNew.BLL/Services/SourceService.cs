@@ -7,10 +7,12 @@ namespace FamilyTreeNew.BLL.Services;
 public class SourceService : ISourceService
 {
     private readonly ISourceRepository _sourceRepository;
+    private readonly ISourceCitationRepository _sourceCitationRepository;
 
-    public SourceService(ISourceRepository sourceRepository)
+    public SourceService(ISourceRepository sourceRepository, ISourceCitationRepository sourceCitationRepository)
     {
         _sourceRepository = sourceRepository;
+        _sourceCitationRepository = sourceCitationRepository;
     }
 
     public async Task<List<SourceResponseDto>> GetAllAsync()
@@ -50,7 +52,7 @@ public class SourceService : ISourceService
             Description = dto.Description,
             Citation = dto.Citation,
             IsEnabled = dto.IsEnabled,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _sourceRepository.InsertAsync(entity);
@@ -71,7 +73,7 @@ public class SourceService : ISourceService
         entity.Description = dto.Description;
         entity.Citation = dto.Citation;
         entity.IsEnabled = dto.IsEnabled;
-        entity.UpdatedAt = DateTime.Now;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _sourceRepository.UpdateAsync(entity);
         return MapToDto(entity);
@@ -80,6 +82,13 @@ public class SourceService : ISourceService
     public async Task<bool> DeleteAsync(Guid id)
     {
         if (!await _sourceRepository.ExistsAsync(id)) return false;
+
+        var relatedCitations = await _sourceCitationRepository.GetBySourceIdAsync(id);
+        if (relatedCitations.Count > 0)
+        {
+            throw new InvalidOperationException("该来源下存在关联引用，无法删除");
+        }
+
         await _sourceRepository.DeleteAsync(id);
         return true;
     }

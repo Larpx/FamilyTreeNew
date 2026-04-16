@@ -15,7 +15,7 @@ public class RoleRepository : BaseRepositoryGuid<Role>, IRoleRepository
     public async Task<Role?> GetWithPermissionsAsync(Guid id)
     {
         return await Db.Queryable<Role>()
-            .Include(r => r.Permissions)
+            .Includes(r => r.Permissions)
             .Where(r => r.Id == id)
             .FirstAsync();
     }
@@ -23,7 +23,7 @@ public class RoleRepository : BaseRepositoryGuid<Role>, IRoleRepository
     public async Task<List<Role>> GetAllWithPermissionsAsync()
     {
         return await Db.Queryable<Role>()
-            .Include(r => r.Permissions)
+            .Includes(r => r.Permissions)
             .ToListAsync();
     }
 

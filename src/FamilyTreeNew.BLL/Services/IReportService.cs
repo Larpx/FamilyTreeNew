@@ -77,7 +77,7 @@ public class StatisticsReportDto
     
     public int Generations { get; set; }
     
-    public int AverageAge { get; set; }
+    public double AverageAge { get; set; }
     
     public int DeceasedCount { get; set; }
     

@@ -26,9 +26,9 @@ public class SpousalRelationsController : ControllerBase
             var result = await _spousalRelationService.GetByFamilyTreeIdAsync(familyTreeId);
             return Ok(ApiResponse<List<SpousalRelationResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<SpousalRelationResponseDto>>.Fail($"获取配偶关系列表失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<SpousalRelationResponseDto>>.Fail("获取配偶关系列表失败，请稍后重试"));
         }
     }
 
@@ -41,9 +41,9 @@ public class SpousalRelationsController : ControllerBase
             var result = await _spousalRelationService.GetByMemberIdAsync(memberId);
             return Ok(ApiResponse<List<SpousalRelationResponseDto>>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<List<SpousalRelationResponseDto>>.Fail($"获取成员配偶关系失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<List<SpousalRelationResponseDto>>.Fail("获取成员配偶关系失败，请稍后重试"));
         }
     }
 
@@ -61,9 +61,9 @@ public class SpousalRelationsController : ControllerBase
             }
             return Ok(ApiResponse<SpousalRelationResponseDto>.Ok(result));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<SpousalRelationResponseDto>.Fail($"获取配偶关系详情失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<SpousalRelationResponseDto>.Fail("获取配偶关系详情失败，请稍后重试"));
         }
     }
 
@@ -86,9 +86,9 @@ public class SpousalRelationsController : ControllerBase
             var result = await _spousalRelationService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<SpousalRelationResponseDto>.Ok(result, "配偶关系创建成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<SpousalRelationResponseDto>.Fail($"创建配偶关系失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<SpousalRelationResponseDto>.Fail("创建配偶关系失败，请稍后重试"));
         }
     }
 
@@ -116,9 +116,9 @@ public class SpousalRelationsController : ControllerBase
             }
             return Ok(ApiResponse<SpousalRelationResponseDto>.Ok(result, "配偶关系更新成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse<SpousalRelationResponseDto>.Fail($"更新配偶关系失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse<SpousalRelationResponseDto>.Fail("更新配偶关系失败，请稍后重试"));
         }
     }
 
@@ -136,9 +136,9 @@ public class SpousalRelationsController : ControllerBase
             }
             return Ok(ApiResponse.Ok("配偶关系删除成功"));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, ApiResponse.Fail($"删除配偶关系失败: {ex.Message}"));
+            return StatusCode(500, ApiResponse.Fail("删除配偶关系失败，请稍后重试"));
         }
     }
 }
