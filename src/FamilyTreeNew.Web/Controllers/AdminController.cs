@@ -1,11 +1,11 @@
-using System.Net.Http.Headers;
-using System.Security.Claims;
-using FamilyTreeNew.Models.DTOs.Auth;
 using FamilyTreeNew.Models.DTOs;
+using FamilyTreeNew.Models.DTOs.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.Security.Claims;
 
 namespace FamilyTreeNew.Web.Controllers;
 
@@ -30,13 +30,13 @@ public class AdminController : Controller
         var client = _httpClientFactory.CreateClient();
         var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
         client.BaseAddress = new Uri(apiBaseUrl);
-        
+
         var token = HttpContext.Session.GetString("JwtToken");
         if (!string.IsNullOrEmpty(token))
         {
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
-        
+
         return client;
     }
 
@@ -74,13 +74,11 @@ public class AdminController : Controller
                     HttpContext.Session.SetString("JwtToken", result.Token ?? string.Empty);
                     HttpContext.Session.SetString("AdminId", result.AdminInfo?.Id.ToString() ?? string.Empty);
                     HttpContext.Session.SetString("Username", result.AdminInfo?.Username ?? string.Empty);
-                    HttpContext.Session.SetString("PermissionLevel", result.AdminInfo?.PermissionLevel.ToString() ?? "1");
 
                     var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.NameIdentifier, result.AdminInfo?.Id.ToString() ?? string.Empty),
-                        new Claim(ClaimTypes.Name, result.AdminInfo?.Username ?? string.Empty),
-                        new Claim("PermissionLevel", result.AdminInfo?.PermissionLevel.ToString() ?? "1")
+                        new Claim(ClaimTypes.Name, result.AdminInfo?.Username ?? string.Empty)
                     };
 
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -140,13 +138,7 @@ public class AdminController : Controller
     {
         if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return RedirectToAction("Login");
-        }
-
-        var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
-        if (permissionLevel != "3")
-        {
-            return Forbid();
+            return RedirectToAction("Login", "Admin");
         }
 
         try
@@ -173,17 +165,11 @@ public class AdminController : Controller
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
         if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return RedirectToAction("Login");
-        }
-
-        var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
-        if (permissionLevel != "3")
-        {
-            return Forbid();
+            return RedirectToAction("Login", "Admin");
         }
 
         return View(new CreateAdminDto());
@@ -195,13 +181,7 @@ public class AdminController : Controller
     {
         if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return RedirectToAction("Login");
-        }
-
-        var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
-        if (permissionLevel != "3")
-        {
-            return Forbid();
+            return RedirectToAction("Login", "Admin");
         }
 
         if (!ModelState.IsValid)
@@ -213,6 +193,7 @@ public class AdminController : Controller
         {
             var client = GetApiClient();
             var response = await client.PostAsJsonAsync("/api/admins", model);
+
 
             if (response.IsSuccessStatusCode)
             {
@@ -238,13 +219,7 @@ public class AdminController : Controller
     {
         if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return RedirectToAction("Login");
-        }
-
-        var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
-        if (permissionLevel != "3")
-        {
-            return Forbid();
+            return RedirectToAction("Login", "Admin");
         }
 
         try
@@ -264,7 +239,6 @@ public class AdminController : Controller
                         Username = result.Data.Username,
                         RealName = result.Data.RealName,
                         Email = result.Data.Email,
-                        PermissionLevel = result.Data.PermissionLevel,
                         IsEnabled = result.Data.IsEnabled
                     };
                     return View(updateDto);
@@ -288,13 +262,7 @@ public class AdminController : Controller
     {
         if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return RedirectToAction("Login");
-        }
-
-        var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
-        if (permissionLevel != "3")
-        {
-            return Forbid();
+            return RedirectToAction("Login", "Admin");
         }
 
         if (!ModelState.IsValid)
@@ -306,6 +274,7 @@ public class AdminController : Controller
         {
             var client = GetApiClient();
             var response = await client.PutAsJsonAsync($"/api/admins/{id}", model);
+
 
             if (response.IsSuccessStatusCode)
             {
@@ -332,19 +301,14 @@ public class AdminController : Controller
     {
         if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return RedirectToAction("Login");
-        }
-
-        var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
-        if (permissionLevel != "3")
-        {
-            return Forbid();
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.DeleteAsync($"/api/admins/{id}");
+
 
             if (response.IsSuccessStatusCode)
             {
@@ -412,34 +376,4 @@ public class AdminController : Controller
 
         return View(model);
     }
-}
-
-public class AdminDto
-{
-    public Guid Id { get; set; }
-    public string Username { get; set; } = string.Empty;
-    public int PermissionLevel { get; set; }
-    public string? RealName { get; set; }
-    public string? Email { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? LastLoginAt { get; set; }
-    public bool IsEnabled { get; set; }
-}
-
-public class CreateAdminDto
-{
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-    public int PermissionLevel { get; set; } = 1;
-    public string? RealName { get; set; }
-    public string? Email { get; set; }
-}
-
-public class UpdateAdminDto
-{
-    public string Username { get; set; } = string.Empty;
-    public int PermissionLevel { get; set; }
-    public string? RealName { get; set; }
-    public string? Email { get; set; }
-    public bool IsEnabled { get; set; }
 }

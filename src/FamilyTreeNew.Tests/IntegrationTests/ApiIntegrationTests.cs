@@ -119,14 +119,15 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
     }
 
     [Fact]
-    public async Task DownloadTemplate_ReturnsFileOrError()
+    public async Task DownloadTemplate_ReturnsExcelFile()
     {
         var response = await _client.GetAsync("/api/FamilyTrees/template");
 
-        response.StatusCode.Should().BeOneOf(
-            HttpStatusCode.OK,
-            HttpStatusCode.InternalServerError,
-            HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType
+            .Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.Content.Headers.ContentDisposition?.FileNameStar
+            .Should().Be("成员导入模板.xlsx");
     }
 }
 

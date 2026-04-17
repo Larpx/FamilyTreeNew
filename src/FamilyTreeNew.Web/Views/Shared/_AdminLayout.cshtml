@@ -63,23 +63,19 @@
                     </a>
                 </li>
                 
-                @if (Context.Session.GetString("PermissionLevel") == "3")
-                {
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Admin" asp-action="Index">
-                            <i class="bi bi-person-badge-fill"></i>
-                            <span>管理员管理</span>
-                        </a>
-                    </li>
-                }
-                
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Admin" asp-action="Index">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <span>管理员管理</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" asp-controller="Settings" asp-action="Index">
                         <i class="bi bi-gear-fill"></i>
                         <span>系统设置</span>
                     </a>
                 </li>
-                
+
                 <li class="nav-item">
                     <a class="nav-link" asp-controller="Backup" asp-action="Index">
                         <i class="bi bi-cloud-arrow-down-fill"></i>

@@ -73,7 +73,7 @@ public class AuthService : IAuthService
             };
         }
 
-        var token = _jwtHelper.GenerateToken(admin.Id, admin.Username, admin.PermissionLevel);
+        var token = _jwtHelper.GenerateToken(admin.Id, admin.Username);
         var tokenExpiration = _jwtHelper.GetTokenExpiration();
 
         await _adminRepository.UpdateLastLoginTimeAsync(admin.Id);
@@ -89,7 +89,6 @@ public class AuthService : IAuthService
             {
                 Id = admin.Id,
                 Username = admin.Username,
-                PermissionLevel = admin.PermissionLevel,
                 RealName = admin.RealName,
                 Email = admin.Email
             }

@@ -89,10 +89,7 @@ public partial class Program
 
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("RequireAdminRole", policy =>
-                policy.RequireAssertion(context =>
-                    context.User.HasClaim("PermissionLevel", "3") ||
-                    context.User.HasClaim("PermissionLevel", "99")));
+            options.AddPolicy("RequireAdminRole", policy => policy.RequireAuthenticatedUser());
             options.AddPolicy("RequireUserRole", policy => policy.RequireAuthenticatedUser());
         });
 

@@ -124,6 +124,11 @@ public static class InputSanitizer
 
     public static bool ContainsXssPayload(string? input) => XssDetector.ContainsXssPayload(input);
 
+    /// <summary>
+    /// 检查输入文本中是否包含常见 SQL 注入特征。
+    /// </summary>
+    /// <param name="input">需要检测的原始文本。</param>
+    /// <returns>检测到可疑 SQL 注入模式时返回 <see langword="true"/>，否则返回 <see langword="false"/>。</returns>
     public static bool ContainsSqlInjection(string? input)
     {
         if (string.IsNullOrEmpty(input)) return false;
@@ -131,13 +136,12 @@ public static class InputSanitizer
         var dangerousPatterns = new[]
         {
             @";\s*DROP\s", @";\s*DELETE\s", @";\s*TRUNCATE\s",
+            @"\bSELECT\b[\s\S]*\bFROM\b", @"\bINSERT\b\s+\bINTO\b", @"\bUPDATE\b\s+\w+\s+\bSET\b",
             @"'\s*OR\s+'[^']*'\s*=\s*'", @"'\s*;\s*--",
             @"UNION\s+ALL\s+SELECT", @"UNION\s+SELECT",
             @"EXEC\s*\(", @"EXECUTE\s*\(",
-            @"XP_)", @"0x[0-9A-Fa-f]+",
+            @"\bXP_\w+\b", @"0x[0-9A-Fa-f]+",
         };
-
-        var upperInput = input.ToUpperInvariant();
 
         foreach (var pattern in dangerousPatterns)
         {

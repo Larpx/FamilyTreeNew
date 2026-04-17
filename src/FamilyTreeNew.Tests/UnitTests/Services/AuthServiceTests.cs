@@ -39,7 +39,7 @@ public class AuthServiceTests
 
         _mockAdminRepository.Setup(x => x.GetByUsernameAsync("testuser"))
             .ReturnsAsync(admin);
-        _mockJwtHelper.Setup(x => x.GenerateToken(admin.Id, admin.Username, admin.PermissionLevel))
+        _mockJwtHelper.Setup(x => x.GenerateToken(admin.Id, admin.Username))
             .Returns("test-token");
         _mockJwtHelper.Setup(x => x.GetTokenExpiration())
             .Returns(DateTime.UtcNow.AddHours(2));

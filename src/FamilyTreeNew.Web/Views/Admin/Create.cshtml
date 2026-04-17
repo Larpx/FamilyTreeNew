@@ -1,4 +1,4 @@
-@model CreateAdminDto
+@model FamilyTreeNew.Models.DTOs.CreateAdminDto
 @{
     ViewData["Title"] = "添加管理员";
     Layout = "_AdminLayout";
@@ -52,20 +52,6 @@
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
                     
-                    <div class="mb-3">
-                        <label asp-for="PermissionLevel" class="form-label">权限级别</label>
-                        <select asp-for="PermissionLevel" class="form-select">
-                            <option value="1">普通管理员</option>
-                            <option value="2">高级管理员</option>
-                            <option value="3">超级管理员</option>
-                        </select>
-                        <div class="form-text">
-                            普通管理员：基本管理权限<br>
-                            高级管理员：可管理内容<br>
-                            超级管理员：完全控制权限
-                        </div>
-                    </div>
-                    
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>添加
@@ -82,63 +68,11 @@
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0">权限说明</h5>
+                <h5 class="card-title mb-0">创建说明</h5>
             </div>
-            <div class="card-body">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>功能</th>
-                            <th class="text-center">普通</th>
-                            <th class="text-center">高级</th>
-                            <th class="text-center">超级</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>查看仪表盘</td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td>管理家谱</td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td>管理成员</td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td>管理相册</td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td>系统设置</td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td>管理管理员</td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td>数据备份</td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-x text-danger"></i></td>
-                            <td class="text-center"><i class="bi bi-check text-success"></i></td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="card-body text-muted">
+                <p class="mb-2">新建管理员后可立即登录后台。</p>
+                <p class="mb-0">密码需满足系统密码强度要求。</p>
             </div>
         </div>
     </div>

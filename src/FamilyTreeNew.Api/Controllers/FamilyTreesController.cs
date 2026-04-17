@@ -17,6 +17,7 @@ public class FamilyTreesController : ControllerBase
     private readonly IFamilyMemberService _memberService;
     private readonly IExcelImportService _excelImportService;
     private readonly IMemoryCache _memoryCache;
+    private readonly IWebHostEnvironment _environment;
 
     private static readonly string FamilyTreeListCacheKey = "FamilyTree_List_{0}_{1}_{2}_{3}_{4}";
     private static readonly string FamilyTreeDetailCacheKey = "FamilyTree_Detail_{0}";
@@ -27,12 +28,14 @@ public class FamilyTreesController : ControllerBase
         IFamilyTreeService familyTreeService,
         IFamilyMemberService memberService,
         IExcelImportService excelImportService,
-        IMemoryCache memoryCache)
+        IMemoryCache memoryCache,
+        IWebHostEnvironment environment)
     {
         _familyTreeService = familyTreeService;
         _memberService = memberService;
         _excelImportService = excelImportService;
         _memoryCache = memoryCache;
+        _environment = environment;
     }
 
     /// <summary>
@@ -384,6 +387,15 @@ public class FamilyTreesController : ControllerBase
     {
         try
         {
+            var defaultTemplatePath = Path.Combine(_environment.ContentRootPath, "Templates", "family-member-import-template.xlsx");
+            if (System.IO.File.Exists(defaultTemplatePath))
+            {
+                return PhysicalFile(
+                    defaultTemplatePath,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "成员导入模板.xlsx");
+            }
+
             var template = _excelImportService.GenerateTemplate();
             return File(template, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "成员导入模板.xlsx");
         }

@@ -105,7 +105,6 @@ public class AuthController : ControllerBase
             {
                 Id = admin.Id,
                 Username = admin.Username,
-                PermissionLevel = admin.PermissionLevel,
                 RealName = admin.RealName,
                 Email = admin.Email
             };

@@ -326,7 +326,7 @@ public class JwtHelperTests
         var settings = TestDataFactory.CreateTestJwtSettings();
         var jwtHelper = new JwtHelper(settings);
 
-        var token = jwtHelper.GenerateToken(Guid.NewGuid(), "testuser", 1);
+        var token = jwtHelper.GenerateToken(Guid.NewGuid(), "testuser");
 
         token.Should().NotBeNullOrEmpty();
     }
@@ -338,7 +338,7 @@ public class JwtHelperTests
         var jwtHelper = new JwtHelper(settings);
         var adminId = Guid.NewGuid();
 
-        var token = jwtHelper.GenerateToken(adminId, "testuser", 1);
+        var token = jwtHelper.GenerateToken(adminId, "testuser");
         var principal = jwtHelper.ValidateToken(token);
 
         principal.Should().NotBeNull();

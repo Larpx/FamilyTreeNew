@@ -4,7 +4,7 @@ namespace FamilyTreeNew.Models.Entities;
 
 /// <summary>
 /// 管理员实体类
-/// 存储系统管理员账户信息，包括登录凭证、权限级别等
+/// 存储系统管理员账户信息，包括登录凭证和基本资料等
 /// </summary>
 [SugarTable("Admins")]
 public class Admin
@@ -32,12 +32,6 @@ public class Admin
     /// </summary>
     [SugarColumn(Length = 100, IsNullable = true, ColumnDescription = "密码盐值")]
     public string? PasswordSalt { get; set; }
-
-    /// <summary>
-    /// 权限级别（1-普通管理员，2-高级管理员，3-超级管理员）
-    /// </summary>
-    [SugarColumn(IsNullable = false, ColumnDescription = "权限级别")]
-    public int PermissionLevel { get; set; } = 1;
 
     /// <summary>
     /// 管理员真实姓名
@@ -69,9 +63,4 @@ public class Admin
     [SugarColumn(IsNullable = false, ColumnDescription = "是否启用")]
     public bool IsEnabled { get; set; } = true;
 
-    /// <summary>
-    /// 管理员拥有的角色列表
-    /// </summary>
-    [Navigate(typeof(UserRole), nameof(UserRole.AdminId), nameof(UserRole.RoleId), new string[0])]
-    public List<Role>? Roles { get; set; }
 }

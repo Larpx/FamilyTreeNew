@@ -47,11 +47,6 @@ public class AdminInfoDto
     public string Username { get; set; } = string.Empty;
 
     /// <summary>
-    /// 权限级别
-    /// </summary>
-    public int PermissionLevel { get; set; }
-
-    /// <summary>
     /// 真实姓名
     /// </summary>
     public string? RealName { get; set; }

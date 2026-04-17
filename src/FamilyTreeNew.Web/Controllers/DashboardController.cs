@@ -100,7 +100,6 @@ public class DashboardController : Controller
         }
 
         ViewBag.Username = HttpContext.Session.GetString("Username");
-        ViewBag.PermissionLevel = HttpContext.Session.GetString("PermissionLevel");
 
         return View(viewModel);
     }

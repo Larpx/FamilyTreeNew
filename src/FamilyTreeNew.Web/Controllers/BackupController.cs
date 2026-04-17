@@ -1,44 +1,66 @@
 using FamilyTreeNew.Models.DTOs;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-public class BackupController : AuthenticatedApiControllerBase
+/// <summary>
+/// 提供数据库备份列表查看、创建、恢复和删除操作。
+/// </summary>
+public class BackupController : Controller
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<BackupController> _logger;
 
+    /// <summary>
+    /// 初始化备份控制器。
+    /// </summary>
+    /// <param name="httpClientFactory">创建 API 请求客户端的工厂。</param>
+    /// <param name="configuration">读取 API 地址等配置的配置对象。</param>
+    /// <param name="logger">记录备份相关错误的日志器。</param>
     public BackupController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<BackupController> logger)
-        : base(httpClientFactory, configuration)
     {
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
         _logger = logger;
     }
 
+    private HttpClient GetApiClient()
+    {
+        var client = _httpClientFactory.CreateClient();
+        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+        client.BaseAddress = new Uri(apiBaseUrl);
+
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        return client;
+    }
+
+    /// <summary>
+    /// 打开备份管理页面，并读取当前备份文件列表。
+    /// </summary>
+    /// <returns>备份列表页面。</returns>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/system/backups");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -58,26 +80,23 @@ public class BackupController : AuthenticatedApiControllerBase
         }
     }
 
+    /// <summary>
+    /// 创建新的系统备份文件。
+    /// </summary>
+    /// <returns>处理完成后返回备份列表页。</returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.PostAsync("/api/system/backup", null);
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -109,14 +128,18 @@ public class BackupController : AuthenticatedApiControllerBase
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// 根据用户选择的备份文件执行恢复操作。
+    /// </summary>
+    /// <param name="fileName">要恢复的备份文件名。</param>
+    /// <returns>处理完成后返回备份列表页。</returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Restore(string fileName)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         if (string.IsNullOrWhiteSpace(fileName))
@@ -130,12 +153,6 @@ public class BackupController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var request = new RestoreRequestDto { FileName = fileName };
             var response = await client.PostAsJsonAsync("/api/system/restore", request);
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -167,14 +184,18 @@ public class BackupController : AuthenticatedApiControllerBase
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// 删除指定的备份文件。
+    /// </summary>
+    /// <param name="fileName">要删除的备份文件名。</param>
+    /// <returns>处理完成后返回备份列表页。</returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string fileName)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         if (string.IsNullOrWhiteSpace(fileName))
@@ -187,12 +208,6 @@ public class BackupController : AuthenticatedApiControllerBase
         {
             var client = GetApiClient();
             var response = await client.DeleteAsync($"/api/system/backups/{Uri.EscapeDataString(fileName)}");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {

@@ -1,4 +1,4 @@
-@model UpdateAdminDto
+@model FamilyTreeNew.Models.DTOs.UpdateAdminDto
 @{
     ViewData["Title"] = "编辑管理员";
     Layout = "_AdminLayout";
@@ -44,15 +44,6 @@
                         <label asp-for="Email" class="form-label">邮箱</label>
                         <input asp-for="Email" class="form-control" type="email" placeholder="请输入邮箱">
                         <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label asp-for="PermissionLevel" class="form-label">权限级别</label>
-                        <select asp-for="PermissionLevel" class="form-select">
-                            <option value="1">普通管理员</option>
-                            <option value="2">高级管理员</option>
-                            <option value="3">超级管理员</option>
-                        </select>
                     </div>
                     
                     <div class="mb-3">

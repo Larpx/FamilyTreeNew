@@ -16,9 +16,8 @@ public interface IJwtHelper
     /// </summary>
     /// <param name="adminId">管理员ID</param>
     /// <param name="username">用户名</param>
-    /// <param name="permissionLevel">权限等级</param>
     /// <returns>JWT令牌字符串</returns>
-    string GenerateToken(Guid adminId, string username, int permissionLevel);
+    string GenerateToken(Guid adminId, string username);
 
     /// <summary>
     /// 验证JWT令牌有效性
@@ -64,7 +63,7 @@ public class JwtHelper : IJwtHelper
     }
 
     /// <inheritdoc/>
-    public string GenerateToken(Guid adminId, string username, int permissionLevel)
+    public string GenerateToken(Guid adminId, string username)
     {
         var claims = new[]
         {
@@ -72,7 +71,6 @@ public class JwtHelper : IJwtHelper
             new Claim(JwtRegisteredClaimNames.UniqueName, username),
             new Claim(ClaimTypes.Name, username),
             new Claim(ClaimTypes.NameIdentifier, adminId.ToString()),
-            new Claim("PermissionLevel", permissionLevel.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };

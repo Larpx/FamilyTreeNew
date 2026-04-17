@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IExcelImportService, ExcelImportService>();
         services.AddScoped<IVerificationQuestionService, VerificationQuestionService>();
         services.AddScoped<IVerificationService, VerificationService>();
+        services.AddScoped<IAdminManagementService, AdminManagementService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IOperationLogService, OperationLogService>();
         services.AddScoped<ISystemSettingsService, SystemSettingsService>();
@@ -30,9 +31,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJwtHelper, JwtHelper>();
         services.AddScoped<IAlbumService, AlbumService>();
         services.AddScoped<IPhotoService, PhotoService>();
-        services.AddScoped<IRoleService, RoleService>();
-        services.AddScoped<IPermissionService, PermissionService>();
-        services.AddScoped<IMenuService, MenuService>();
         services.AddScoped<ISpousalRelationService, SpousalRelationService>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventTypeService, EventTypeService>();

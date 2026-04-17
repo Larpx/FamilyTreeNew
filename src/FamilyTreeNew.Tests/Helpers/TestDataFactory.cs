@@ -14,7 +14,6 @@ public static class TestDataFactory
             Username = username,
             Password = password,
             PasswordSalt = salt,
-            PermissionLevel = 1,
             RealName = "Test User",
             Email = "test@example.com",
             CreatedAt = DateTime.Now,
