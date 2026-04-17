@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,7 @@ namespace FamilyTreeNew.Api.Controllers;
 [Authorize]
 public class GedcomController : ControllerBase
 {
+    private const int MaxGedcomContentLength = 5_000_000;
     private readonly IGedcomService _gedcomService;
 
     public GedcomController(IGedcomService gedcomService)
@@ -41,13 +43,28 @@ public class GedcomController : ControllerBase
     {
         try
         {
-            if (string.IsNullOrEmpty(dto.Content))
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(e => !string.IsNullOrWhiteSpace(e))
+                    .ToList();
+                return BadRequest(ApiResponse.Fail("数据验证失败", 400, errors));
+            }
+
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Content))
             {
                 return BadRequest(ApiResponse.Fail("GEDCOM内容不能为空"));
             }
 
-            var result = await _gedcomService.ImportFromGedcomAsync(familyTreeId, dto.Content);
-            
+            if (dto.Content.Length > MaxGedcomContentLength)
+            {
+                return BadRequest(ApiResponse.Fail("GEDCOM内容过大，请控制在5MB以内"));
+            }
+
+            var result = await _gedcomService.ImportFromGedcomAsync(familyTreeId, dto.Content.Trim());
+
             if (result.Success)
             {
                 return Ok(ApiResponse.Ok(result.Message));
@@ -57,7 +74,7 @@ public class GedcomController : ControllerBase
                 return BadRequest(ApiResponse.Fail(result.Message));
             }
         }
-        catch (Exception ex)
+        catch
         {
             return StatusCode(500, ApiResponse.Fail("导入失败，请稍后重试"));
         }
@@ -65,6 +82,7 @@ public class GedcomController : ControllerBase
 
     public class GedcomImportRequestDto
     {
+        [Required(ErrorMessage = "GEDCOM内容不能为空")]
         public string Content { get; set; } = string.Empty;
     }
 }

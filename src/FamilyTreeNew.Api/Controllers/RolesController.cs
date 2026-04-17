@@ -142,8 +142,7 @@ public class RolesController : ControllerBase
                 return NotFound(ApiResponse<List<PermissionResponseDto>>.Fail("角色不存在"));
             }
 
-            var result = await _roleService.GetByIdAsync(id);
-            return Ok(ApiResponse<List<PermissionResponseDto>>.Ok(result?.Permissions ?? new List<PermissionResponseDto>()));
+            return Ok(ApiResponse<List<PermissionResponseDto>>.Ok(role.Permissions ?? new List<PermissionResponseDto>()));
         }
         catch (Exception)
         {

@@ -1,55 +1,47 @@
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using FamilyTreeNew.Models.DTOs.Auth;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-public class AdminController : Controller
+[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+public class AdminController : AuthenticatedApiControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<AdminController> logger)
+        : base(httpClientFactory, configuration)
     {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
         _logger = logger;
     }
 
-    private HttpClient GetApiClient()
-    {
-        var client = _httpClientFactory.CreateClient();
-        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-        client.BaseAddress = new Uri(apiBaseUrl);
-        
-        var token = HttpContext.Session.GetString("JwtToken");
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        
-        return client;
-    }
-
+    [AllowAnonymous]
     [HttpGet]
-    public IActionResult Login()
+    public async Task<IActionResult> Login()
     {
-        if (!string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrWhiteSpace(token) && !IsTokenExpired(token) && (User.Identity?.IsAuthenticated ?? false))
         {
             return RedirectToAction("Index", "Dashboard");
         }
+
+        if (!string.IsNullOrWhiteSpace(token) || (User.Identity?.IsAuthenticated ?? false))
+        {
+            await SignOutAndClearSessionAsync();
+        }
+
         return View();
     }
 
+    [AllowAnonymous]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginRequestDto model)
@@ -98,19 +90,19 @@ public class AdminController : Controller
                     return RedirectToAction("Index", "Dashboard");
                 }
 
-                ModelState.AddModelError(string.Empty, result?.Message ?? "登录失败");
+                AddErrorMessage(result?.Message ?? "登录失败");
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 var errorResult = JsonConvert.DeserializeObject<LoginResponseDto>(errorContent);
-                ModelState.AddModelError(string.Empty, errorResult?.Message ?? "登录失败，请检查用户名和密码");
+                AddErrorMessage(errorResult?.Message ?? "登录失败，请检查用户名和密码");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "登录过程中发生错误");
-            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
+            AddErrorMessage("系统错误，请稍后重试");
         }
 
         return View(model);
@@ -122,25 +114,29 @@ public class AdminController : Controller
     {
         try
         {
-            var client = GetApiClient();
-            await client.PostAsync("/api/auth/logout", null);
+            var token = HttpContext.Session.GetString("JwtToken");
+            if (!string.IsNullOrWhiteSpace(token) && !IsTokenExpired(token))
+            {
+                var client = GetApiClient();
+                await client.PostAsync("/api/auth/logout", null);
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "登出API调用失败");
         }
 
-        HttpContext.Session.Clear();
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await SignOutAndClearSessionAsync();
         return RedirectToAction("Login");
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? keyword = null)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login");
+            return authResult;
         }
 
         var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
@@ -154,6 +150,12 @@ public class AdminController : Controller
             var client = GetApiClient();
             var response = await client.GetAsync($"/api/admins?page={page}&pageSize={pageSize}&keyword={keyword}");
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
@@ -161,23 +163,24 @@ public class AdminController : Controller
                 return View(result?.Data);
             }
 
-            TempData["Error"] = "获取管理员列表失败";
+            SetErrorMessage("获取管理员列表失败");
             return View(new PagedResult<AdminDto>());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取管理员列表失败");
-            TempData["Error"] = "系统错误，请稍后重试";
+            SetErrorMessage("系统错误，请稍后重试");
             return View(new PagedResult<AdminDto>());
         }
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login");
+            return authResult;
         }
 
         var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
@@ -193,9 +196,10 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateAdminDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login");
+            return authResult;
         }
 
         var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
@@ -214,20 +218,24 @@ public class AdminController : Controller
             var client = GetApiClient();
             var response = await client.PostAsJsonAsync("/api/admins", model);
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = "管理员创建成功";
+                SetSuccessMessage("管理员创建成功");
                 return RedirectToAction(nameof(Index));
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            var errorResult = JsonConvert.DeserializeObject<ApiResponse<object>>(errorContent);
-            ModelState.AddModelError(string.Empty, errorResult?.Message ?? "创建失败");
+            await AddResponseErrorsAsync(response, "创建失败");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "创建管理员失败");
-            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
+            AddErrorMessage("系统错误，请稍后重试");
         }
 
         return View(model);
@@ -236,9 +244,10 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login");
+            return authResult;
         }
 
         var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
@@ -251,6 +260,12 @@ public class AdminController : Controller
         {
             var client = GetApiClient();
             var response = await client.GetAsync($"/api/admins/{id}");
+
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -271,13 +286,13 @@ public class AdminController : Controller
                 }
             }
 
-            TempData["Error"] = "管理员不存在";
+            SetErrorMessage("管理员不存在");
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取管理员信息失败");
-            TempData["Error"] = "系统错误，请稍后重试";
+            SetErrorMessage("系统错误，请稍后重试");
             return RedirectToAction(nameof(Index));
         }
     }
@@ -286,9 +301,10 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, UpdateAdminDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login");
+            return authResult;
         }
 
         var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
@@ -307,20 +323,24 @@ public class AdminController : Controller
             var client = GetApiClient();
             var response = await client.PutAsJsonAsync($"/api/admins/{id}", model);
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "管理员更新成功";
                 return RedirectToAction(nameof(Index));
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            var errorResult = JsonConvert.DeserializeObject<ApiResponse<object>>(errorContent);
-            ModelState.AddModelError(string.Empty, errorResult?.Message ?? "更新失败");
+            await AddResponseErrorsAsync(response, "更新失败");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新管理员失败");
-            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
+            AddErrorMessage("系统错误，请稍后重试");
         }
 
         return View(model);
@@ -330,9 +350,10 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login");
+            return authResult;
         }
 
         var permissionLevel = HttpContext.Session.GetString("PermissionLevel");
@@ -346,30 +367,37 @@ public class AdminController : Controller
             var client = GetApiClient();
             var response = await client.DeleteAsync($"/api/admins/{id}");
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = "管理员删除成功";
+                SetSuccessMessage("管理员删除成功");
             }
             else
             {
-                TempData["Error"] = "删除失败";
+                await SetResponseErrorMessageAsync(response, "删除失败");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除管理员失败");
-            TempData["Error"] = "系统错误，请稍后重试";
+            SetErrorMessage("系统错误，请稍后重试");
         }
 
         return RedirectToAction(nameof(Index));
     }
 
     [HttpGet]
-    public IActionResult ChangePassword()
+    public async Task<IActionResult> ChangePassword()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login");
+            return authResult;
         }
 
         return View(new ChangePasswordRequestDto());
@@ -379,9 +407,10 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequestDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login");
+            return authResult;
         }
 
         if (!ModelState.IsValid)
@@ -394,20 +423,24 @@ public class AdminController : Controller
             var client = GetApiClient();
             var response = await client.PostAsJsonAsync("/api/auth/change-password", model);
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = "密码修改成功";
+                SetSuccessMessage("密码修改成功");
                 return RedirectToAction("Index", "Dashboard");
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            var errorResult = JsonConvert.DeserializeObject<ApiResponse<object>>(errorContent);
-            ModelState.AddModelError(string.Empty, errorResult?.Message ?? "密码修改失败");
+            await AddResponseErrorsAsync(response, "密码修改失败");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "修改密码失败");
-            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
+            AddErrorMessage("系统错误，请稍后重试");
         }
 
         return View(model);

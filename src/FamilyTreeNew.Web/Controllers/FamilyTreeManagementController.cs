@@ -1,47 +1,32 @@
-using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-public class FamilyTreeManagementController : Controller
+[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+public class FamilyTreeManagementController : AuthenticatedApiControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<FamilyTreeManagementController> _logger;
 
     public FamilyTreeManagementController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<FamilyTreeManagementController> logger)
+        : base(httpClientFactory, configuration)
     {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
         _logger = logger;
-    }
-
-    private HttpClient GetApiClient()
-    {
-        var client = _httpClientFactory.CreateClient();
-        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-        client.BaseAddress = new Uri(apiBaseUrl);
-        
-        var token = HttpContext.Session.GetString("JwtToken");
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        
-        return client;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? keyword = null, bool? isEnabled = null)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login", "Admin");
+            return authResult;
         }
 
         try
@@ -59,6 +44,12 @@ public class FamilyTreeManagementController : Controller
 
             var response = await client.GetAsync(url);
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
@@ -72,23 +63,24 @@ public class FamilyTreeManagementController : Controller
                 return View(result?.Data);
             }
 
-            TempData["Error"] = "获取家谱列表失败";
+            SetErrorMessage("获取家谱列表失败");
             return View(new PagedResult<FamilyTreeDto>());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取家谱列表失败");
-            TempData["Error"] = "系统错误，请稍后重试";
+            SetErrorMessage("系统错误，请稍后重试");
             return View(new PagedResult<FamilyTreeDto>());
         }
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login", "Admin");
+            return authResult;
         }
 
         return View(new FamilyTreeCreateDto());
@@ -98,9 +90,10 @@ public class FamilyTreeManagementController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(FamilyTreeCreateDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login", "Admin");
+            return authResult;
         }
 
         if (!ModelState.IsValid)
@@ -113,31 +106,24 @@ public class FamilyTreeManagementController : Controller
             var client = GetApiClient();
             var response = await client.PostAsJsonAsync("/api/familytrees", model);
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = "家谱创建成功";
+                SetSuccessMessage("家谱创建成功");
                 return RedirectToAction(nameof(Index));
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            var errorResult = JsonConvert.DeserializeObject<ApiResponse<FamilyTreeDto>>(errorContent);
-            
-            if (errorResult?.Errors != null && errorResult.Errors.Any())
-            {
-                foreach (var error in errorResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error);
-                }
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, errorResult?.Message ?? "创建失败");
-            }
+            await AddResponseErrorsAsync(response, "创建失败");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "创建家谱失败");
-            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
+            AddErrorMessage("系统错误，请稍后重试");
         }
 
         return View(model);
@@ -146,15 +132,22 @@ public class FamilyTreeManagementController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login", "Admin");
+            return authResult;
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync($"/api/familytrees/{id}");
+
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -175,13 +168,13 @@ public class FamilyTreeManagementController : Controller
                 }
             }
 
-            TempData["Error"] = "家谱不存在";
+            SetErrorMessage("家谱不存在");
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取家谱信息失败");
-            TempData["Error"] = "系统错误，请稍后重试";
+            SetErrorMessage("系统错误，请稍后重试");
             return RedirectToAction(nameof(Index));
         }
     }
@@ -190,9 +183,10 @@ public class FamilyTreeManagementController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, FamilyTreeUpdateDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login", "Admin");
+            return authResult;
         }
 
         if (!ModelState.IsValid)
@@ -206,31 +200,24 @@ public class FamilyTreeManagementController : Controller
             var client = GetApiClient();
             var response = await client.PutAsJsonAsync($"/api/familytrees/{id}", model);
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = "家谱更新成功";
+                SetSuccessMessage("家谱更新成功");
                 return RedirectToAction(nameof(Index));
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
-            var errorResult = JsonConvert.DeserializeObject<ApiResponse<FamilyTreeDto>>(errorContent);
-            
-            if (errorResult?.Errors != null && errorResult.Errors.Any())
-            {
-                foreach (var error in errorResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error);
-                }
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, errorResult?.Message ?? "更新失败");
-            }
+            await AddResponseErrorsAsync(response, "更新失败");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新家谱失败");
-            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
+            AddErrorMessage("系统错误，请稍后重试");
         }
 
         ViewBag.FamilyTreeId = id;
@@ -241,9 +228,10 @@ public class FamilyTreeManagementController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login", "Admin");
+            return authResult;
         }
 
         try
@@ -251,21 +239,25 @@ public class FamilyTreeManagementController : Controller
             var client = GetApiClient();
             var response = await client.DeleteAsync($"/api/familytrees/{id}");
 
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
+
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = "家谱删除成功";
+                SetSuccessMessage("家谱删除成功");
             }
             else
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                var errorResult = JsonConvert.DeserializeObject<ApiResponse>(errorContent);
-                TempData["Error"] = errorResult?.Message ?? "删除失败";
+                await SetResponseErrorMessageAsync(response, "删除失败");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除家谱失败");
-            TempData["Error"] = "系统错误，请稍后重试";
+            SetErrorMessage("系统错误，请稍后重试");
         }
 
         return RedirectToAction(nameof(Index));
@@ -274,15 +266,22 @@ public class FamilyTreeManagementController : Controller
     [HttpGet]
     public async Task<IActionResult> Details(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
+        var authResult = await EnsureAuthenticatedAsync();
+        if (authResult != null)
         {
-            return RedirectToAction("Login", "Admin");
+            return authResult;
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync($"/api/familytrees/{id}");
+
+            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
+            if (unauthorizedResult != null)
+            {
+                return unauthorizedResult;
+            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -291,13 +290,13 @@ public class FamilyTreeManagementController : Controller
                 return View(result?.Data);
             }
 
-            TempData["Error"] = "家谱不存在";
+            SetErrorMessage("家谱不存在");
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取家谱详情失败");
-            TempData["Error"] = "系统错误，请稍后重试";
+            SetErrorMessage("系统错误，请稍后重试");
             return RedirectToAction(nameof(Index));
         }
     }

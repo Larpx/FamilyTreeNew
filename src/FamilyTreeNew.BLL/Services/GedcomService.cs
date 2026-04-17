@@ -1,6 +1,6 @@
 using FamilyTreeNew.DAL.Repositories;
-using FamilyTreeNew.Models.Entities;
 using FamilyTreeNew.Models.DTOs;
+using FamilyTreeNew.Models.Entities;
 using System.Globalization;
 using System.Text;
 
@@ -8,11 +8,18 @@ namespace FamilyTreeNew.BLL.Services;
 
 public class GedcomService : IGedcomService
 {
+    private sealed class PendingMember
+    {
+        public required string ExternalId { get; init; }
+        public required FamilyMemberCreateDto Member { get; init; }
+        public string? ParentExternalId { get; set; }
+    }
+
     private readonly IFamilyTreeRepository _familyTreeRepository;
     private readonly IFamilyMemberRepository _familyMemberRepository;
     private readonly IFamilyMemberService _familyMemberService;
 
-    public GedcomService(IFamilyTreeRepository familyTreeRepository, 
+    public GedcomService(IFamilyTreeRepository familyTreeRepository,
         IFamilyMemberRepository familyMemberRepository,
         IFamilyMemberService familyMemberService)
     {
@@ -30,7 +37,7 @@ public class GedcomService : IGedcomService
         }
 
         var members = await _familyMemberRepository.GetByFamilyTreeIdAsync(familyTreeId);
-        
+
         var gedcom = new StringBuilder();
         gedcom.AppendLine("0 HEAD");
         gedcom.AppendLine("1 SOUR FamilyTreeNew");
@@ -39,14 +46,14 @@ public class GedcomService : IGedcomService
         gedcom.AppendLine("2 VERS 5.5.1");
         gedcom.AppendLine("2 FORM LINEAGE-LINKED");
         gedcom.AppendLine("1 CHAR UTF-8");
-        gedcom.AppendLine("1 DATE " + DateTime.Now.ToString("yyyy-MM-dd"));
+        gedcom.AppendLine("1 DATE " + DateTime.UtcNow.ToString("yyyy-MM-dd"));
 
         foreach (var member in members)
         {
             gedcom.AppendLine();
             gedcom.AppendLine($"0 @I{member.Id.ToString().Replace("-", "")}@ INDI");
             gedcom.AppendLine($"1 NAME {EscapeGedcomString(member.Surname)} /{EscapeGedcomString(member.FirstName)}/");
-            
+
             if (!string.IsNullOrEmpty(member.Alias))
             {
                 gedcom.AppendLine($"1 NICK {EscapeGedcomString(member.Alias)}");
@@ -59,7 +66,7 @@ public class GedcomService : IGedcomService
 
             if (member.BirthDateSolar.HasValue)
             {
-                gedcom.AppendLine($"1 BIRT");
+                gedcom.AppendLine("1 BIRT");
                 gedcom.AppendLine($"2 DATE {member.BirthDateSolar.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)}");
             }
 
@@ -70,7 +77,7 @@ public class GedcomService : IGedcomService
 
             if (member.IsDeceased)
             {
-                gedcom.AppendLine($"1 DEAT");
+                gedcom.AppendLine("1 DEAT");
                 if (member.DeathDateSolar.HasValue)
                 {
                     gedcom.AppendLine($"2 DATE {member.DeathDateSolar.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)}");
@@ -83,7 +90,7 @@ public class GedcomService : IGedcomService
 
             if (!string.IsNullOrEmpty(member.Residence))
             {
-                gedcom.AppendLine($"1 RESI");
+                gedcom.AppendLine("1 RESI");
                 gedcom.AppendLine($"2 PLAC {EscapeGedcomString(member.Residence)}");
             }
 
@@ -99,7 +106,7 @@ public class GedcomService : IGedcomService
 
             if (member.ParentId.HasValue)
             {
-                gedcom.AppendLine($"1 FAMC @F{member.ParentId.Value.ToString().Replace("-", "")}@");
+                gedcom.AppendLine($"1 FAMC @I{member.ParentId.Value.ToString().Replace("-", "")}@");
             }
         }
 
@@ -113,107 +120,27 @@ public class GedcomService : IGedcomService
     {
         try
         {
+            var familyTree = await _familyTreeRepository.GetByIdAsync(familyTreeId);
+            if (familyTree == null)
+            {
+                return (false, "家谱不存在");
+            }
+
+            if (string.IsNullOrWhiteSpace(gedcomContent))
+            {
+                return (false, "GEDCOM内容不能为空");
+            }
+
             var lines = gedcomContent.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            
-            var memberMap = new Dictionary<string, Guid>();
-            Guid? currentMemberId = null;
-            FamilyMemberCreateDto? currentMember = null;
-            string currentTag = string.Empty;
+            var pendingMembers = ParseMembers(lines, familyTreeId);
 
-            foreach (var line in lines)
+            if (pendingMembers.Count == 0)
             {
-                var trimmedLine = line.Trim();
-                if (string.IsNullOrEmpty(trimmedLine)) continue;
-
-                var parts = trimmedLine.Split(new[] { ' ' }, 3);
-                if (parts.Length < 2) continue;
-
-                if (!int.TryParse(parts[0], out int level)) continue;
-                string tag = parts[1];
-                string value = parts.Length > 2 ? parts[2] : string.Empty;
-
-                if (level == 0)
-                {
-                    if (currentMember != null && currentMemberId.HasValue)
-                    {
-                        await CreateMember(currentMember, memberMap);
-                    }
-
-                    if (value == "INDI" && tag.StartsWith("@I") && tag.EndsWith("@"))
-                    {
-                        currentMemberId = Guid.NewGuid();
-                        memberMap[tag] = currentMemberId.Value;
-                        currentMember = new FamilyMemberCreateDto();
-                        currentMember.FamilyTreeId = familyTreeId;
-                    }
-                    else
-                    {
-                        currentMember = null;
-                        currentMemberId = null;
-                    }
-                }
-                else if (level == 1 && currentMember != null)
-                {
-                    currentTag = tag;
-                    switch (tag)
-                    {
-                        case "NAME":
-                            var nameParts = value.Split('/');
-                            if (nameParts.Length >= 2)
-                            {
-                                currentMember.Surname = UnescapeGedcomString(nameParts[0].Trim());
-                                currentMember.FirstName = UnescapeGedcomString(nameParts[1].Trim());
-                            }
-                            break;
-                        case "NICK":
-                            currentMember.Alias = UnescapeGedcomString(value);
-                            break;
-                        case "TITL":
-                            currentMember.GenerationName = UnescapeGedcomString(value);
-                            break;
-                        case "SEX":
-                            currentMember.Gender = value;
-                            break;
-                        case "FAMC":
-                            if (memberMap.TryGetValue(value, out Guid parentId))
-                            {
-                                currentMember.ParentId = parentId;
-                            }
-                            break;
-                    }
-                }
-                else if (level == 2 && currentMember != null)
-                {
-                    if (currentTag == "BIRT" && tag == "DATE")
-                    {
-                        currentMember.BirthDateSolar = ParseGedcomDate(value);
-                    }
-                    else if (currentTag == "DEAT" && tag == "DATE")
-                    {
-                        currentMember.DeathDateSolar = ParseGedcomDate(value);
-                        currentMember.IsDeceased = true;
-                    }
-                    else if (currentTag == "RESI" && tag == "PLAC")
-                    {
-                        currentMember.Residence = UnescapeGedcomString(value);
-                    }
-                    else if (tag == "OCCU")
-                    {
-                        currentMember.Occupation = UnescapeGedcomString(value);
-                    }
-                    else if (tag == "NOTE")
-                    {
-                        currentMember.PersonalInfo = UnescapeGedcomString(value);
-                    }
-                }
+                return (false, "未解析到有效的成员数据");
             }
 
-            if (currentMember != null && currentMemberId.HasValue)
-            {
-                await CreateMember(currentMember, memberMap);
-            }
-
-            return (true, $"成功导入 {memberMap.Count} 个成员");
+            var importedCount = await ImportMembersAsync(pendingMembers);
+            return (true, $"成功导入 {importedCount} 个成员");
         }
         catch (Exception ex)
         {
@@ -221,28 +148,211 @@ public class GedcomService : IGedcomService
         }
     }
 
-    private async Task CreateMember(FamilyMemberCreateDto member, Dictionary<string, Guid> memberMap)
+    private List<PendingMember> ParseMembers(string[] lines, Guid familyTreeId)
     {
-        if (member.ParentId.HasValue && !memberMap.ContainsValue(member.ParentId.Value))
+        var result = new List<PendingMember>();
+        PendingMember? current = null;
+        string currentTag = string.Empty;
+
+        foreach (var line in lines)
         {
-            member.ParentId = null;
+            var trimmedLine = line.Trim();
+            if (string.IsNullOrWhiteSpace(trimmedLine))
+            {
+                continue;
+            }
+
+            var parts = trimmedLine.Split(' ', 3);
+            if (parts.Length < 2 || !int.TryParse(parts[0], out var level))
+            {
+                continue;
+            }
+
+            var tag = parts[1];
+            var value = parts.Length > 2 ? parts[2] : string.Empty;
+
+            if (level == 0)
+            {
+                if (current != null)
+                {
+                    result.Add(current);
+                }
+
+                if (parts.Length == 3 && parts[1].StartsWith("@I", StringComparison.OrdinalIgnoreCase) && parts[1].EndsWith("@") && parts[2] == "INDI")
+                {
+                    current = new PendingMember
+                    {
+                        ExternalId = parts[1],
+                        Member = new FamilyMemberCreateDto
+                        {
+                            FamilyTreeId = familyTreeId
+                        }
+                    };
+                    currentTag = string.Empty;
+                }
+                else
+                {
+                    current = null;
+                }
+
+                continue;
+            }
+
+            if (current == null)
+            {
+                continue;
+            }
+
+            if (level == 1)
+            {
+                currentTag = tag;
+                switch (tag)
+                {
+                    case "NAME":
+                        var nameParts = value.Split('/');
+                        if (nameParts.Length >= 2)
+                        {
+                            current.Member.Surname = UnescapeGedcomString(nameParts[0].Trim());
+                            current.Member.FirstName = UnescapeGedcomString(nameParts[1].Trim());
+                        }
+                        break;
+                    case "NICK":
+                        current.Member.Alias = UnescapeGedcomString(value);
+                        break;
+                    case "TITL":
+                        current.Member.GenerationName = UnescapeGedcomString(value);
+                        break;
+                    case "SEX":
+                        current.Member.Gender = value;
+                        break;
+                    case "FAMC":
+                        current.ParentExternalId = value;
+                        break;
+                    case "OCCU":
+                        current.Member.Occupation = UnescapeGedcomString(value);
+                        break;
+                    case "NOTE":
+                        current.Member.PersonalInfo = UnescapeGedcomString(value);
+                        break;
+                }
+                continue;
+            }
+
+            if (level == 2)
+            {
+                if (currentTag == "BIRT" && tag == "DATE")
+                {
+                    current.Member.BirthDateSolar = ParseGedcomDate(value);
+                }
+                else if (currentTag == "BIRT" && tag == "NOTE")
+                {
+                    current.Member.BirthDateLunar = ParseLunarNote(value);
+                }
+                else if (currentTag == "DEAT" && tag == "DATE")
+                {
+                    current.Member.DeathDateSolar = ParseGedcomDate(value);
+                    current.Member.IsDeceased = true;
+                }
+                else if (currentTag == "DEAT" && tag == "NOTE")
+                {
+                    current.Member.DeathDateLunar = ParseLunarNote(value);
+                    current.Member.IsDeceased = true;
+                }
+                else if (currentTag == "RESI" && tag == "PLAC")
+                {
+                    current.Member.Residence = UnescapeGedcomString(value);
+                }
+                else if (tag == "NOTE")
+                {
+                    current.Member.PersonalInfo = UnescapeGedcomString(value);
+                }
+            }
         }
-        await _familyMemberService.CreateAsync(member);
+
+        if (current != null)
+        {
+            result.Add(current);
+        }
+
+        return result.Where(m => !string.IsNullOrWhiteSpace(m.Member.Surname) || !string.IsNullOrWhiteSpace(m.Member.FirstName)).ToList();
     }
 
-    private string EscapeGedcomString(string input)
+    private async Task<int> ImportMembersAsync(List<PendingMember> pendingMembers)
+    {
+        var importedCount = 0;
+        var createdIdMap = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+
+        while (pendingMembers.Count > 0)
+        {
+            var progressed = false;
+
+            for (var i = pendingMembers.Count - 1; i >= 0; i--)
+            {
+                var pending = pendingMembers[i];
+
+                if (!string.IsNullOrWhiteSpace(pending.ParentExternalId))
+                {
+                    if (!createdIdMap.TryGetValue(pending.ParentExternalId, out var parentId))
+                    {
+                        continue;
+                    }
+
+                    pending.Member.ParentId = parentId;
+                }
+                else
+                {
+                    pending.Member.ParentId = null;
+                }
+
+                var created = await _familyMemberService.CreateAsync(pending.Member);
+                createdIdMap[pending.ExternalId] = created.Id;
+                pendingMembers.RemoveAt(i);
+                importedCount++;
+                progressed = true;
+            }
+
+            if (!progressed)
+            {
+                for (var i = pendingMembers.Count - 1; i >= 0; i--)
+                {
+                    var pending = pendingMembers[i];
+                    pending.Member.ParentId = null;
+                    var created = await _familyMemberService.CreateAsync(pending.Member);
+                    createdIdMap[pending.ExternalId] = created.Id;
+                    pendingMembers.RemoveAt(i);
+                    importedCount++;
+                }
+            }
+        }
+
+        return importedCount;
+    }
+
+    private static string EscapeGedcomString(string input)
     {
         if (string.IsNullOrEmpty(input)) return string.Empty;
         return input.Replace("@", "@@");
     }
 
-    private string UnescapeGedcomString(string input)
+    private static string UnescapeGedcomString(string input)
     {
         if (string.IsNullOrEmpty(input)) return string.Empty;
         return input.Replace("@@", "@");
     }
 
-    private DateTime? ParseGedcomDate(string dateStr)
+    private static string? ParseLunarNote(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var note = UnescapeGedcomString(value).Trim();
+        const string prefix = "农历:";
+        return note.StartsWith(prefix, StringComparison.Ordinal) ? note[prefix.Length..].Trim() : note;
+    }
+
+    private static DateTime? ParseGedcomDate(string dateStr)
     {
         if (string.IsNullOrEmpty(dateStr)) return null;
 
