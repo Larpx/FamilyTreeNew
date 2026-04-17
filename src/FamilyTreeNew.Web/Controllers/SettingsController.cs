@@ -7,10 +7,6 @@ using Newtonsoft.Json;
 namespace FamilyTreeNew.Web.Controllers;
 
 [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-/// <summary>
-/// 系统设置管理控制器。
-/// 负责查看和修改网站设置，以及查看数据库状态。
-/// </summary>
 public class SettingsController : AuthenticatedApiControllerBase
 {
     private readonly ILogger<SettingsController> _logger;
@@ -24,10 +20,6 @@ public class SettingsController : AuthenticatedApiControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// 显示系统设置页面。
-    /// 从后端 API 读取当前设置并填充到编辑表单中。
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -91,10 +83,6 @@ public class SettingsController : AuthenticatedApiControllerBase
         }
     }
 
-    /// <summary>
-    /// 提交系统设置更新。
-    /// 当表单验证通过时，会把新的设置保存到后端。
-    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Index(UpdateSystemSettingsDto model)
@@ -138,10 +126,6 @@ public class SettingsController : AuthenticatedApiControllerBase
         return View(model);
     }
 
-    /// <summary>
-    /// 数据库状态页面。
-    /// 用于展示数据库是否连通、表数量和统计信息。
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> DatabaseStatus()
     {

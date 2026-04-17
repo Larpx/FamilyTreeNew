@@ -7,26 +7,11 @@ using Newtonsoft.Json;
 namespace FamilyTreeNew.Web.Controllers;
 
 [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-/// <summary>
-/// Excel 导入控制器。
-/// 负责上传成员导入文件、下载模板，以及展示导入结果与错误信息。
-/// </summary>
 public class ExcelImportController : AuthenticatedApiControllerBase
 {
-    /// <summary>
-    /// TempData 中保存导入错误的键名。
-    /// </summary>
     private const string ImportErrorsTempDataKey = "ImportErrors";
-
-    /// <summary>
-    /// TempData 中保存导入结果的键名。
-    /// </summary>
     private const string ImportResultTempDataKey = "ImportResult";
 
-    /// <summary>
-    /// 日志记录器。
-    /// 用于记录导入过程中的异常和状态。
-    /// </summary>
     private readonly ILogger<ExcelImportController> _logger;
 
     public ExcelImportController(
@@ -38,10 +23,6 @@ public class ExcelImportController : AuthenticatedApiControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Excel 导入首页。
-    /// 用于展示可导入的家谱列表和导入入口。
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -79,10 +60,6 @@ public class ExcelImportController : AuthenticatedApiControllerBase
         }
     }
 
-    /// <summary>
-    /// 上传 Excel 文件并执行导入。
-    /// 会先检查文件类型，再把文件流发送到后端 API。
-    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Upload(Guid familyTreeId, IFormFile excelFile)
@@ -164,10 +141,6 @@ public class ExcelImportController : AuthenticatedApiControllerBase
         return RedirectToAction(nameof(Index));
     }
 
-    /// <summary>
-    /// 下载 Excel 导入模板。
-    /// 供管理员按模板填写成员数据后再导入。
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> DownloadTemplate()
     {
@@ -215,10 +188,6 @@ public class ExcelImportController : AuthenticatedApiControllerBase
         TempData[ImportErrorsTempDataKey] = JsonConvert.SerializeObject(errors);
     }
 
-    /// <summary>
-    /// 将导入结果保存到 `TempData`。
-    /// 页面重定向后仍可读取并展示导入统计信息。
-    /// </summary>
     private void SetImportResult(ExcelImportResultDto importResult)
     {
         TempData[ImportResultTempDataKey] = JsonConvert.SerializeObject(importResult);

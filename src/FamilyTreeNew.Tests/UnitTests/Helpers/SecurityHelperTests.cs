@@ -4,10 +4,6 @@ using Xunit;
 
 namespace FamilyTreeNew.Tests.UnitTests.Helpers;
 
-/// <summary>
-/// 输入安全工具测试。
-/// 主要验证 SQL 注入检测、HTML 清理和路径清洗规则是否正确。
-/// </summary>
 public class SecurityHelperTests
 {
     [Fact]

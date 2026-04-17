@@ -3,10 +3,6 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
-/// <summary>
-/// 验证问题仓储接口。
-/// 负责获取带家谱信息的验证问题、按家谱查询以及批量删除相关问题。
-/// </summary>
 public interface IVerificationQuestionRepository : IBaseRepositoryGuid<VerificationQuestion>
 {
     Task<List<VerificationQuestion>> GetAllWithFamilyTreeAsync();
@@ -15,10 +11,6 @@ public interface IVerificationQuestionRepository : IBaseRepositoryGuid<Verificat
     Task<int> DeleteByFamilyTreeIdAsync(Guid familyTreeId);
 }
 
-/// <summary>
-/// 验证问题仓储实现。
-/// 提供验证问题的查询、关联加载和批量删除等功能。
-/// </summary>
 public class VerificationQuestionRepository : BaseRepositoryGuid<VerificationQuestion>, IVerificationQuestionRepository
 {
     public VerificationQuestionRepository(SqlSugarContext context) : base(context)

@@ -3,10 +3,6 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
-/// <summary>
-/// 来源引用仓储实现。
-/// 负责查询某个来源的引用记录，以及按目标对象查找引用信息。
-/// </summary>
 public class SourceCitationRepository : BaseRepositoryGuid<SourceCitation>, ISourceCitationRepository
 {
     public SourceCitationRepository(SqlSugarContext context) : base(context) { }

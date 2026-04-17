@@ -3,10 +3,6 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
-/// <summary>
-/// 地点仓储实现。
-/// 提供按省、市和启用状态筛选地点的数据库查询能力。
-/// </summary>
 public class PlaceRepository : BaseRepositoryGuid<Place>, IPlaceRepository
 {
     public PlaceRepository(SqlSugarContext context) : base(context) { }

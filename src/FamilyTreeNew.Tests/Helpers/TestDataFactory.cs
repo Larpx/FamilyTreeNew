@@ -3,10 +3,6 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.Tests.Helpers;
 
-/// <summary>
-/// 测试数据工厂。
-/// 这个类专门创建可重复使用的测试实体，帮助单元测试更容易准备输入数据。
-/// </summary>
 public static class TestDataFactory
 {
     public static Admin CreateTestAdmin(Guid? id = null, string username = "testuser", string password = "Test@123456", bool isEnabled = true)

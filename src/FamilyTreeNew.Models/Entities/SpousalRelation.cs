@@ -2,10 +2,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
-/// <summary>
-/// 配偶关系实体。
-/// 用来保存一对夫妻的婚姻关系和相关时间信息。
-/// </summary>
 [SugarTable("SpousalRelations")]
 public class SpousalRelation
 {

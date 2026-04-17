@@ -8,10 +8,6 @@ using Xunit;
 
 namespace FamilyTreeNew.Tests.UnitTests.Services;
 
-/// <summary>
-/// 备份服务安全测试。
-/// 重点确认恢复和删除备份时会拒绝危险文件名，避免路径穿越攻击。
-/// </summary>
 public class BackupServiceSecurityTests
 {
     private readonly Mock<ILogger<BackupService>> _mockLogger;

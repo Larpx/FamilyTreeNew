@@ -7,10 +7,6 @@ using Newtonsoft.Json;
 namespace FamilyTreeNew.Web.Controllers;
 
 [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-/// <summary>
-/// 验证问题管理控制器。
-/// 负责后台维护家谱访问验证所需的问题列表。
-/// </summary>
 public class VerificationManagementController : AuthenticatedApiControllerBase
 {
     private readonly ILogger<VerificationManagementController> _logger;

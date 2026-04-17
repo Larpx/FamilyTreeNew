@@ -2,10 +2,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
-/// <summary>
-/// 来源引用实体。
-/// 用来记录某条资料来源被引用到哪个成员、事件或家谱对象上。
-/// </summary>
 [SugarTable("SourceCitations")]
 public class SourceCitation
 {

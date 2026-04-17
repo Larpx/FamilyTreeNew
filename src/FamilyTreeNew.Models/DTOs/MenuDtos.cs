@@ -2,10 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FamilyTreeNew.Models.DTOs;
 
-/// <summary>
-/// 创建菜单时使用的请求模型。
-/// 它描述了菜单树中的一个新节点，包括名称、地址、图标和显示规则。
-/// </summary>
 public class MenuCreateRequestDto
 {
     public Guid? ParentId { get; set; }
@@ -31,10 +27,6 @@ public class MenuCreateRequestDto
     public bool IsVisible { get; set; } = true;
 }
 
-/// <summary>
-/// 更新菜单时使用的请求模型。
-/// 适合在后台修改已有菜单的层级、排序和可见性。
-/// </summary>
 public class MenuUpdateRequestDto
 {
     public Guid? ParentId { get; set; }
@@ -60,10 +52,6 @@ public class MenuUpdateRequestDto
     public bool IsVisible { get; set; }
 }
 
-/// <summary>
-/// 菜单返回模型。
-/// 这个对象通常会构造成树形结构，供前端菜单栏直接渲染使用。
-/// </summary>
 public class MenuResponseDto
 {
     public Guid Id { get; set; }

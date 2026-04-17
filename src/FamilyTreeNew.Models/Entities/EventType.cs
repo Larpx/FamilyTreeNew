@@ -2,10 +2,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
-/// <summary>
-/// 事件类型实体。
-/// 用来定义事件的分类，比如出生、结婚、死亡等。
-/// </summary>
 [SugarTable("EventTypes")]
 public class EventType
 {

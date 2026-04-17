@@ -2,10 +2,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
-/// <summary>
-/// 角色实体。
-/// 用来表示用户可以拥有的身份，例如管理员、编辑者或普通访客。
-/// </summary>
 [SugarTable("Roles")]
 public class Role
 {

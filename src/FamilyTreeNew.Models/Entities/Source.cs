@@ -2,10 +2,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
-/// <summary>
-/// 来源实体。
-/// 用来保存家谱资料的来源信息，例如书籍、网站、档案或口述记录。
-/// </summary>
 [SugarTable("Sources")]
 public class Source
 {

@@ -7,10 +7,6 @@ using Xunit;
 
 namespace FamilyTreeNew.Tests.UnitTests.Helpers;
 
-/// <summary>
-/// 密码工具测试。
-/// 用来验证密码哈希、验证和随机密码生成是否符合预期。
-/// </summary>
 public class PasswordHelperTests
 {
     [Fact]
@@ -78,10 +74,6 @@ public class PasswordHelperTests
     }
 }
 
-/// <summary>
-/// XSS 检测器测试。
-/// 主要检查系统是否能识别常见的跨站脚本输入。
-/// </summary>
 public class XssDetectorTests
 {
     [Theory]
@@ -119,10 +111,6 @@ public class XssDetectorTests
     }
 }
 
-/// <summary>
-/// 连接字符串工具测试。
-/// 用于验证数据库名提取和连接字符串解析逻辑。
-/// </summary>
 public class ConnectionStringHelperTests
 {
     [Fact]
@@ -197,10 +185,6 @@ public class ConnectionStringHelperTests
     }
 }
 
-/// <summary>
-/// 文件工具测试。
-/// 用于验证图片文件类型、大小和扩展名相关的校验规则。
-/// </summary>
 public class FileHelperTests
 {
     [Fact]
@@ -261,10 +245,6 @@ public class FileHelperTests
     }
 }
 
-/// <summary>
-/// 照片映射器测试。
-/// 用于确认实体对象到 DTO 的转换结果是否正确。
-/// </summary>
 public class PhotoMapperTests
 {
     [Fact]
@@ -338,10 +318,6 @@ public class PhotoMapperTests
     }
 }
 
-/// <summary>
-/// JWT 工具测试。
-/// 用于验证令牌生成和解析逻辑能否正常工作。
-/// </summary>
 public class JwtHelperTests
 {
     [Fact]

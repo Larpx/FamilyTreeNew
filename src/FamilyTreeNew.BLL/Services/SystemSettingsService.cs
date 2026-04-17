@@ -5,20 +5,12 @@ using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
-/// <summary>
-/// 系统设置服务接口。
-/// 定义系统设置的读取和更新能力。
-/// </summary>
 public interface ISystemSettingsService
 {
     Task<SystemSettingsDto?> GetSettingsAsync();
     Task<SystemSettingsDto?> UpdateSettingsAsync(UpdateSystemSettingsDto dto);
 }
 
-/// <summary>
-/// 系统设置服务。
-/// 负责读取、创建默认设置和更新系统配置。
-/// </summary>
 public class SystemSettingsService : ISystemSettingsService
 {
     private readonly SqlSugarContext _context;
@@ -32,10 +24,6 @@ public class SystemSettingsService : ISystemSettingsService
         _logger = logger;
     }
 
-    /// <summary>
-    /// 获取当前系统设置。
-    /// 如果数据库中还没有设置，则自动创建默认设置。
-    /// </summary>
     public async Task<SystemSettingsDto?> GetSettingsAsync()
     {
         try
@@ -57,10 +45,6 @@ public class SystemSettingsService : ISystemSettingsService
         }
     }
 
-    /// <summary>
-    /// 更新系统设置。
-    /// 如果数据库中不存在设置记录，则先创建一条。
-    /// </summary>
     public async Task<SystemSettingsDto?> UpdateSettingsAsync(UpdateSystemSettingsDto dto)
     {
         try
@@ -92,10 +76,6 @@ public class SystemSettingsService : ISystemSettingsService
         }
     }
 
-    /// <summary>
-    /// 创建默认系统设置。
-    /// 这是系统首次启动时的兜底配置。
-    /// </summary>
     private async Task<SystemSettings> CreateDefaultSettingsAsync()
     {
         var settings = new SystemSettings
@@ -119,9 +99,6 @@ public class SystemSettingsService : ISystemSettingsService
         return settings;
     }
 
-    /// <summary>
-    /// 将实体转换为 DTO。
-    /// </summary>
     private static SystemSettingsDto MapToDto(SystemSettings settings)
     {
         return new SystemSettingsDto
@@ -147,9 +124,6 @@ public class SystemSettingsService : ISystemSettingsService
         };
     }
 
-    /// <summary>
-    /// 将更新 DTO 的值写回实体。
-    /// </summary>
     private static void MapFromDto(SystemSettings settings, UpdateSystemSettingsDto dto)
     {
         settings.SiteName = dto.SiteName;

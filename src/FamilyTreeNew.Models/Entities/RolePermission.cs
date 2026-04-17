@@ -2,10 +2,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
-/// <summary>
-/// 角色权限关联实体。
-/// 这是一个中间表，用来记录角色和权限之间的多对多关系。
-/// </summary>
 [SugarTable("RolePermissions")]
 public class RolePermission
 {

@@ -7,10 +7,6 @@ using Newtonsoft.Json;
 namespace FamilyTreeNew.Web.Controllers;
 
 [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-/// <summary>
-/// 成员管理控制器。
-/// 用于在后台查看和维护家谱成员数据。
-/// </summary>
 public class MemberManagementController : AuthenticatedApiControllerBase
 {
     private readonly ILogger<MemberManagementController> _logger;

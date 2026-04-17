@@ -4,10 +4,6 @@ using Microsoft.Extensions.Configuration;
 
 namespace FamilyTreeNew.Tests.Helpers;
 
-/// <summary>
-/// 自定义的 ASP.NET Core 测试宿主工厂。
-/// 用于在集成测试中覆盖应用配置，并注入测试环境所需的 JWT 和数据库连接字符串。
-/// </summary>
 public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
 {
     public CustomWebApplicationFactory()

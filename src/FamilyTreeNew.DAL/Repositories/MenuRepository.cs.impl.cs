@@ -3,10 +3,6 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
-/// <summary>
-/// 菜单仓储实现。
-/// 负责从数据库读取菜单并把它整理成树形结构，方便前端直接渲染。
-/// </summary>
 public class MenuRepository : BaseRepositoryGuid<Menu>, IMenuRepository
 {
     public MenuRepository(SqlSugarContext context) : base(context) { }

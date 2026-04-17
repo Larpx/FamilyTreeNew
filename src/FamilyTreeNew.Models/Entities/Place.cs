@@ -2,10 +2,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
-/// <summary>
-/// 地点实体。
-/// 用来保存事件发生地或地理位置的基础信息。
-/// </summary>
 [SugarTable("Places")]
 public class Place
 {

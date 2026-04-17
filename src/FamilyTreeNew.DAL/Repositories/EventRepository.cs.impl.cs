@@ -3,10 +3,6 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
-/// <summary>
-/// 事件仓储实现。
-/// 提供事件的数据库查询能力，并自动加载事件类型、地点和成员信息。
-/// </summary>
 public class EventRepository : BaseRepositoryGuid<Event>, IEventRepository
 {
     public EventRepository(SqlSugarContext context) : base(context) { }
