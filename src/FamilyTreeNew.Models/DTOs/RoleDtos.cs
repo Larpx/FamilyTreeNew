@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FamilyTreeNew.Models.DTOs;
 
+/// <summary>
+/// 创建角色时使用的请求模型。
+/// 它定义了角色名称、编码、说明和启用状态。
+/// </summary>
 public class RoleCreateRequestDto
 {
     [Required(ErrorMessage = "角色名称不能为空")]
@@ -19,6 +23,10 @@ public class RoleCreateRequestDto
     public bool IsEnabled { get; set; } = true;
 }
 
+/// <summary>
+/// 更新角色时使用的请求模型。
+/// 用于修改角色名称、描述和启用状态。
+/// </summary>
 public class RoleUpdateRequestDto
 {
     [Required(ErrorMessage = "角色名称不能为空")]
@@ -31,6 +39,10 @@ public class RoleUpdateRequestDto
     public bool IsEnabled { get; set; }
 }
 
+/// <summary>
+/// 角色返回模型。
+/// 后台页面会使用它显示角色及其关联的权限信息。
+/// </summary>
 public class RoleResponseDto
 {
     public Guid Id { get; set; }
@@ -50,6 +62,10 @@ public class RoleResponseDto
     public List<PermissionResponseDto>? Permissions { get; set; }
 }
 
+/// <summary>
+/// 给角色分配权限时使用的请求模型。
+/// 只需要传入要绑定的权限 ID 列表即可。
+/// </summary>
 public class RolePermissionAssignRequestDto
 {
     [Required(ErrorMessage = "权限ID列表不能为空")]

@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 权限实体。
+/// 用于描述系统中的菜单权限、按钮权限和接口权限，并支持树形层级关系。
+/// </summary>
 [SugarTable("Permissions")]
 public class Permission
 {

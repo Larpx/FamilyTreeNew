@@ -11,6 +11,10 @@ using Xunit;
 
 namespace FamilyTreeNew.Tests.UnitTests.Services;
 
+/// <summary>
+/// 认证服务测试。
+/// 负责验证登录、密码修改等核心认证流程在不同场景下的行为。
+/// </summary>
 public class AuthServiceTests
 {
     private readonly Mock<IAdminRepository> _mockAdminRepository;

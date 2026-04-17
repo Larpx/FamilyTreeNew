@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 namespace FamilyTreeNew.Web.Controllers;
 
 [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+/// <summary>
+/// 系统备份管理控制器。
+/// 用于查看备份列表、创建新备份、恢复备份以及删除旧备份。
+/// </summary>
 public class BackupController : AuthenticatedApiControllerBase
 {
     private readonly ILogger<BackupController> _logger;
@@ -20,6 +24,10 @@ public class BackupController : AuthenticatedApiControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 备份列表页面。
+    /// 从后端 API 加载已有备份并展示给管理员。
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -58,6 +66,10 @@ public class BackupController : AuthenticatedApiControllerBase
         }
     }
 
+    /// <summary>
+    /// 创建新备份。
+    /// 调用后端备份接口生成新的数据库备份文件。
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create()
@@ -107,6 +119,10 @@ public class BackupController : AuthenticatedApiControllerBase
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// 恢复指定备份。
+    /// 通过文件名让后端把指定备份还原到数据库。
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Restore(string fileName)
@@ -163,6 +179,10 @@ public class BackupController : AuthenticatedApiControllerBase
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// 删除指定备份文件。
+    /// 文件名会经过 URL 编码，避免特殊字符造成路径问题。
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string fileName)

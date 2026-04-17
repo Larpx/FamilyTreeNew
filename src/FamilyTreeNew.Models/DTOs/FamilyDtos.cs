@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FamilyTreeNew.Models.DTOs;
 
+/// <summary>
+/// 创建家族信息时使用的请求模型。
+/// 用于在某个家谱下新增一个家族分支，并可同时填写地址和描述。
+/// </summary>
 public class FamilyCreateRequestDto
 {
     [Required(ErrorMessage = "家谱ID不能为空")]
@@ -20,6 +24,10 @@ public class FamilyCreateRequestDto
     public string? Description { get; set; }
 }
 
+/// <summary>
+/// 更新家族信息时使用的请求模型。
+/// 该模型与创建模型类似，但用于修改已经存在的家族资料。
+/// </summary>
 public class FamilyUpdateRequestDto
 {
     [Required(ErrorMessage = "家族名称不能为空")]
@@ -35,6 +43,10 @@ public class FamilyUpdateRequestDto
     public string? Description { get; set; }
 }
 
+/// <summary>
+/// 家族信息返回模型。
+/// 前端拿到这个对象后，可以直接显示家族的名称、负责人和说明信息。
+/// </summary>
 public class FamilyResponseDto
 {
     public int Id { get; set; }
@@ -56,6 +68,10 @@ public class FamilyResponseDto
     public DateTime? UpdatedAt { get; set; }
 }
 
+/// <summary>
+/// 创建配偶关系时使用的请求模型。
+/// 主要用于录入一对夫妻的基础信息和婚姻状态。
+/// </summary>
 public class SpousalRelationCreateRequestDto
 {
     [Required(ErrorMessage = "家谱ID不能为空")]
@@ -86,6 +102,10 @@ public class SpousalRelationCreateRequestDto
     public string? Remarks { get; set; }
 }
 
+/// <summary>
+/// 更新配偶关系时使用的请求模型。
+/// 一般用于修改婚姻日期、离婚日期、状态和备注等内容。
+/// </summary>
 public class SpousalRelationUpdateRequestDto
 {
     public DateTime? MarriageDateSolar { get; set; }
@@ -107,6 +127,10 @@ public class SpousalRelationUpdateRequestDto
     public string? Remarks { get; set; }
 }
 
+/// <summary>
+/// 配偶关系返回模型。
+/// 前端可以用它展示夫妻双方姓名、婚姻信息和关系状态。
+/// </summary>
 public class SpousalRelationResponseDto
 {
     public Guid Id { get; set; }

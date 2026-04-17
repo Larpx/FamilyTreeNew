@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FamilyTreeNew.Models.DTOs;
 
+/// <summary>
+/// 创建事件类型时使用的请求模型。
+/// 用于定义某类事件的名称、编码、描述和排序信息。
+/// </summary>
 public class EventTypeCreateRequestDto
 {
     [Required(ErrorMessage = "事件类型名称不能为空")]
@@ -22,6 +26,10 @@ public class EventTypeCreateRequestDto
     public bool IsEnabled { get; set; } = true;
 }
 
+/// <summary>
+/// 更新事件类型时使用的请求模型。
+/// 主要用于修改事件类型名称、描述和启用状态。
+/// </summary>
 public class EventTypeUpdateRequestDto
 {
     [Required(ErrorMessage = "事件类型名称不能为空")]
@@ -37,6 +45,10 @@ public class EventTypeUpdateRequestDto
     public bool IsEnabled { get; set; }
 }
 
+/// <summary>
+/// 事件类型返回模型。
+/// 前端可以用它展示可用的事件分类列表。
+/// </summary>
 public class EventTypeResponseDto
 {
     public Guid Id { get; set; }
@@ -54,6 +66,10 @@ public class EventTypeResponseDto
     public DateTime CreatedAt { get; set; }
 }
 
+/// <summary>
+/// 创建事件时使用的请求模型。
+/// 这个模型把事件类型、成员、地点和日期等信息一次性提交给后端。
+/// </summary>
 public class EventCreateRequestDto
 {
     [Required(ErrorMessage = "事件类型ID不能为空")]
@@ -81,6 +97,10 @@ public class EventCreateRequestDto
     public string? Remarks { get; set; }
 }
 
+/// <summary>
+/// 更新事件时使用的请求模型。
+/// 适合在后台编辑已经录入的事件资料。
+/// </summary>
 public class EventUpdateRequestDto
 {
     [Required(ErrorMessage = "事件类型ID不能为空")]
@@ -102,6 +122,10 @@ public class EventUpdateRequestDto
     public string? Remarks { get; set; }
 }
 
+/// <summary>
+/// 事件返回模型。
+/// 前端通过它显示某条事件的完整内容和关联对象名称。
+/// </summary>
 public class EventResponseDto
 {
     public Guid Id { get; set; }

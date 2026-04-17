@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 事件实体。
+/// 用来保存与家谱成员相关的事件，例如出生、婚姻、迁徙或逝世等。
+/// </summary>
 [SugarTable("Events")]
 public class Event
 {

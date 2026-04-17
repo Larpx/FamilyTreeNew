@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FamilyTreeNew.Models.DTOs;
 
+/// <summary>
+/// 创建地点时使用的请求模型。
+/// 用于录入地点名称、地址、经纬度和描述等信息。
+/// </summary>
 public class PlaceCreateRequestDto
 {
     [Required(ErrorMessage = "地点名称不能为空")]
@@ -32,6 +36,10 @@ public class PlaceCreateRequestDto
     public bool IsEnabled { get; set; } = true;
 }
 
+/// <summary>
+/// 更新地点时使用的请求模型。
+/// 一般用于修改地点说明、坐标或启用状态。
+/// </summary>
 public class PlaceUpdateRequestDto
 {
     [Required(ErrorMessage = "地点名称不能为空")]
@@ -62,6 +70,10 @@ public class PlaceUpdateRequestDto
     public bool IsEnabled { get; set; }
 }
 
+/// <summary>
+/// 地点返回模型。
+/// 这个对象会被事件页面或地点管理页面直接展示给用户。
+/// </summary>
 public class PlaceResponseDto
 {
     public Guid Id { get; set; }

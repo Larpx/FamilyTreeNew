@@ -9,6 +9,10 @@ using Xunit;
 
 namespace FamilyTreeNew.Tests.UnitTests.Services;
 
+/// <summary>
+/// 家谱成员服务测试。
+/// 用于验证成员分页、详情查询和新增逻辑是否符合业务规则。
+/// </summary>
 public class FamilyMemberServiceTests
 {
     private readonly Mock<IFamilyMemberRepository> _mockMemberRepository;

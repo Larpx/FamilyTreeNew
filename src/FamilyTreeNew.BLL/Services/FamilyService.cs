@@ -4,15 +4,38 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.BLL.Services;
 
+/// <summary>
+/// 家族服务接口。
+/// 定义家族分支的查询、创建、更新和删除能力。
+/// </summary>
 public interface IFamilyService
 {
+    /// <summary>
+    /// 获取全部家族列表。
+    /// </summary>
     Task<List<FamilyResponseDto>> GetAllFamiliesAsync();
+    /// <summary>
+    /// 根据 ID 获取家族。
+    /// </summary>
     Task<FamilyResponseDto?> GetFamilyByIdAsync(int id);
+    /// <summary>
+    /// 创建家族。
+    /// </summary>
     Task<FamilyResponseDto> CreateFamilyAsync(FamilyCreateRequestDto dto);
+    /// <summary>
+    /// 更新家族。
+    /// </summary>
     Task<FamilyResponseDto?> UpdateFamilyAsync(int id, FamilyUpdateRequestDto dto);
+    /// <summary>
+    /// 删除家族。
+    /// </summary>
     Task<bool> DeleteFamilyAsync(int id);
 }
 
+/// <summary>
+/// 家族服务实现。
+/// 负责把家族仓储的数据暴露给上层业务，并处理家族相关的业务规则。
+/// </summary>
 public class FamilyService : IFamilyService
 {
     private readonly IFamilyRepository _familyRepository;
@@ -24,18 +47,27 @@ public class FamilyService : IFamilyService
         _familyMemberRepository = familyMemberRepository;
     }
 
+    /// <summary>
+    /// 获取全部家族。
+    /// </summary>
     public async Task<List<FamilyResponseDto>> GetAllFamiliesAsync()
     {
         var families = await _familyRepository.GetFamiliesWithMemberCountAsync();
         return families.Select(MapToDto).ToList();
     }
 
+    /// <summary>
+    /// 根据 ID 获取家族。
+    /// </summary>
     public async Task<FamilyResponseDto?> GetFamilyByIdAsync(int id)
     {
         var family = await _familyRepository.GetByIdAsync(id);
         return family != null ? await MapToDtoAsync(family) : null;
     }
 
+    /// <summary>
+    /// 创建家族。
+    /// </summary>
     public async Task<FamilyResponseDto> CreateFamilyAsync(FamilyCreateRequestDto dto)
     {
         var entity = new Family
@@ -52,6 +84,9 @@ public class FamilyService : IFamilyService
         return MapToDto(entity);
     }
 
+    /// <summary>
+    /// 更新家族。
+    /// </summary>
     public async Task<FamilyResponseDto?> UpdateFamilyAsync(int id, FamilyUpdateRequestDto dto)
     {
         var entity = await _familyRepository.GetByIdAsync(id);
@@ -67,6 +102,9 @@ public class FamilyService : IFamilyService
         return await MapToDtoAsync(entity);
     }
 
+    /// <summary>
+    /// 删除家族。
+    /// </summary>
     public async Task<bool> DeleteFamilyAsync(int id)
     {
         var entity = await _familyRepository.GetByIdAsync(id);
@@ -75,6 +113,9 @@ public class FamilyService : IFamilyService
         return true;
     }
 
+    /// <summary>
+    /// 将家族实体转换为 DTO。
+    /// </summary>
     private static FamilyResponseDto MapToDto(Family entity)
     {
         return new FamilyResponseDto
@@ -90,6 +131,9 @@ public class FamilyService : IFamilyService
         };
     }
 
+    /// <summary>
+    /// 将家族实体转换为 DTO，并补充负责人姓名。
+    /// </summary>
     private async Task<FamilyResponseDto> MapToDtoAsync(Family entity)
     {
         var dto = MapToDto(entity);

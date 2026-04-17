@@ -7,11 +7,19 @@ using SqlSugar;
 
 namespace FamilyTreeNew.BLL.Services;
 
+/// <summary>
+/// 系统服务接口。
+/// 主要用于获取数据库状态和系统运行信息。
+/// </summary>
 public interface ISystemService
 {
     Task<DatabaseStatusDto> GetDatabaseStatusAsync();
 }
 
+/// <summary>
+/// 系统服务实现。
+/// 负责检查数据库连接、读取表信息，并组装成状态报告返回给上层。
+/// </summary>
 public class SystemService : ISystemService
 {
     private readonly SqlSugarContext _context;
@@ -28,6 +36,10 @@ public class SystemService : ISystemService
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// 获取数据库状态。
+    /// 包括连接是否正常、数据库版本、表信息和记录统计等内容。
+    /// </summary>
     public async Task<DatabaseStatusDto> GetDatabaseStatusAsync()
     {
         var status = new DatabaseStatusDto
@@ -69,6 +81,10 @@ public class SystemService : ISystemService
         return status;
     }
 
+    /// <summary>
+    /// 收集数据库表信息。
+    /// 会按预期表名逐个检查表是否存在，并统计记录数。
+    /// </summary>
     private async Task<List<TableInfoDto>> GetTableInfoAsync(ISqlSugarClient db)
     {
         var tables = new List<TableInfoDto>();

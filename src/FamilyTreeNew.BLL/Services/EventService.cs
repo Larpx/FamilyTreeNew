@@ -4,6 +4,10 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.BLL.Services;
 
+/// <summary>
+/// 事件服务。
+/// 负责事件的查询、创建、更新和删除，并在实体与 DTO 之间做转换。
+/// </summary>
 public class EventService : IEventService
 {
     private readonly IEventRepository _eventRepository;
@@ -22,18 +26,27 @@ public class EventService : IEventService
         _familyMemberRepository = familyMemberRepository;
     }
 
+    /// <summary>
+    /// 获取某个家谱下的所有事件。
+    /// </summary>
     public async Task<List<EventResponseDto>> GetByFamilyTreeIdAsync(Guid familyTreeId)
     {
         var events = await _eventRepository.GetByFamilyTreeIdAsync(familyTreeId);
         return events.Select(MapToDto).ToList();
     }
 
+    /// <summary>
+    /// 获取某个成员的所有事件。
+    /// </summary>
     public async Task<List<EventResponseDto>> GetByMemberIdAsync(Guid memberId)
     {
         var events = await _eventRepository.GetByMemberIdAsync(memberId);
         return events.Select(MapToDto).ToList();
     }
 
+    /// <summary>
+    /// 根据 ID 获取事件。
+    /// </summary>
     public async Task<EventResponseDto?> GetByIdAsync(Guid id)
     {
         var entity = await _eventRepository.GetByIdAsync(id);
@@ -45,6 +58,10 @@ public class EventService : IEventService
         return MapToDtoWithDetails(entity, eventType, place, member);
     }
 
+    /// <summary>
+    /// 创建事件。
+    /// 会保存事件类型、成员、地点和时间等信息。
+    /// </summary>
     public async Task<EventResponseDto> CreateAsync(EventCreateRequestDto dto)
     {
         var entity = new Event
@@ -69,6 +86,9 @@ public class EventService : IEventService
         return MapToDtoWithDetails(entity, eventType, place, member);
     }
 
+    /// <summary>
+    /// 更新事件。
+    /// </summary>
     public async Task<EventResponseDto?> UpdateAsync(Guid id, EventUpdateRequestDto dto)
     {
         var entity = await _eventRepository.GetByIdAsync(id);
@@ -91,6 +111,9 @@ public class EventService : IEventService
         return MapToDtoWithDetails(entity, eventType, place, member);
     }
 
+    /// <summary>
+    /// 删除事件。
+    /// </summary>
     public async Task<bool> DeleteAsync(Guid id)
     {
         if (!await _eventRepository.ExistsAsync(id)) return false;
@@ -98,6 +121,9 @@ public class EventService : IEventService
         return true;
     }
 
+    /// <summary>
+    /// 将事件实体转换为 DTO。
+    /// </summary>
     private static EventResponseDto MapToDto(Event entity)
     {
         return new EventResponseDto
@@ -120,6 +146,9 @@ public class EventService : IEventService
         };
     }
 
+    /// <summary>
+    /// 将事件实体和关联对象一起转换为 DTO。
+    /// </summary>
     private static EventResponseDto MapToDtoWithDetails(Event entity, EventType? eventType, Place? place, FamilyMember? member)
     {
         return new EventResponseDto

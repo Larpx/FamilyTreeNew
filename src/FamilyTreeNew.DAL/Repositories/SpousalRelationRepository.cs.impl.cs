@@ -3,6 +3,10 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
+/// <summary>
+/// 配偶关系仓储实现。
+/// 负责按家谱、成员或配偶身份查询婚姻关系数据。
+/// </summary>
 public class SpousalRelationRepository : BaseRepositoryGuid<SpousalRelation>, ISpousalRelationRepository
 {
     public SpousalRelationRepository(SqlSugarContext context) : base(context) { }

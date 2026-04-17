@@ -4,13 +4,30 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.BLL.Services;
 
+/// <summary>
+/// 操作日志服务接口。
+/// 定义系统操作日志的记录和分页查询方法。
+/// </summary>
 public interface IOperationLogService
 {
+    /// <summary>
+    /// 记录一条操作日志。
+    /// </summary>
     Task LogAsync(Guid? adminId, string operationType, string module, string? content, string? ipAddress = null, string? userAgent = null, bool isSuccess = true, string? errorMessage = null);
+    /// <summary>
+    /// 分页获取操作日志列表。
+    /// </summary>
     Task<PagedResult<OperationLog>> GetListAsync(int pageIndex = 1, int pageSize = 20);
+    /// <summary>
+    /// 分页获取指定管理员的操作日志。
+    /// </summary>
     Task<PagedResult<OperationLog>> GetByAdminIdAsync(Guid adminId, int pageIndex = 1, int pageSize = 20);
 }
 
+/// <summary>
+/// 操作日志服务实现。
+/// 负责把日志实体写入数据库，并提供分页查询功能。
+/// </summary>
 public class OperationLogService : IOperationLogService
 {
     private readonly IOperationLogRepository _repository;
@@ -20,6 +37,9 @@ public class OperationLogService : IOperationLogService
         _repository = repository;
     }
 
+    /// <summary>
+    /// 记录一条操作日志。
+    /// </summary>
     public async Task LogAsync(
         Guid? adminId,
         string operationType,
@@ -46,6 +66,9 @@ public class OperationLogService : IOperationLogService
         await _repository.InsertAsync(log);
     }
 
+    /// <summary>
+    /// 分页获取操作日志列表。
+    /// </summary>
     public async Task<PagedResult<OperationLog>> GetListAsync(int pageIndex = 1, int pageSize = 20)
     {
         var items = await _repository.GetListAsync(pageIndex, pageSize);
@@ -60,6 +83,9 @@ public class OperationLogService : IOperationLogService
         };
     }
 
+    /// <summary>
+    /// 分页获取指定管理员的操作日志。
+    /// </summary>
     public async Task<PagedResult<OperationLog>> GetByAdminIdAsync(Guid adminId, int pageIndex = 1, int pageSize = 20)
     {
         var items = await _repository.GetByAdminIdAsync(adminId, pageIndex, pageSize);

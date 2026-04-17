@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Web.Controllers;
 
+/// <summary>
+/// 家谱访问验证控制器。
+/// 当家谱设置了验证问题时，用户需要先回答正确才能进入详情页。
+/// </summary>
 public class VerificationController : Controller
 {
     private readonly IVerificationService _verificationService;
@@ -26,6 +30,10 @@ public class VerificationController : Controller
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// 显示验证页面。
+    /// 当家谱要求验证时，用户会先看到这个页面并逐题回答问题。
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Verify(Guid familyTreeId, int questionOrder = 1)
     {
@@ -87,6 +95,10 @@ public class VerificationController : Controller
         }
     }
 
+    /// <summary>
+    /// 提交验证答案。
+    /// 如果答案正确并且全部问题都通过，就会发放访问令牌并重定向到家谱详情页。
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Verify(VerificationSubmitModel model)
@@ -147,6 +159,10 @@ public class VerificationController : Controller
         }
     }
 
+    /// <summary>
+    /// 检查当前浏览器是否已经拥有访问该家谱的有效令牌。
+    /// 该接口通常被前端页面通过 AJAX 调用。
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> CheckAccess(Guid familyTreeId)
     {
@@ -187,6 +203,10 @@ public class VerificationController : Controller
         }
     }
 
+    /// <summary>
+    /// 清除某个家谱的访问令牌。
+    /// 一般在退出验证或切换账户时调用。
+    /// </summary>
     [HttpPost]
     public IActionResult ClearToken(Guid familyTreeId)
     {
@@ -195,6 +215,10 @@ public class VerificationController : Controller
     }
 }
 
+/// <summary>
+/// 验证页面视图模型。
+/// 负责把当前家谱信息、当前问题和进度展示给前端页面。
+/// </summary>
 public class VerificationViewModel
 {
     public Guid FamilyTreeId { get; set; }
@@ -206,6 +230,10 @@ public class VerificationViewModel
     public int Progress { get; set; }
 }
 
+/// <summary>
+/// 验证答案提交模型。
+/// 用于表单提交当前题目的答案和进度信息。
+/// </summary>
 public class VerificationSubmitModel
 {
     public Guid FamilyTreeId { get; set; }

@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 namespace FamilyTreeNew.Web.Controllers;
 
 [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+/// <summary>
+/// 相册管理控制器。
+/// 用于在后台查看、筛选和维护相册数据。
+/// </summary>
 public class AlbumManagementController : AuthenticatedApiControllerBase
 {
     private readonly ILogger<AlbumManagementController> _logger;

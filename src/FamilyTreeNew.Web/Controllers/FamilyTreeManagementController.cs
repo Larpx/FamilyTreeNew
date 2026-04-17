@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 namespace FamilyTreeNew.Web.Controllers;
 
 [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+/// <summary>
+/// 家谱管理控制器。
+/// 负责后台家谱列表的查询、筛选和维护操作。
+/// </summary>
 public class FamilyTreeManagementController : AuthenticatedApiControllerBase
 {
     private readonly ILogger<FamilyTreeManagementController> _logger;

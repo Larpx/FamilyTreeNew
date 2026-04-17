@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 菜单实体。
+/// 用来保存后台或前台菜单的层级结构、跳转地址、图标和显示状态。
+/// </summary>
 [SugarTable("Menus")]
 public class Menu
 {

@@ -6,6 +6,10 @@ using System.Diagnostics;
 
 namespace FamilyTreeNew.Web.Controllers;
 
+/// <summary>
+/// 网站首页控制器。
+/// 负责展示公开页面，例如首页、隐私说明，以及统一错误页。
+/// </summary>
 public class HomeController : Controller
 {
     private readonly IFamilyService _familyService;
@@ -42,6 +46,10 @@ public class HomeController : Controller
         });
     }
 
+    /// <summary>
+    /// 状态码页面。
+    /// 根据不同的 HTTP 状态码，展示不同的错误说明，帮助用户理解发生了什么。
+    /// </summary>
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult StatusCodePage(int code)
     {

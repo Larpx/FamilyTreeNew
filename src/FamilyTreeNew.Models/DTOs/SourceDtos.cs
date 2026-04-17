@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FamilyTreeNew.Models.DTOs;
 
+/// <summary>
+/// 创建来源时使用的请求模型。
+/// 用于录入资料来源的标题、作者、出版信息和引用说明。
+/// </summary>
 public class SourceCreateRequestDto
 {
     [Required(ErrorMessage = "来源标题不能为空")]
@@ -33,6 +37,10 @@ public class SourceCreateRequestDto
     public bool IsEnabled { get; set; } = true;
 }
 
+/// <summary>
+/// 更新来源时使用的请求模型。
+/// 与创建模型类似，但用于编辑已经存在的来源资料。
+/// </summary>
 public class SourceUpdateRequestDto
 {
     [Required(ErrorMessage = "来源标题不能为空")]
@@ -64,6 +72,10 @@ public class SourceUpdateRequestDto
     public bool IsEnabled { get; set; }
 }
 
+/// <summary>
+/// 来源返回模型。
+/// 前端可以通过它展示来源的完整详情，并用于引用关联。
+/// </summary>
 public class SourceResponseDto
 {
     public Guid Id { get; set; }
@@ -91,6 +103,10 @@ public class SourceResponseDto
     public DateTime? UpdatedAt { get; set; }
 }
 
+/// <summary>
+/// 创建来源引用时使用的请求模型。
+/// 它把某个来源与具体成员、事件或家谱对象关联起来。
+/// </summary>
 public class SourceCitationCreateRequestDto
 {
     [Required(ErrorMessage = "来源ID不能为空")]
@@ -107,6 +123,10 @@ public class SourceCitationCreateRequestDto
     public string? Note { get; set; }
 }
 
+/// <summary>
+/// 来源引用返回模型。
+/// 方便前端查看某条资料被引用到了什么对象上。
+/// </summary>
 public class SourceCitationResponseDto
 {
     public Guid Id { get; set; }

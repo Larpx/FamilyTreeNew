@@ -3,6 +3,10 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
+/// <summary>
+/// 角色仓储实现。
+/// 提供角色按编码查询、角色权限加载以及按管理员查询角色的能力。
+/// </summary>
 public class RoleRepository : BaseRepositoryGuid<Role>, IRoleRepository
 {
     public RoleRepository(SqlSugarContext context) : base(context) { }

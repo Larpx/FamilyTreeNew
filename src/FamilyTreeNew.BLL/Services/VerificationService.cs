@@ -5,6 +5,10 @@ using System.Text;
 
 namespace FamilyTreeNew.BLL.Services;
 
+/// <summary>
+/// 验证服务接口。
+/// 定义答案验证、验证状态查询和访问令牌生成与校验方法。
+/// </summary>
 public interface IVerificationService
 {
     Task<VerificationResultDto> VerifyAnswerAsync(VerifyAnswerDto dto);
@@ -13,6 +17,10 @@ public interface IVerificationService
     bool ValidateAccessToken(string token, Guid familyTreeId);
 }
 
+/// <summary>
+/// 验证服务。
+/// 负责判断用户答案是否正确，并在通过后发放临时访问令牌。
+/// </summary>
 public class VerificationService : IVerificationService
 {
     private readonly DAL.Repositories.IVerificationQuestionRepository _questionRepository;
@@ -28,6 +36,10 @@ public class VerificationService : IVerificationService
         _familyTreeRepository = familyTreeRepository;
     }
 
+    /// <summary>
+    /// 验证用户答案。
+    /// 这是验证家谱访问权限的核心逻辑。
+    /// </summary>
     public async Task<VerificationResultDto> VerifyAnswerAsync(VerifyAnswerDto dto)
     {
         var familyTree = await _familyTreeRepository.GetByIdAsync(dto.FamilyTreeId);
@@ -104,6 +116,10 @@ public class VerificationService : IVerificationService
         return result;
     }
 
+    /// <summary>
+    /// 获取某个家谱的验证状态。
+    /// 返回总问题数、问题列表和是否需要验证。
+    /// </summary>
     public async Task<FamilyTreeVerificationStatusDto> GetFamilyTreeVerificationStatusAsync(Guid familyTreeId)
     {
         var familyTree = await _familyTreeRepository.GetByIdAsync(familyTreeId);
@@ -133,6 +149,10 @@ public class VerificationService : IVerificationService
         };
     }
 
+    /// <summary>
+    /// 生成访问令牌。
+    /// 令牌会存入内存缓存并设置过期时间。
+    /// </summary>
     public string GenerateAccessToken(Guid familyTreeId, Guid questionId)
     {
         string rawData = $"{familyTreeId}_{questionId}_{DateTime.UtcNow.Ticks}_{Guid.NewGuid()}";
@@ -145,6 +165,10 @@ public class VerificationService : IVerificationService
         return token;
     }
 
+    /// <summary>
+    /// 校验访问令牌。
+    /// 只检查令牌是否存在且未过期。
+    /// </summary>
     public bool ValidateAccessToken(string token, Guid familyTreeId)
     {
         if (!_tokenCache.TryGetValue(token, out DateTime expiration))
@@ -161,6 +185,10 @@ public class VerificationService : IVerificationService
         return true;
     }
 
+    /// <summary>
+    /// 判断用户答案是否包含正确关键词。
+    /// 这里使用不区分大小写的包含匹配。
+    /// </summary>
     private bool CheckAnswer(string userAnswer, string keyword)
     {
         if (string.IsNullOrWhiteSpace(userAnswer) || string.IsNullOrWhiteSpace(keyword))
@@ -171,6 +199,10 @@ public class VerificationService : IVerificationService
         return userAnswer.Trim().Contains(keyword.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// 清理过期令牌。
+    /// 避免内存缓存无限增长。
+    /// </summary>
     private void CleanExpiredTokens()
     {
         foreach (var kvp in _tokenCache)

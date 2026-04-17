@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 用户角色关联实体。
+/// 这是管理员和角色之间的中间表，用来表示一个管理员可以拥有多个角色。
+/// </summary>
 [SugarTable("UserRoles")]
 public class UserRole
 {

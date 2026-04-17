@@ -3,6 +3,10 @@ using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
+/// <summary>
+/// 权限仓储实现。
+/// 负责权限的树形查询、按编码查找以及按角色筛选权限。
+/// </summary>
 public class PermissionRepository : BaseRepositoryGuid<Permission>, IPermissionRepository
 {
     public PermissionRepository(SqlSugarContext context) : base(context) { }

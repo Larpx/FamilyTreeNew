@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FamilyTreeNew.Models.DTOs;
 
+/// <summary>
+/// 创建权限时使用的请求模型。
+/// 用来描述一个权限节点的编码、名称、类型和父子关系。
+/// </summary>
 public class PermissionCreateRequestDto
 {
     [Required(ErrorMessage = "权限编码不能为空")]
@@ -31,6 +35,10 @@ public class PermissionCreateRequestDto
     public bool IsEnabled { get; set; } = true;
 }
 
+/// <summary>
+/// 更新权限时使用的请求模型。
+/// 适用于修改权限名称、类型、地址和启用状态等信息。
+/// </summary>
 public class PermissionUpdateRequestDto
 {
     [Required(ErrorMessage = "权限名称不能为空")]
@@ -55,6 +63,10 @@ public class PermissionUpdateRequestDto
     public bool IsEnabled { get; set; }
 }
 
+/// <summary>
+/// 权限返回模型。
+/// 后台可以借助它展示权限树、权限列表以及节点状态。
+/// </summary>
 public class PermissionResponseDto
 {
     public Guid Id { get; set; }

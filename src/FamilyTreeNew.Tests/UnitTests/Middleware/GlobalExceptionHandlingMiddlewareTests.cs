@@ -8,6 +8,10 @@ using Xunit;
 
 namespace FamilyTreeNew.Tests.UnitTests.Middleware;
 
+/// <summary>
+/// 全局异常处理中间件测试。
+/// 用于验证不同异常类型会被转换成正确的 HTTP 状态码。
+/// </summary>
 public class GlobalExceptionHandlingMiddlewareTests
 {
     private readonly Mock<ILogger<GlobalExceptionHandlingMiddleware>> _mockLogger;

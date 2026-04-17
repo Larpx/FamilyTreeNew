@@ -5,6 +5,10 @@ using Xunit;
 
 namespace FamilyTreeNew.Tests.UnitTests.Repositories;
 
+/// <summary>
+/// 管理员仓储接口与实现测试。
+/// 用来确认管理员仓储提供了需要的查询、保存和删除方法。
+/// </summary>
 public class AdminRepositoryTests
 {
     [Fact]
@@ -27,6 +31,10 @@ public class AdminRepositoryTests
     }
 }
 
+/// <summary>
+/// 操作日志仓储接口与实现测试。
+/// 用来确认操作日志查询与统计相关的方法是否齐全。
+/// </summary>
 public class OperationLogRepositoryTests
 {
     [Fact]
@@ -45,6 +53,10 @@ public class OperationLogRepositoryTests
     }
 }
 
+/// <summary>
+/// 相册仓储接口测试。
+/// 用来确认相册分页、查询和关联检查所需的方法都已定义。
+/// </summary>
 public class AlbumRepositoryTests
 {
     [Fact]
@@ -63,6 +75,10 @@ public class AlbumRepositoryTests
     }
 }
 
+/// <summary>
+/// 照片仓储接口测试。
+/// 用来确认照片查询、分页和批量操作相关的方法都已定义。
+/// </summary>
 public class PhotoRepositoryTests
 {
     [Fact]
@@ -83,6 +99,10 @@ public class PhotoRepositoryTests
     }
 }
 
+/// <summary>
+/// 家谱仓储测试。
+/// 用来确认家谱仓储实现了带成员数量统计的分页查询能力。
+/// </summary>
 public class FamilyTreeRepositoryTests
 {
     [Fact]
@@ -101,6 +121,10 @@ public class FamilyTreeRepositoryTests
     }
 }
 
+/// <summary>
+/// 家谱成员仓储测试。
+/// 用来确认成员仓储实现了父子关系、分页查询和批量插入等方法。
+/// </summary>
 public class FamilyMemberRepositoryTests
 {
     [Fact]
@@ -122,6 +146,10 @@ public class FamilyMemberRepositoryTests
     }
 }
 
+/// <summary>
+/// 通用 GUID 仓储接口测试。
+/// 用来确认基类仓储接口包含常用的 CRUD 和分页能力。
+/// </summary>
 public class BaseRepositoryGuidTests
 {
     [Fact]

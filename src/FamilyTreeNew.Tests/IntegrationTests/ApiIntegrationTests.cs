@@ -11,6 +11,10 @@ using Xunit;
 
 namespace FamilyTreeNew.Tests.IntegrationTests;
 
+/// <summary>
+/// API 集成测试。
+/// 通过真实 HTTP 请求验证应用启动后各个关键接口是否能够正常响应。
+/// </summary>
 public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly CustomWebApplicationFactory<Program> _factory;
@@ -129,6 +133,10 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
     }
 }
 
+/// <summary>
+/// 认证流程集成测试。
+/// 用于验证登录、获取当前用户信息、修改密码和登出等 API 能否串联工作。
+/// </summary>
 public class AuthFlowIntegrationTests : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly CustomWebApplicationFactory<Program> _factory;
@@ -209,6 +217,10 @@ public class AuthFlowIntegrationTests : IClassFixture<CustomWebApplicationFactor
     }
 }
 
+/// <summary>
+/// 家谱 CRUD 集成测试。
+/// 用于验证家谱列表、详情、创建、更新和删除等接口的基础响应行为。
+/// </summary>
 public class FamilyTreeCrudIntegrationTests : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly CustomWebApplicationFactory<Program> _factory;

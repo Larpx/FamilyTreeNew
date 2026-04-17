@@ -3,6 +3,10 @@ using System.Text;
 
 namespace FamilyTreeNew.BLL.Services;
 
+/// <summary>
+/// 报表服务。
+/// 负责生成祖先报表、后代报表和统计报表等家谱分析内容。
+/// </summary>
 public class ReportService : IReportService
 {
     private readonly IFamilyMemberRepository _familyMemberRepository;

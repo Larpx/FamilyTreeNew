@@ -4,6 +4,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.DAL.Context;
 
+/// <summary>
+/// 数据库初始化器。
+/// 启动时负责建表、建索引和种子数据初始化，确保系统能够正常运行。
+/// </summary>
 public class DatabaseInitializer
 {
     private readonly ISqlSugarClient _db;

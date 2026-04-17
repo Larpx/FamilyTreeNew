@@ -7,10 +7,18 @@ using Newtonsoft.Json;
 namespace FamilyTreeNew.Web.Controllers;
 
 [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+/// <summary>
+/// 后台仪表盘控制器。
+/// 负责汇总家谱、成员、相册和数据库状态等统计信息，让管理员快速查看系统概况。
+/// </summary>
 public class DashboardController : AuthenticatedApiControllerBase
 {
     private readonly ILogger<DashboardController> _logger;
 
+    /// <summary>
+    /// 构造函数。
+    /// 用于注入调用 API 和记录日志所需的对象。
+    /// </summary>
     public DashboardController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
@@ -20,6 +28,10 @@ public class DashboardController : AuthenticatedApiControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 仪表盘首页。
+    /// 负责收集家谱、成员、相册和数据库状态的统计信息并展示给管理员。
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -112,6 +124,10 @@ public class DashboardController : AuthenticatedApiControllerBase
     }
 }
 
+/// <summary>
+/// 仪表盘页面的数据模型。
+/// 用来把多个统计结果一次性传给 Razor 视图显示。
+/// </summary>
 public class DashboardViewModel
 {
     public int TotalFamilyTrees { get; set; }
