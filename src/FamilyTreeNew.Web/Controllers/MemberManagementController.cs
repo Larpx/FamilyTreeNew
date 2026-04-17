@@ -48,7 +48,7 @@ public class MemberManagementController : Controller
         {
             var client = GetApiClient();
 
-            var familyTreesResponse = await client.GetAsync("/api/familytrees?pageSize=100");
+            var familyTreesResponse = await client.GetAsync($"/api/familytrees?pageSize=100&familyTreeId={familyTreeId}");
             if (familyTreesResponse.IsSuccessStatusCode)
             {
                 var content = await familyTreesResponse.Content.ReadAsStringAsync();

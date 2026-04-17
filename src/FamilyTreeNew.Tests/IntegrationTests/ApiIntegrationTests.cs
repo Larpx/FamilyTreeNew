@@ -31,7 +31,7 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
     [Fact]
     public async Task GetFamilyTrees_ReturnsSuccessStatusCode()
     {
-        var response = await _client.GetAsync("/api/FamilyTrees");
+        var response = await _client.GetAsync("/api/FamilyTrees", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Unauthorized);
     }
@@ -40,7 +40,7 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
     public async Task GetFamilyTreeById_WithInvalidId_ReturnsNotFound()
     {
         var invalidId = Guid.NewGuid();
-        var response = await _client.GetAsync($"/api/FamilyTrees/{invalidId}");
+        var response = await _client.GetAsync($"/api/FamilyTrees/{invalidId}", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.NotFound, HttpStatusCode.OK);
     }
@@ -59,7 +59,7 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
             Encoding.UTF8,
             "application/json");
 
-        var response = await _client.PostAsync("/api/Auth/login", content);
+        var response = await _client.PostAsync("/api/Auth/login", content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.Unauthorized, HttpStatusCode.OK);
     }
@@ -78,7 +78,7 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
             Encoding.UTF8,
             "application/json");
 
-        var response = await _client.PostAsync("/api/Auth/login", content);
+        var response = await _client.PostAsync("/api/Auth/login", content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.OK, HttpStatusCode.Unauthorized);
     }
@@ -86,7 +86,7 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
     [Fact]
     public async Task GetInfo_WithoutAuth_ReturnsUnauthorized()
     {
-        var response = await _client.GetAsync("/api/Auth/info");
+        var response = await _client.GetAsync("/api/Auth/info", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -105,7 +105,7 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
             Encoding.UTF8,
             "application/json");
 
-        var response = await _client.PostAsync("/api/FamilyTrees", content);
+        var response = await _client.PostAsync("/api/FamilyTrees", content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Created, HttpStatusCode.Unauthorized);
     }
@@ -113,7 +113,7 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
     [Fact]
     public async Task GetSystemInfo_ReturnsSuccess()
     {
-        var response = await _client.GetAsync("/api/System/info");
+        var response = await _client.GetAsync("/api/System/info", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Unauthorized, HttpStatusCode.NotFound);
     }
@@ -121,7 +121,7 @@ public class ApiIntegrationTests : IClassFixture<CustomWebApplicationFactory<Pro
     [Fact]
     public async Task DownloadTemplate_ReturnsExcelFile()
     {
-        var response = await _client.GetAsync("/api/FamilyTrees/template");
+        var response = await _client.GetAsync("/api/FamilyTrees/template", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType?.MediaType
@@ -161,19 +161,19 @@ public class AuthFlowIntegrationTests : IClassFixture<CustomWebApplicationFactor
             Encoding.UTF8,
             "application/json");
 
-        var loginResponse = await _client.PostAsync("/api/Auth/login", loginContent);
+        var loginResponse = await _client.PostAsync("/api/Auth/login", loginContent, TestContext.Current.CancellationToken);
 
         if (loginResponse.StatusCode == HttpStatusCode.OK)
         {
             var loginResult = JsonSerializer.Deserialize<LoginResponseDto>(
-                await loginResponse.Content.ReadAsStringAsync(), _jsonOptions);
+                await loginResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), _jsonOptions);
 
             if (loginResult?.Success == true && !string.IsNullOrEmpty(loginResult.Token))
             {
                 _client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", loginResult.Token);
 
-                var infoResponse = await _client.GetAsync("/api/Auth/info");
+                var infoResponse = await _client.GetAsync("/api/Auth/info", TestContext.Current.CancellationToken);
                 infoResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             }
         }
@@ -197,7 +197,7 @@ public class AuthFlowIntegrationTests : IClassFixture<CustomWebApplicationFactor
             Encoding.UTF8,
             "application/json");
 
-        var response = await _client.PostAsync("/api/Auth/change-password", content);
+        var response = await _client.PostAsync("/api/Auth/change-password", content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -205,7 +205,7 @@ public class AuthFlowIntegrationTests : IClassFixture<CustomWebApplicationFactor
     [Fact]
     public async Task Logout_WithoutAuth_ReturnsUnauthorized()
     {
-        var response = await _client.PostAsync("/api/Auth/logout", null);
+        var response = await _client.PostAsync("/api/Auth/logout", null, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -230,7 +230,7 @@ public class FamilyTreeCrudIntegrationTests : IClassFixture<CustomWebApplication
     [Fact]
     public async Task GetFamilyTreesList_ReturnsPagedResult()
     {
-        var response = await _client.GetAsync("/api/FamilyTrees?pageIndex=1&pageSize=10");
+        var response = await _client.GetAsync("/api/FamilyTrees?pageIndex=1&pageSize=10", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.Unauthorized);
     }
@@ -239,7 +239,7 @@ public class FamilyTreeCrudIntegrationTests : IClassFixture<CustomWebApplication
     public async Task GetFamilyTreeMembers_WithInvalidId_ReturnsNotFound()
     {
         var invalidId = Guid.NewGuid();
-        var response = await _client.GetAsync($"/api/FamilyTrees/{invalidId}/members");
+        var response = await _client.GetAsync($"/api/FamilyTrees/{invalidId}/members", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(HttpStatusCode.NotFound, HttpStatusCode.OK);
     }
@@ -258,7 +258,7 @@ public class FamilyTreeCrudIntegrationTests : IClassFixture<CustomWebApplication
             Encoding.UTF8,
             "application/json");
 
-        var response = await _client.PostAsync("/api/FamilyTrees", content);
+        var response = await _client.PostAsync("/api/FamilyTrees", content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.BadRequest,
@@ -282,7 +282,7 @@ public class FamilyTreeCrudIntegrationTests : IClassFixture<CustomWebApplication
             Encoding.UTF8,
             "application/json");
 
-        var response = await _client.PutAsync($"/api/FamilyTrees/{invalidId}", content);
+        var response = await _client.PutAsync($"/api/FamilyTrees/{invalidId}", content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.NotFound,
@@ -294,7 +294,7 @@ public class FamilyTreeCrudIntegrationTests : IClassFixture<CustomWebApplication
     public async Task DeleteFamilyTree_WithInvalidId_ReturnsNotFound()
     {
         var invalidId = Guid.NewGuid();
-        var response = await _client.DeleteAsync($"/api/FamilyTrees/{invalidId}");
+        var response = await _client.DeleteAsync($"/api/FamilyTrees/{invalidId}", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().BeOneOf(
             HttpStatusCode.NotFound,
