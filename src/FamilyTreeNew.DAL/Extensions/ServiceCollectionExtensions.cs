@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISourceRepository, SourceRepository>();
         services.AddScoped<ISourceCitationRepository, SourceCitationRepository>();
         services.AddScoped<DatabaseInitializer>();
-
+        
         return services;
     }
 }

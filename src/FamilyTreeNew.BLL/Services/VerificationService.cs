@@ -1,7 +1,8 @@
-using FamilyTreeNew.Models.DTOs;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using FamilyTreeNew.Models.DTOs;
+using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.BLL.Services;
 

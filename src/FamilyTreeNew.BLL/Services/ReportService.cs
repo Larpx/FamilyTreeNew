@@ -1,4 +1,5 @@
 using FamilyTreeNew.DAL.Repositories;
+using FamilyTreeNew.Models.Entities;
 using System.Text;
 
 namespace FamilyTreeNew.BLL.Services;
@@ -8,7 +9,7 @@ public class ReportService : IReportService
     private readonly IFamilyMemberRepository _familyMemberRepository;
     private readonly IFamilyTreeRepository _familyTreeRepository;
 
-    public ReportService(IFamilyMemberRepository familyMemberRepository,
+    public ReportService(IFamilyMemberRepository familyMemberRepository, 
         IFamilyTreeRepository familyTreeRepository)
     {
         _familyMemberRepository = familyMemberRepository;
@@ -120,8 +121,8 @@ public class ReportService : IReportService
         {
             if (member.BirthDateSolar.HasValue)
             {
-                DateTime endDate = member.IsDeceased && member.DeathDateSolar.HasValue
-                    ? member.DeathDateSolar.Value
+                DateTime endDate = member.IsDeceased && member.DeathDateSolar.HasValue 
+                    ? member.DeathDateSolar.Value 
                     : DateTime.Now;
                 var age = endDate.Year - member.BirthDateSolar.Value.Year;
                 if (endDate < member.BirthDateSolar.Value.AddYears(age)) age--;
@@ -184,7 +185,7 @@ public class ReportService : IReportService
         html.AppendLine("<body>");
         html.AppendLine($"<h1>{statistics.FamilyTreeName} - 统计报告</h1>");
         html.AppendLine($"<p style=\"color: #666;\">生成时间: {statistics.GeneratedAt.ToString("yyyy年MM月dd日 HH:mm:ss")}</p>");
-
+        
         html.AppendLine("<div class=\"section\">");
         html.AppendLine("<h2>基本统计</h2>");
         html.AppendLine($"<div class=\"stat-item\"><span class=\"stat-value\">{statistics.TotalMembers}</span><span class=\"stat-label\">总人数</span></div>");

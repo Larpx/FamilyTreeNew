@@ -48,9 +48,9 @@ public class FamilyMembersController : ControllerBase
                 return BadRequest(ApiResponse<PagedResult<FamilyMemberDto>>.Fail("请指定家谱ID"));
             }
 
-            var cacheKey = string.Format(MemberListCacheKey,
-                query.FamilyTreeId, query.PageIndex, query.PageSize,
-                query.Keyword ?? "", query.Generation?.ToString() ?? "",
+            var cacheKey = string.Format(MemberListCacheKey, 
+                query.FamilyTreeId, query.PageIndex, query.PageSize, 
+                query.Keyword ?? "", query.Generation?.ToString() ?? "", 
                 query.ParentId?.ToString() ?? "", "");
 
             if (_memoryCache.TryGetValue(cacheKey, out PagedResult<FamilyMemberDto>? cachedResult) && cachedResult != null)

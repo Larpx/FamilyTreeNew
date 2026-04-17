@@ -2,6 +2,7 @@ using FamilyTreeNew.DAL.Context;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
 using Microsoft.Extensions.Logging;
+using SqlSugar;
 
 namespace FamilyTreeNew.BLL.Services;
 

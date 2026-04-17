@@ -1,5 +1,5 @@
-using FamilyTreeNew.DAL.Context;
 using FamilyTreeNew.Models.Entities;
+using FamilyTreeNew.DAL.Context;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
@@ -31,7 +31,7 @@ public class PermissionRepository : BaseRepositoryGuid<Permission>, IPermissionR
             parent.Children = allPermissions
                 .Where(p => p.ParentId == parent.Id)
                 .ToList();
-
+            
             if (parent.Children?.Count > 0)
             {
                 BuildPermissionTree(parent.Children, allPermissions);

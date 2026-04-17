@@ -1,5 +1,6 @@
 using FamilyTreeNew.DAL.Context;
 using FamilyTreeNew.Models.Entities;
+using SqlSugar;
 
 namespace FamilyTreeNew.DAL.Repositories;
 

@@ -1,11 +1,11 @@
-using FamilyTreeNew.Models.DTOs;
+using System.Security.Claims;
 using FamilyTreeNew.Models.DTOs.Auth;
+using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Security.Claims;
 
 namespace FamilyTreeNew.Web.Controllers;
 
@@ -271,7 +271,7 @@ public class AdminController : AuthenticatedApiControllerBase
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<AdminDto>>(content);
-
+                
                 if (result?.Data != null)
                 {
                     var updateDto = new UpdateAdminDto

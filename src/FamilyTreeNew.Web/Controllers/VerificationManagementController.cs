@@ -208,7 +208,7 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<VerificationQuestionDto>(content);
-
+                
                 if (result != null)
                 {
                     var updateDto = new UpdateVerificationQuestionDto

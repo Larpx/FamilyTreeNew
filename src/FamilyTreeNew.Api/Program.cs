@@ -1,3 +1,5 @@
+using System.IO.Compression;
+using System.Text;
 using FamilyTreeNew.Api.Middleware;
 using FamilyTreeNew.BLL.Configuration;
 using FamilyTreeNew.BLL.Extensions;
@@ -6,8 +8,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.IdentityModel.Tokens;
-using System.IO.Compression;
-using System.Text;
 
 namespace FamilyTreeNew.Api;
 

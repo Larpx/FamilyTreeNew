@@ -54,12 +54,12 @@ public class FamilyTreeManagementController : AuthenticatedApiControllerBase
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyTreeDto>>>(content);
-
+                
                 ViewBag.Keyword = keyword;
                 ViewBag.IsEnabled = isEnabled;
                 ViewBag.PageIndex = page;
                 ViewBag.PageSize = pageSize;
-
+                
                 return View(result?.Data);
             }
 
@@ -153,7 +153,7 @@ public class FamilyTreeManagementController : AuthenticatedApiControllerBase
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<FamilyTreeDto>>(content);
-
+                
                 if (result?.Data != null)
                 {
                     var updateDto = new FamilyTreeUpdateDto

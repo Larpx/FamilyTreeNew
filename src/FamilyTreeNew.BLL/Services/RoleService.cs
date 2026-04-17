@@ -17,7 +17,7 @@ public class RoleService : IRoleService
 
     public async Task<PagedResult<RoleResponseDto>> GetPagedAsync(int pageIndex, int pageSize, string? keyword = null)
     {
-        var (items, totalCount) = await _roleRepository.GetPagedAsync(pageIndex, pageSize,
+        var (items, totalCount) = await _roleRepository.GetPagedAsync(pageIndex, pageSize, 
             keyword != null ? r => r.Name.Contains(keyword) || r.Code.Contains(keyword) : null);
 
         var dtos = items.Select(MapToDto).ToList();

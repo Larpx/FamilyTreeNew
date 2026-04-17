@@ -86,11 +86,11 @@ public class ExcelImportController : AuthenticatedApiControllerBase
         try
         {
             var client = GetApiClient();
-
+            
             using var content = new MultipartFormDataContent();
             using var fileStream = excelFile.OpenReadStream();
             using var streamContent = new StreamContent(fileStream);
-
+            
             streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             content.Add(streamContent, "file", excelFile.FileName);
 
@@ -106,11 +106,11 @@ public class ExcelImportController : AuthenticatedApiControllerBase
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<ExcelImportResultDto>>(responseContent);
-
+                
                 if (result?.Data != null)
                 {
                     var importResult = result.Data;
-
+                    
                     if (importResult.Success)
                     {
                         SetSuccessMessage($"导入成功！共导入 {importResult.ImportedCount} 条记录");
@@ -120,7 +120,7 @@ public class ExcelImportController : AuthenticatedApiControllerBase
                         SetErrorMessage(importResult.Message);
                         SetImportErrors(importResult.Errors);
                     }
-
+                    
                     SetImportResult(importResult);
                 }
             }

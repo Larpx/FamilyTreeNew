@@ -1,8 +1,8 @@
-using FamilyTreeNew.BLL.Services;
-using FamilyTreeNew.Web.Models;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using FamilyTreeNew.Web.Models;
+using FamilyTreeNew.BLL.Services;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace FamilyTreeNew.Web.Controllers;
 
