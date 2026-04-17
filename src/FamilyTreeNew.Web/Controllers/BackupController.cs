@@ -1,44 +1,53 @@
+using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-public class BackupController : AuthenticatedApiControllerBase
+public class BackupController : Controller
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<BackupController> _logger;
 
     public BackupController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<BackupController> logger)
-        : base(httpClientFactory, configuration)
     {
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
         _logger = logger;
+    }
+
+    private HttpClient GetApiClient()
+    {
+        var client = _httpClientFactory.CreateClient();
+        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+        client.BaseAddress = new Uri(apiBaseUrl);
+        
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+        
+        return client;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/system/backups");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -47,13 +56,13 @@ public class BackupController : AuthenticatedApiControllerBase
                 return View(result?.Data);
             }
 
-            SetErrorMessage("获取备份列表失败");
+            TempData["Error"] = "获取备份列表失败";
             return View(new BackupListDto());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取备份列表失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return View(new BackupListDto());
         }
     }
@@ -62,22 +71,15 @@ public class BackupController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.PostAsync("/api/system/backup", null);
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -86,22 +88,24 @@ public class BackupController : AuthenticatedApiControllerBase
                 
                 if (result?.Data?.IsSuccess == true)
                 {
-                    SetSuccessMessage("备份创建成功");
+                    TempData["Success"] = "备份创建成功";
                 }
                 else
                 {
-                    SetErrorMessage(result?.Data?.ErrorMessage ?? "备份创建失败");
+                    TempData["Error"] = result?.Data?.ErrorMessage ?? "备份创建失败";
                 }
             }
             else
             {
-                await SetResponseErrorMessageAsync(response, "备份创建失败");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                var errorResult = JsonConvert.DeserializeObject<ApiResponse<BackupDto>>(errorContent);
+                TempData["Error"] = errorResult?.Message ?? "备份创建失败";
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "创建备份失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
         }
 
         return RedirectToAction(nameof(Index));
@@ -111,15 +115,14 @@ public class BackupController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Restore(string fileName)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            SetErrorMessage("备份文件名不能为空");
+            TempData["Error"] = "备份文件名不能为空";
             return RedirectToAction(nameof(Index));
         }
 
@@ -129,12 +132,6 @@ public class BackupController : AuthenticatedApiControllerBase
             var request = new RestoreRequestDto { FileName = fileName };
             var response = await client.PostAsJsonAsync("/api/system/restore", request);
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
@@ -142,22 +139,24 @@ public class BackupController : AuthenticatedApiControllerBase
                 
                 if (result?.Data?.IsSuccess == true)
                 {
-                    SetSuccessMessage("备份恢复成功");
+                    TempData["Success"] = "备份恢复成功";
                 }
                 else
                 {
-                    SetErrorMessage(result?.Data?.ErrorMessage ?? "备份恢复失败");
+                    TempData["Error"] = result?.Data?.ErrorMessage ?? "备份恢复失败";
                 }
             }
             else
             {
-                await SetResponseErrorMessageAsync(response, "备份恢复失败");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                var errorResult = JsonConvert.DeserializeObject<ApiResponse<RestoreDto>>(errorContent);
+                TempData["Error"] = errorResult?.Message ?? "备份恢复失败";
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "恢复备份失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
         }
 
         return RedirectToAction(nameof(Index));
@@ -167,15 +166,14 @@ public class BackupController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string fileName)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            SetErrorMessage("备份文件名不能为空");
+            TempData["Error"] = "备份文件名不能为空";
             return RedirectToAction(nameof(Index));
         }
 
@@ -184,25 +182,21 @@ public class BackupController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.DeleteAsync($"/api/system/backups/{Uri.EscapeDataString(fileName)}");
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
-                SetSuccessMessage("备份删除成功");
+                TempData["Success"] = "备份删除成功";
             }
             else
             {
-                await SetResponseErrorMessageAsync(response, "删除失败");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                var errorResult = JsonConvert.DeserializeObject<ApiResponse>(errorContent);
+                TempData["Error"] = errorResult?.Message ?? "删除失败";
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除备份失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
         }
 
         return RedirectToAction(nameof(Index));

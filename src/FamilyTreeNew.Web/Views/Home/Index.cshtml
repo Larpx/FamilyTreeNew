@@ -1,8 +1,8 @@
 @using System.Linq
-@model IEnumerable<FamilyTreeNew.Models.DTOs.FamilyResponseDto>
+@model IEnumerable<FamilyTreeNew.Models.Entities.Family>
 @{
     ViewData["Title"] = "首页";
-    var familyList = (Model ?? Enumerable.Empty<FamilyTreeNew.Models.DTOs.FamilyResponseDto>())
+    var familyList = (Model ?? Enumerable.Empty<FamilyTreeNew.Models.Entities.Family>())
         .OrderByDescending(f => f.CreatedAt)
         .ToList();
     var latestCreatedAt = familyList.FirstOrDefault()?.CreatedAt;

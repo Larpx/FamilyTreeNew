@@ -1,44 +1,53 @@
+using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-public class SettingsController : AuthenticatedApiControllerBase
+public class SettingsController : Controller
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<SettingsController> _logger;
 
     public SettingsController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<SettingsController> logger)
-        : base(httpClientFactory, configuration)
     {
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
         _logger = logger;
+    }
+
+    private HttpClient GetApiClient()
+    {
+        var client = _httpClientFactory.CreateClient();
+        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+        client.BaseAddress = new Uri(apiBaseUrl);
+        
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+        
+        return client;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/system/settings");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -72,13 +81,13 @@ public class SettingsController : AuthenticatedApiControllerBase
                 }
             }
 
-            SetErrorMessage("获取系统设置失败");
+            TempData["Error"] = "获取系统设置失败";
             return View(new UpdateSystemSettingsDto());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取系统设置失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return View(new UpdateSystemSettingsDto());
         }
     }
@@ -87,10 +96,9 @@ public class SettingsController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Index(UpdateSystemSettingsDto model)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         if (!ModelState.IsValid)
@@ -103,24 +111,31 @@ public class SettingsController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.PutAsJsonAsync("/api/system/settings", model);
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
-                SetSuccessMessage("系统设置更新成功");
+                TempData["Success"] = "系统设置更新成功";
                 return RedirectToAction(nameof(Index));
             }
 
-            await AddResponseErrorsAsync(response, "更新失败");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            var errorResult = JsonConvert.DeserializeObject<ApiResponse<SystemSettingsDto>>(errorContent);
+            
+            if (errorResult?.Errors != null && errorResult.Errors.Any())
+            {
+                foreach (var error in errorResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, errorResult?.Message ?? "更新失败");
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新系统设置失败");
-            AddErrorMessage("系统错误，请稍后重试");
+            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
         }
 
         return View(model);
@@ -129,22 +144,15 @@ public class SettingsController : AuthenticatedApiControllerBase
     [HttpGet]
     public async Task<IActionResult> DatabaseStatus()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/system/database-status");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -153,13 +161,13 @@ public class SettingsController : AuthenticatedApiControllerBase
                 return View(result?.Data);
             }
 
-            SetErrorMessage("获取数据库状态失败");
+            TempData["Error"] = "获取数据库状态失败";
             return View(new DatabaseStatusDto());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取数据库状态失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return View(new DatabaseStatusDto());
         }
     }

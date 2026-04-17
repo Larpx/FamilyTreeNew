@@ -11,15 +11,6 @@ public static class InputSanitizer
     private static readonly Regex JsProtocolPattern = new(@"javascript\s*:", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex VbsProtocolPattern = new(@"vbscript\s*:", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex DataUrlPattern = new(@"data\s*:\s*text/html", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-    private static readonly Regex[] SqlInjectionPatterns =
-    {
-        new(@"\b(SELECT|INSERT|UPDATE|DELETE|DROP|TRUNCATE|ALTER|CREATE|EXEC|EXECUTE|UNION)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1)),
-        new(@"'\s*OR\s*'[^']*'\s*=\s*'[^']*'", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1)),
-        new(@"'\s*;\s*--", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1)),
-        new(@";\s*(DROP|DELETE|TRUNCATE|ALTER)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1)),
-        new(@"\bXP_[A-Z0-9_]+\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1)),
-        new(@"\b0x[0-9A-F]+\b", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1)),
-    };
 
     public static string SanitizeHtml(string? input)
     {
@@ -137,11 +128,22 @@ public static class InputSanitizer
     {
         if (string.IsNullOrEmpty(input)) return false;
 
-        foreach (var pattern in SqlInjectionPatterns)
+        var dangerousPatterns = new[]
+        {
+            @";\s*DROP\s", @";\s*DELETE\s", @";\s*TRUNCATE\s",
+            @"'\s*OR\s+'[^']*'\s*=\s*'", @"'\s*;\s*--",
+            @"UNION\s+ALL\s+SELECT", @"UNION\s+SELECT",
+            @"EXEC\s*\(", @"EXECUTE\s*\(",
+            @"XP_)", @"0x[0-9A-Fa-f]+",
+        };
+
+        var upperInput = input.ToUpperInvariant();
+
+        foreach (var pattern in dangerousPatterns)
         {
             try
             {
-                if (pattern.IsMatch(input))
+                if (Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1)))
                 {
                     return true;
                 }

@@ -1,32 +1,47 @@
+using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-public class VerificationManagementController : AuthenticatedApiControllerBase
+public class VerificationManagementController : Controller
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<VerificationManagementController> _logger;
 
     public VerificationManagementController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<VerificationManagementController> logger)
-        : base(httpClientFactory, configuration)
     {
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
         _logger = logger;
+    }
+
+    private HttpClient GetApiClient()
+    {
+        var client = _httpClientFactory.CreateClient();
+        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+        client.BaseAddress = new Uri(apiBaseUrl);
+        
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+        
+        return client;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
@@ -34,26 +49,20 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.GetAsync("/api/verificationquestions");
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<ApiResponse<List<VerificationQuestionDto>>>(content);
-                return View(result?.Data ?? new List<VerificationQuestionDto>());
+                var result = JsonConvert.DeserializeObject<List<VerificationQuestionDto>>(content);
+                return View(result);
             }
 
-            SetErrorMessage("获取验证问题列表失败");
+            TempData["Error"] = "获取验证问题列表失败";
             return View(new List<VerificationQuestionDto>());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取验证问题列表失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return View(new List<VerificationQuestionDto>());
         }
     }
@@ -61,22 +70,15 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -90,7 +92,7 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取创建验证问题页面失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return RedirectToAction(nameof(Index));
         }
     }
@@ -99,10 +101,9 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateVerificationQuestionDto model)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         if (!ModelState.IsValid)
@@ -111,12 +112,6 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
             {
                 var client = GetApiClient();
                 var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-                var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-                if (unauthorizedResult != null)
-                {
-                    return unauthorizedResult;
-                }
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -138,36 +133,25 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.PostAsJsonAsync("/api/verificationquestions", model);
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
-                SetSuccessMessage("验证问题创建成功");
+                TempData["Success"] = "验证问题创建成功";
                 return RedirectToAction(nameof(Index));
             }
 
-            await AddResponseErrorsAsync(response, "创建失败");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, "创建失败: " + errorContent);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "创建验证问题失败");
-            AddErrorMessage("系统错误，请稍后重试");
+            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -187,22 +171,15 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync($"/api/verificationquestions/{id}");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -231,13 +208,13 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
                 }
             }
 
-            SetErrorMessage("验证问题不存在");
+            TempData["Error"] = "验证问题不存在";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取验证问题信息失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return RedirectToAction(nameof(Index));
         }
     }
@@ -246,10 +223,9 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, UpdateVerificationQuestionDto model)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         ViewBag.QuestionId = id;
@@ -260,12 +236,6 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
             {
                 var client = GetApiClient();
                 var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-                var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-                if (unauthorizedResult != null)
-                {
-                    return unauthorizedResult;
-                }
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -287,36 +257,25 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.PutAsJsonAsync($"/api/verificationquestions/{id}", model);
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
-                SetSuccessMessage("验证问题更新成功");
+                TempData["Success"] = "验证问题更新成功";
                 return RedirectToAction(nameof(Index));
             }
 
-            await AddResponseErrorsAsync(response, "更新失败");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, "更新失败: " + errorContent);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新验证问题失败");
-            AddErrorMessage("系统错误，请稍后重试");
+            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -337,10 +296,9 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
@@ -348,25 +306,19 @@ public class VerificationManagementController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.DeleteAsync($"/api/verificationquestions/{id}");
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
-                SetSuccessMessage("验证问题删除成功");
+                TempData["Success"] = "验证问题删除成功";
             }
             else
             {
-                await SetResponseErrorMessageAsync(response, "删除失败");
+                TempData["Error"] = "删除失败";
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除验证问题失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
         }
 
         return RedirectToAction(nameof(Index));

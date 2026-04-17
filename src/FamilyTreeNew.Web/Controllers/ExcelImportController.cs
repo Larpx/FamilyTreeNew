@@ -1,47 +1,53 @@
+using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-public class ExcelImportController : AuthenticatedApiControllerBase
+public class ExcelImportController : Controller
 {
-    private const string ImportErrorsTempDataKey = "ImportErrors";
-    private const string ImportResultTempDataKey = "ImportResult";
-
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<ExcelImportController> _logger;
 
     public ExcelImportController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<ExcelImportController> logger)
-        : base(httpClientFactory, configuration)
     {
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
         _logger = logger;
+    }
+
+    private HttpClient GetApiClient()
+    {
+        var client = _httpClientFactory.CreateClient();
+        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+        client.BaseAddress = new Uri(apiBaseUrl);
+        
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+        
+        return client;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -55,7 +61,7 @@ public class ExcelImportController : AuthenticatedApiControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取家谱列表失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return View();
         }
     }
@@ -64,22 +70,21 @@ public class ExcelImportController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Upload(Guid familyTreeId, IFormFile excelFile)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         if (excelFile == null || excelFile.Length == 0)
         {
-            SetErrorMessage("请选择要上传的Excel文件");
+            TempData["Error"] = "请选择要上传的Excel文件";
             return RedirectToAction(nameof(Index));
         }
 
         var extension = Path.GetExtension(excelFile.FileName).ToLowerInvariant();
         if (extension != ".xlsx" && extension != ".xls")
         {
-            SetErrorMessage("请上传Excel文件（.xlsx或.xls格式）");
+            TempData["Error"] = "请上传Excel文件（.xlsx或.xls格式）";
             return RedirectToAction(nameof(Index));
         }
 
@@ -96,12 +101,6 @@ public class ExcelImportController : AuthenticatedApiControllerBase
 
             var response = await client.PostAsync($"/api/familytrees/{familyTreeId}/import", content);
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -113,29 +112,36 @@ public class ExcelImportController : AuthenticatedApiControllerBase
                     
                     if (importResult.Success)
                     {
-                        SetSuccessMessage($"导入成功！共导入 {importResult.ImportedCount} 条记录");
+                        TempData["Success"] = $"导入成功！共导入 {importResult.ImportedCount} 条记录";
                     }
                     else
                     {
-                        SetErrorMessage(importResult.Message);
-                        SetImportErrors(importResult.Errors);
+                        TempData["Error"] = importResult.Message;
+                        if (importResult.Errors != null && importResult.Errors.Any())
+                        {
+                            TempData["ImportErrors"] = JsonConvert.SerializeObject(importResult.Errors);
+                        }
                     }
                     
-                    SetImportResult(importResult);
+                    TempData["ImportResult"] = JsonConvert.SerializeObject(importResult);
                 }
             }
             else
             {
-                await SetResponseErrorMessageAsync(response, "导入失败");
                 var errorContent = await response.Content.ReadAsStringAsync();
                 var errorResult = JsonConvert.DeserializeObject<ApiResponse<ExcelImportResultDto>>(errorContent);
-                SetImportErrors(errorResult?.Data?.Errors);
+                TempData["Error"] = errorResult?.Message ?? "导入失败";
+                
+                if (errorResult?.Data?.Errors != null && errorResult.Data.Errors.Any())
+                {
+                    TempData["ImportErrors"] = JsonConvert.SerializeObject(errorResult.Data.Errors);
+                }
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Excel导入失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
         }
 
         return RedirectToAction(nameof(Index));
@@ -144,10 +150,9 @@ public class ExcelImportController : AuthenticatedApiControllerBase
     [HttpGet]
     public async Task<IActionResult> DownloadTemplate()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
@@ -155,41 +160,20 @@ public class ExcelImportController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.GetAsync("/api/familytrees/template");
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
                 var fileBytes = await response.Content.ReadAsByteArrayAsync();
                 return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "成员导入模板.xlsx");
             }
 
-            SetErrorMessage("下载模板失败");
+            TempData["Error"] = "下载模板失败";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "下载模板失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return RedirectToAction(nameof(Index));
         }
-    }
-
-    private void SetImportErrors(IEnumerable<ExcelImportErrorDto>? errors)
-    {
-        if (errors == null || !errors.Any())
-        {
-            return;
-        }
-
-        TempData[ImportErrorsTempDataKey] = JsonConvert.SerializeObject(errors);
-    }
-
-    private void SetImportResult(ExcelImportResultDto importResult)
-    {
-        TempData[ImportResultTempDataKey] = JsonConvert.SerializeObject(importResult);
     }
 }

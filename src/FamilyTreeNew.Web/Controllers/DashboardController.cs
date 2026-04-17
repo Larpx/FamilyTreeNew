@@ -1,32 +1,47 @@
+using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-public class DashboardController : AuthenticatedApiControllerBase
+public class DashboardController : Controller
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<DashboardController> _logger;
 
     public DashboardController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<DashboardController> logger)
-        : base(httpClientFactory, configuration)
     {
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
         _logger = logger;
+    }
+
+    private HttpClient GetApiClient()
+    {
+        var client = _httpClientFactory.CreateClient();
+        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+        client.BaseAddress = new Uri(apiBaseUrl);
+        
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+        
+        return client;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         var viewModel = new DashboardViewModel();
@@ -36,11 +51,6 @@ public class DashboardController : AuthenticatedApiControllerBase
             var client = GetApiClient();
 
             var familyTreesResponse = await client.GetAsync("/api/familytrees?pageSize=1");
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(familyTreesResponse);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
             if (familyTreesResponse.IsSuccessStatusCode)
             {
                 var content = await familyTreesResponse.Content.ReadAsStringAsync();
@@ -49,11 +59,6 @@ public class DashboardController : AuthenticatedApiControllerBase
             }
 
             var membersResponse = await client.GetAsync("/api/familymembers?pageSize=1");
-            unauthorizedResult = await HandleUnauthorizedResponseAsync(membersResponse);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
             if (membersResponse.IsSuccessStatusCode)
             {
                 var content = await membersResponse.Content.ReadAsStringAsync();
@@ -62,11 +67,6 @@ public class DashboardController : AuthenticatedApiControllerBase
             }
 
             var albumsResponse = await client.GetAsync("/api/albums?pageSize=1");
-            unauthorizedResult = await HandleUnauthorizedResponseAsync(albumsResponse);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
             if (albumsResponse.IsSuccessStatusCode)
             {
                 var content = await albumsResponse.Content.ReadAsStringAsync();
@@ -75,11 +75,6 @@ public class DashboardController : AuthenticatedApiControllerBase
             }
 
             var dbStatusResponse = await client.GetAsync("/api/system/database-status");
-            unauthorizedResult = await HandleUnauthorizedResponseAsync(dbStatusResponse);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
             if (dbStatusResponse.IsSuccessStatusCode)
             {
                 var content = await dbStatusResponse.Content.ReadAsStringAsync();
@@ -88,11 +83,6 @@ public class DashboardController : AuthenticatedApiControllerBase
             }
 
             var recentTreesResponse = await client.GetAsync("/api/familytrees?pageSize=5");
-            unauthorizedResult = await HandleUnauthorizedResponseAsync(recentTreesResponse);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
             if (recentTreesResponse.IsSuccessStatusCode)
             {
                 var content = await recentTreesResponse.Content.ReadAsStringAsync();

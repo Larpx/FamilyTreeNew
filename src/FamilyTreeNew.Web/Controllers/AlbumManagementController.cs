@@ -1,32 +1,47 @@
+using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-[Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-public class AlbumManagementController : AuthenticatedApiControllerBase
+public class AlbumManagementController : Controller
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<AlbumManagementController> _logger;
 
     public AlbumManagementController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<AlbumManagementController> logger)
-        : base(httpClientFactory, configuration)
     {
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
         _logger = logger;
+    }
+
+    private HttpClient GetApiClient()
+    {
+        var client = _httpClientFactory.CreateClient();
+        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
+        client.BaseAddress = new Uri(apiBaseUrl);
+        
+        var token = HttpContext.Session.GetString("JwtToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+        
+        return client;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, Guid? familyTreeId = null, string? keyword = null)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
@@ -34,11 +49,6 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
             var client = GetApiClient();
 
             var familyTreesResponse = await client.GetAsync("/api/familytrees?pageSize=100");
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(familyTreesResponse);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
             if (familyTreesResponse.IsSuccessStatusCode)
             {
                 var content = await familyTreesResponse.Content.ReadAsStringAsync();
@@ -58,12 +68,6 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
 
             var response = await client.GetAsync(url);
 
-            unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
@@ -77,13 +81,13 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
                 return View(result?.Data);
             }
 
-            SetErrorMessage("获取相册列表失败");
+            TempData["Error"] = "获取相册列表失败";
             return View(new PagedResult<AlbumDto>());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取相册列表失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return View(new PagedResult<AlbumDto>());
         }
     }
@@ -91,22 +95,15 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
     [HttpGet]
     public async Task<IActionResult> Create(Guid? familyTreeId)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -125,7 +122,7 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取创建相册页面失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return RedirectToAction(nameof(Index));
         }
     }
@@ -134,10 +131,9 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(AlbumCreateDto model)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         if (!ModelState.IsValid)
@@ -146,12 +142,6 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
             {
                 var client = GetApiClient();
                 var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-                var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-                if (unauthorizedResult != null)
-                {
-                    return unauthorizedResult;
-                }
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -173,36 +163,37 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.PostAsJsonAsync("/api/albums", model);
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
-                SetSuccessMessage("相册创建成功");
+                TempData["Success"] = "相册创建成功";
                 return RedirectToAction(nameof(Index), new { familyTreeId = model.FamilyTreeId });
             }
 
-            await AddResponseErrorsAsync(response, "创建失败");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            var errorResult = JsonConvert.DeserializeObject<ApiResponse<AlbumDto>>(errorContent);
+            
+            if (errorResult?.Errors != null && errorResult.Errors.Any())
+            {
+                foreach (var error in errorResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, errorResult?.Message ?? "创建失败");
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "创建相册失败");
-            AddErrorMessage("系统错误，请稍后重试");
+            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync("/api/familytrees?pageSize=100");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -222,22 +213,15 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync($"/api/albums/{id}");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -259,13 +243,13 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
                 }
             }
 
-            SetErrorMessage("相册不存在");
+            TempData["Error"] = "相册不存在";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取相册信息失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return RedirectToAction(nameof(Index));
         }
     }
@@ -274,10 +258,9 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, AlbumUpdateDto model)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         var familyTreeId = Request.Form["FamilyTreeId"];
@@ -294,24 +277,31 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.PutAsJsonAsync($"/api/albums/{id}", model);
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
-                SetSuccessMessage("相册更新成功");
+                TempData["Success"] = "相册更新成功";
                 return RedirectToAction(nameof(Index), new { familyTreeId });
             }
 
-            await AddResponseErrorsAsync(response, "更新失败");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            var errorResult = JsonConvert.DeserializeObject<ApiResponse<AlbumDto>>(errorContent);
+            
+            if (errorResult?.Errors != null && errorResult.Errors.Any())
+            {
+                foreach (var error in errorResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, errorResult?.Message ?? "更新失败");
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新相册失败");
-            AddErrorMessage("系统错误，请稍后重试");
+            ModelState.AddModelError(string.Empty, "系统错误，请稍后重试");
         }
 
         return View(model);
@@ -321,10 +311,9 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
@@ -332,25 +321,21 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
             var client = GetApiClient();
             var response = await client.DeleteAsync($"/api/albums/{id}");
 
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
-
             if (response.IsSuccessStatusCode)
             {
-                SetSuccessMessage("相册删除成功");
+                TempData["Success"] = "相册删除成功";
             }
             else
             {
-                await SetResponseErrorMessageAsync(response, "删除失败");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                var errorResult = JsonConvert.DeserializeObject<ApiResponse>(errorContent);
+                TempData["Error"] = errorResult?.Message ?? "删除失败";
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除相册失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
         }
 
         return RedirectToAction(nameof(Index));
@@ -359,22 +344,15 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
     [HttpGet]
     public async Task<IActionResult> Details(Guid id)
     {
-        var authResult = await EnsureAuthenticatedAsync();
-        if (authResult != null)
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
         {
-            return authResult;
+            return RedirectToAction("Login", "Admin");
         }
 
         try
         {
             var client = GetApiClient();
             var response = await client.GetAsync($"/api/albums/{id}");
-
-            var unauthorizedResult = await HandleUnauthorizedResponseAsync(response);
-            if (unauthorizedResult != null)
-            {
-                return unauthorizedResult;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -383,13 +361,13 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
                 return View(result?.Data);
             }
 
-            SetErrorMessage("相册不存在");
+            TempData["Error"] = "相册不存在";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取相册详情失败");
-            SetErrorMessage("系统错误，请稍后重试");
+            TempData["Error"] = "系统错误，请稍后重试";
             return RedirectToAction(nameof(Index));
         }
     }

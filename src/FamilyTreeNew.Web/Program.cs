@@ -92,14 +92,11 @@ public partial class Program
 
         var app = builder.Build();
 
-        app.UseExceptionHandler("/Home/Error");
-
         if (!app.Environment.IsDevelopment())
         {
+            app.UseExceptionHandler("/Home/Error");
             app.UseHsts();
         }
-
-        app.UseStatusCodePagesWithReExecute("/Home/StatusCodePage", "?code={0}");
 
         app.Use(async (context, next) =>
         {
@@ -125,10 +122,7 @@ public partial class Program
         });
 
         app.UseHttpsRedirection();
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseResponseCompression();
-        }
+        app.UseResponseCompression();
         app.UseResponseCaching();
 
         app.UseStaticFiles(new StaticFileOptions
