@@ -1,5 +1,4 @@
 using FamilyTreeNew.Models.DTOs;
-using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.BLL.Services;
 

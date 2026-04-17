@@ -68,12 +68,12 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<AlbumDto>>>(content);
-                
+
                 ViewBag.SelectedFamilyTreeId = familyTreeId;
                 ViewBag.Keyword = keyword;
                 ViewBag.PageIndex = page;
                 ViewBag.PageSize = pageSize;
-                
+
                 return View(result?.Data);
             }
 
@@ -243,7 +243,7 @@ public class AlbumManagementController : AuthenticatedApiControllerBase
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<AlbumDetailDto>>(content);
-                
+
                 if (result?.Data != null)
                 {
                     var updateDto = new AlbumUpdateDto

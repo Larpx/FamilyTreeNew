@@ -1,11 +1,10 @@
-using System.Security.Claims;
 using FamilyTreeNew.Api.Extensions;
-using FamilyTreeNew.BLL.Helpers;
 using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.DTOs.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FamilyTreeNew.Api.Controllers;
 

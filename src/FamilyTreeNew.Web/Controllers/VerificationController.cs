@@ -1,11 +1,6 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using FamilyTreeNew.Web.Models;
 using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Web.Controllers;
 
@@ -54,7 +49,7 @@ public class VerificationController : Controller
             }
 
             var status = await _verificationService.GetFamilyTreeVerificationStatusAsync(familyTreeId);
-            
+
             if (status.TotalQuestions == 0)
             {
                 TempData["ErrorMessage"] = "该家谱暂未设置验证问题";

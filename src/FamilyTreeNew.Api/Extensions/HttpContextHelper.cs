@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
 namespace FamilyTreeNew.Api.Extensions;
 
 /// <summary>

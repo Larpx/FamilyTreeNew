@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
 using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace FamilyTreeNew.Api.Controllers;
 

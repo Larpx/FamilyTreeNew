@@ -75,12 +75,12 @@ public class MemberManagementController : AuthenticatedApiControllerBase
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyMemberDto>>>(content);
-                    
+
                     ViewBag.SelectedFamilyTreeId = familyTreeId;
                     ViewBag.Keyword = keyword;
                     ViewBag.PageIndex = page;
                     ViewBag.PageSize = pageSize;
-                    
+
                     return View(result?.Data);
                 }
             }
@@ -253,7 +253,7 @@ public class MemberManagementController : AuthenticatedApiControllerBase
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<FamilyMemberDto>>(content);
-                
+
                 if (result?.Data != null)
                 {
                     var parentsResponse = await client.GetAsync($"/api/familytrees/{result.Data.FamilyTreeId}/members?pageSize=1000");

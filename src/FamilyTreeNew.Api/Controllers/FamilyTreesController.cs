@@ -54,20 +54,20 @@ public class FamilyTreesController : ControllerBase
                 query.PageSize,
                 query.Keyword ?? "",
                 query.IsEnabled?.ToString() ?? "");
-            
+
             if (_memoryCache.TryGetValue(cacheKey, out PagedResult<FamilyTreeDto>? cachedResult) && cachedResult != null)
             {
                 return Ok(ApiResponse<PagedResult<FamilyTreeDto>>.Ok(cachedResult));
             }
 
             var result = await _familyTreeService.GetPagedAsync(query);
-            
+
             _memoryCache.Set(cacheKey, result, new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = CacheDuration,
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             });
-            
+
             return Ok(ApiResponse<PagedResult<FamilyTreeDto>>.Ok(result));
         }
         catch (Exception)
@@ -91,7 +91,7 @@ public class FamilyTreesController : ControllerBase
         try
         {
             var cacheKey = string.Format(FamilyTreeDetailCacheKey, id);
-            
+
             if (_memoryCache.TryGetValue(cacheKey, out FamilyTreeDto? cachedResult) && cachedResult != null)
             {
                 return Ok(ApiResponse<FamilyTreeDto>.Ok(cachedResult));
@@ -102,13 +102,13 @@ public class FamilyTreesController : ControllerBase
             {
                 return NotFound(ApiResponse<FamilyTreeDto>.Fail("家谱不存在"));
             }
-            
+
             _memoryCache.Set(cacheKey, result, new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = CacheDuration,
                 SlidingExpiration = TimeSpan.FromMinutes(2)
             });
-            
+
             return Ok(ApiResponse<FamilyTreeDto>.Ok(result));
         }
         catch (Exception)
@@ -183,7 +183,7 @@ public class FamilyTreesController : ControllerBase
             {
                 return NotFound(ApiResponse<FamilyTreeDto>.Fail("家谱不存在"));
             }
-            
+
             InvalidateFamilyTreeCache(id);
             return Ok(ApiResponse<FamilyTreeDto>.Ok(result, "家谱更新成功"));
         }
@@ -213,7 +213,7 @@ public class FamilyTreesController : ControllerBase
             {
                 return NotFound(ApiResponse.Fail("家谱不存在"));
             }
-            
+
             InvalidateFamilyTreeCache(id);
             return Ok(ApiResponse.Ok("家谱删除成功"));
         }

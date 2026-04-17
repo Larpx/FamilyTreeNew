@@ -1,4 +1,3 @@
-using SqlSugar;
 using FamilyTreeNew.DAL.Context;
 using FamilyTreeNew.Models.Entities;
 

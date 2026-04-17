@@ -1,8 +1,5 @@
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
 using FamilyTreeNew.Api.Extensions;
-using FamilyTreeNew.BLL.Helpers;
+using System.Collections.Concurrent;
 
 namespace FamilyTreeNew.Api.Middleware;
 

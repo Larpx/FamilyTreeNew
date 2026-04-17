@@ -1,5 +1,5 @@
-using FamilyTreeNew.Models.Entities;
 using FamilyTreeNew.DAL.Context;
+using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.DAL.Repositories;
 
@@ -39,7 +39,7 @@ public class MenuRepository : BaseRepositoryGuid<Menu>, IMenuRepository
             parent.Children = allMenus
                 .Where(m => m.ParentId == parent.Id && m.IsVisible)
                 .ToList();
-            
+
             if (parent.Children?.Count > 0)
             {
                 BuildMenuTree(parent.Children, allMenus);

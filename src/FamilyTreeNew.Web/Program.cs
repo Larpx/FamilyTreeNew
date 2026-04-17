@@ -1,9 +1,9 @@
-using System.IO.Compression;
 using FamilyTreeNew.BLL.Extensions;
 using FamilyTreeNew.DAL.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
+using System.IO.Compression;
 using CacheControlHeaderValue = Microsoft.Net.Http.Headers.CacheControlHeaderValue;
 using HeaderNames = Microsoft.Net.Http.Headers.HeaderNames;
 

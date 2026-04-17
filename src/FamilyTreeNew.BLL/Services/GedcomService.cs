@@ -1,6 +1,5 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
-using FamilyTreeNew.Models.Entities;
 using System.Globalization;
 using System.Text;
 

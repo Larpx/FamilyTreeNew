@@ -1,5 +1,5 @@
-using System.Text.Json;
 using FamilyTreeNew.Models.DTOs;
+using System.Text.Json;
 
 namespace FamilyTreeNew.Api.Middleware;
 

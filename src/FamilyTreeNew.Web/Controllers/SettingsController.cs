@@ -44,7 +44,7 @@ public class SettingsController : AuthenticatedApiControllerBase
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<SystemSettingsDto>>(content);
-                
+
                 if (result?.Data != null)
                 {
                     var updateDto = new UpdateSystemSettingsDto

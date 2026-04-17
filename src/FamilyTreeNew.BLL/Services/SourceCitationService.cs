@@ -9,7 +9,7 @@ public class SourceCitationService : ISourceCitationService
     private readonly ISourceCitationRepository _sourceCitationRepository;
     private readonly ISourceRepository _sourceRepository;
 
-    public SourceCitationService(ISourceCitationRepository sourceCitationRepository, 
+    public SourceCitationService(ISourceCitationRepository sourceCitationRepository,
         ISourceRepository sourceRepository)
     {
         _sourceCitationRepository = sourceCitationRepository;
@@ -59,7 +59,7 @@ public class SourceCitationService : ISourceCitationService
     private async Task<SourceCitationResponseDto> MapToDtoAsync(SourceCitation entity)
     {
         var source = await _sourceRepository.GetByIdAsync(entity.SourceId);
-        
+
         return new SourceCitationResponseDto
         {
             Id = entity.Id,

@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Api.Controllers;
 

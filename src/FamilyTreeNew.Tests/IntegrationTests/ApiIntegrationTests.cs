@@ -1,13 +1,12 @@
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
 using FamilyTreeNew.Api;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.DTOs.Auth;
 using FamilyTreeNew.Tests.Helpers;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using Xunit;
 
 namespace FamilyTreeNew.Tests.IntegrationTests;
