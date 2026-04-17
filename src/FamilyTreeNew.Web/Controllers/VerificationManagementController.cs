@@ -52,8 +52,8 @@ public class VerificationManagementController : Controller
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<List<VerificationQuestionDto>>(content);
-                return View(result);
+                var result = JsonConvert.DeserializeObject<ApiResponse<List<VerificationQuestionDto>>>(content);
+                return View(result?.Data ?? new List<VerificationQuestionDto>());
             }
 
             TempData["Error"] = "获取验证问题列表失败";
@@ -184,7 +184,8 @@ public class VerificationManagementController : Controller
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<VerificationQuestionDto>(content);
+                var apiResult = JsonConvert.DeserializeObject<ApiResponse<VerificationQuestionDto>>(content);
+                var result = apiResult?.Data;
                 
                 if (result != null)
                 {

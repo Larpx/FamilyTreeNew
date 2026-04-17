@@ -56,14 +56,18 @@ public class DashboardController : Controller
                 var content = await familyTreesResponse.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyTreeDto>>>(content);
                 viewModel.TotalFamilyTrees = result?.Data?.TotalCount ?? 0;
-            }
 
-            var membersResponse = await client.GetAsync("/api/familymembers?pageSize=1");
-            if (membersResponse.IsSuccessStatusCode)
-            {
-                var content = await membersResponse.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyMemberDto>>>(content);
-                viewModel.TotalMembers = result?.Data?.TotalCount ?? 0;
+                var firstFamilyTreeId = result?.Data?.Items?.FirstOrDefault()?.Id;
+                if (firstFamilyTreeId.HasValue)
+                {
+                    var membersResponse = await client.GetAsync($"/api/familymembers?familyTreeId={firstFamilyTreeId.Value}&pageSize=1");
+                    if (membersResponse.IsSuccessStatusCode)
+                    {
+                        var membersContent = await membersResponse.Content.ReadAsStringAsync();
+                        var membersResult = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyMemberDto>>>(membersContent);
+                        viewModel.TotalMembers = membersResult?.Data?.TotalCount ?? 0;
+                    }
+                }
             }
 
             var albumsResponse = await client.GetAsync("/api/albums?pageSize=1");

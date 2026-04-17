@@ -48,7 +48,6 @@ public class FamilyMemberRepository : BaseRepositoryGuid<FamilyMember>, IFamilyM
             .OrderBy(m => m.CreatedAt, OrderByType.Desc)
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
-            .Includes(m => m.Parent)
             .ToListAsync();
 
         return (items, totalCount);
