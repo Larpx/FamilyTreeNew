@@ -1,61 +1,37 @@
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Net.Http.Headers;
 
 namespace FamilyTreeNew.Web.Controllers;
 
 /// <summary>
-/// 负责展示和保存后台系统设置页面。
+/// 系统设置控制器
+/// 负责展示和保存后台系统设置页面
 /// </summary>
-public class SettingsController : Controller
+public class SettingsController : AdminControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<SettingsController> _logger;
 
     /// <summary>
-    /// 初始化系统设置控制器。
+    /// 初始化系统设置控制器
     /// </summary>
-    /// <param name="httpClientFactory">创建 API 请求客户端的工厂。</param>
-    /// <param name="configuration">读取 API 地址等配置的配置对象。</param>
-    /// <param name="logger">记录错误和诊断信息的日志器。</param>
     public SettingsController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<SettingsController> logger)
+        : base(httpClientFactory, configuration)
     {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
         _logger = logger;
     }
 
-    private HttpClient GetApiClient()
-    {
-        var client = _httpClientFactory.CreateClient();
-        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-        client.BaseAddress = new Uri(apiBaseUrl);
-
-        var token = HttpContext.Session.GetString("JwtToken");
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-
-        return client;
-    }
-
     /// <summary>
-    /// 打开系统设置首页，并从 API 读取当前设置数据填充页面。
+    /// 打开系统设置首页，并从API读取当前设置数据填充页面
     /// </summary>
-    /// <returns>系统设置页面。</returns>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -66,7 +42,7 @@ public class SettingsController : Controller
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<SystemSettingsDto>>(content);
-                
+
                 if (result?.Data != null)
                 {
                     var updateDto = new UpdateSystemSettingsDto
@@ -106,18 +82,14 @@ public class SettingsController : Controller
     }
 
     /// <summary>
-    /// 提交系统设置修改并将更改保存到后端。
+    /// 提交系统设置修改并将更改保存到后端
     /// </summary>
-    /// <param name="model">页面提交的系统设置数据。</param>
-    /// <returns>保存成功后返回设置页，失败时重新显示表单和错误信息。</returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Index(UpdateSystemSettingsDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         if (!ModelState.IsValid)
         {
@@ -137,7 +109,7 @@ public class SettingsController : Controller
 
             var errorContent = await response.Content.ReadAsStringAsync();
             var errorResult = JsonConvert.DeserializeObject<ApiResponse<SystemSettingsDto>>(errorContent);
-            
+
             if (errorResult?.Errors != null && errorResult.Errors.Any())
             {
                 foreach (var error in errorResult.Errors)
@@ -160,16 +132,13 @@ public class SettingsController : Controller
     }
 
     /// <summary>
-    /// 查看数据库连接和运行状态信息。
+    /// 查看数据库连接和运行状态信息
     /// </summary>
-    /// <returns>数据库状态页面。</returns>
     [HttpGet]
     public async Task<IActionResult> DatabaseStatus()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {

@@ -152,7 +152,7 @@ public class AuthService : IAuthService
             UserAgent = userAgent,
             IsSuccess = isSuccess,
             ErrorMessage = errorMessage,
-            OperationTime = DateTime.Now
+            OperationTime = DateTime.UtcNow
         };
 
         await _operationLogRepository.InsertAsync(log);

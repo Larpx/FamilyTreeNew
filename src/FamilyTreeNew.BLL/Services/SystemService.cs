@@ -32,7 +32,7 @@ public class SystemService : ISystemService
     {
         var status = new DatabaseStatusDto
         {
-            CheckTime = DateTime.Now
+            CheckTime = DateTime.UtcNow
         };
 
         try
@@ -62,7 +62,7 @@ public class SystemService : ISystemService
         catch (Exception ex)
         {
             status.IsConnected = false;
-            status.ErrorMessage = ex.Message;
+            status.ErrorMessage = "数据库连接异常，请查看系统日志";
             _logger.LogError(ex, "Error checking database status");
         }
 

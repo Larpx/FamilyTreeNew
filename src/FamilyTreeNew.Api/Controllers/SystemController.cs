@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Api.Controllers;
 
+/// <summary>
+/// 系统管理控制器
+/// 提供健康检查、数据库状态、系统设置和备份恢复功能
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Policy = "RequireAdminRole")]
@@ -27,14 +31,23 @@ public class SystemController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 健康检查
+    /// </summary>
     [HttpGet("health")]
     [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult HealthCheck()
     {
         return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
     }
 
+    /// <summary>
+    /// 获取数据库状态
+    /// </summary>
     [HttpGet("database-status")]
+    [ProducesResponseType(typeof(ApiResponse<DatabaseStatusDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<DatabaseStatusDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<DatabaseStatusDto>>> GetDatabaseStatus()
     {
         try
@@ -49,7 +62,13 @@ public class SystemController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 获取系统设置
+    /// </summary>
     [HttpGet("settings")]
+    [ProducesResponseType(typeof(ApiResponse<SystemSettingsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<SystemSettingsDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<SystemSettingsDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<SystemSettingsDto>>> GetSettings()
     {
         try
@@ -68,7 +87,13 @@ public class SystemController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 更新系统设置
+    /// </summary>
     [HttpPut("settings")]
+    [ProducesResponseType(typeof(ApiResponse<SystemSettingsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<SystemSettingsDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<SystemSettingsDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<SystemSettingsDto>>> UpdateSettings([FromBody] UpdateSystemSettingsDto dto)
     {
         try
@@ -96,7 +121,12 @@ public class SystemController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 创建数据库备份
+    /// </summary>
     [HttpPost("backup")]
+    [ProducesResponseType(typeof(ApiResponse<BackupDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<BackupDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<BackupDto>>> CreateBackup()
     {
         try
@@ -115,7 +145,12 @@ public class SystemController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 获取备份列表
+    /// </summary>
     [HttpGet("backups")]
+    [ProducesResponseType(typeof(ApiResponse<BackupListDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<BackupListDto>), StatusCodes.Status500InternalServerError)]
     public ActionResult<ApiResponse<BackupListDto>> GetBackupList()
     {
         try
@@ -130,7 +165,13 @@ public class SystemController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 恢复数据库备份
+    /// </summary>
     [HttpPost("restore")]
+    [ProducesResponseType(typeof(ApiResponse<RestoreDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<RestoreDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<RestoreDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<RestoreDto>>> RestoreBackup([FromBody] RestoreRequestDto request)
     {
         try
@@ -154,7 +195,14 @@ public class SystemController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 删除备份文件
+    /// </summary>
     [HttpDelete("backups/{fileName}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public ActionResult<ApiResponse> DeleteBackup(string fileName)
     {
         try

@@ -1,6 +1,7 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -11,13 +12,19 @@ public interface IOperationLogService
     Task<PagedResult<OperationLog>> GetByAdminIdAsync(Guid adminId, int pageIndex = 1, int pageSize = 20);
 }
 
+/// <summary>
+/// 操作日志服务
+/// 记录和查询管理员操作日志
+/// </summary>
 public class OperationLogService : IOperationLogService
 {
     private readonly IOperationLogRepository _repository;
+    private readonly ILogger<OperationLogService> _logger;
 
-    public OperationLogService(IOperationLogRepository repository)
+    public OperationLogService(IOperationLogRepository repository, ILogger<OperationLogService> logger)
     {
         _repository = repository;
+        _logger = logger;
     }
 
     public async Task LogAsync(
@@ -40,10 +47,11 @@ public class OperationLogService : IOperationLogService
             UserAgent = userAgent,
             IsSuccess = isSuccess,
             ErrorMessage = errorMessage,
-            OperationTime = DateTime.Now
+            OperationTime = DateTime.UtcNow
         };
 
         await _repository.InsertAsync(log);
+        _logger.LogInformation("记录操作日志，管理员: {AdminId}，操作: {OperationType}，模块: {Module}", adminId, operationType, module);
     }
 
     public async Task<PagedResult<OperationLog>> GetListAsync(int pageIndex = 1, int pageSize = 20)

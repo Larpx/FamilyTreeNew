@@ -1,19 +1,27 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 using System.Text;
 
 namespace FamilyTreeNew.BLL.Services;
 
+/// <summary>
+/// 报告服务
+/// 生成家谱的祖先报告、后裔报告和统计报告
+/// </summary>
 public class ReportService : IReportService
 {
     private readonly IFamilyMemberRepository _familyMemberRepository;
     private readonly IFamilyTreeRepository _familyTreeRepository;
+    private readonly ILogger<ReportService> _logger;
 
-    public ReportService(IFamilyMemberRepository familyMemberRepository, 
-        IFamilyTreeRepository familyTreeRepository)
+    public ReportService(IFamilyMemberRepository familyMemberRepository,
+        IFamilyTreeRepository familyTreeRepository,
+        ILogger<ReportService> logger)
     {
         _familyMemberRepository = familyMemberRepository;
         _familyTreeRepository = familyTreeRepository;
+        _logger = logger;
     }
 
     public async Task<AncestorReportDto> GenerateAncestorReportAsync(Guid memberId, int generations = 5)
@@ -27,6 +35,7 @@ public class ReportService : IReportService
         var ancestors = new List<AncestorNode>();
         await CollectAncestors(memberId, 1, generations, ancestors);
 
+        _logger.LogInformation("生成祖先报告，成员ID: {MemberId}，世代数: {Generations}", memberId, generations);
         return new AncestorReportDto
         {
             MemberId = memberId,
@@ -69,6 +78,7 @@ public class ReportService : IReportService
         var descendants = new List<DescendantNode>();
         await CollectDescendants(memberId, 1, generations, descendants);
 
+        _logger.LogInformation("生成后裔报告，成员ID: {MemberId}，世代数: {Generations}", memberId, generations);
         return new DescendantReportDto
         {
             MemberId = memberId,
@@ -121,9 +131,9 @@ public class ReportService : IReportService
         {
             if (member.BirthDateSolar.HasValue)
             {
-                DateTime endDate = member.IsDeceased && member.DeathDateSolar.HasValue 
-                    ? member.DeathDateSolar.Value 
-                    : DateTime.Now;
+                DateTime endDate = member.IsDeceased && member.DeathDateSolar.HasValue
+                    ? member.DeathDateSolar.Value
+                    : DateTime.UtcNow;
                 var age = endDate.Year - member.BirthDateSolar.Value.Year;
                 if (endDate < member.BirthDateSolar.Value.AddYears(age)) age--;
                 totalAge += age;
@@ -141,6 +151,7 @@ public class ReportService : IReportService
             .GroupBy(m => m.Residence!)
             .ToDictionary(g => g.Key, g => g.Count());
 
+        _logger.LogInformation("生成统计报告，家谱ID: {FamilyTreeId}，成员数: {MemberCount}", familyTreeId, members.Count);
         return new StatisticsReportDto
         {
             FamilyTreeId = familyTreeId,
@@ -154,7 +165,7 @@ public class ReportService : IReportService
             DeceasedCount = members.Count(m => m.IsDeceased),
             OccupationDistribution = occupationDistribution,
             ResidenceDistribution = residenceDistribution,
-            GeneratedAt = DateTime.Now
+            GeneratedAt = DateTime.UtcNow
         };
     }
 
@@ -185,7 +196,7 @@ public class ReportService : IReportService
         html.AppendLine("<body>");
         html.AppendLine($"<h1>{statistics.FamilyTreeName} - 统计报告</h1>");
         html.AppendLine($"<p style=\"color: #666;\">生成时间: {statistics.GeneratedAt.ToString("yyyy年MM月dd日 HH:mm:ss")}</p>");
-        
+
         html.AppendLine("<div class=\"section\">");
         html.AppendLine("<h2>基本统计</h2>");
         html.AppendLine($"<div class=\"stat-item\"><span class=\"stat-value\">{statistics.TotalMembers}</span><span class=\"stat-label\">总人数</span></div>");

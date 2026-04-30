@@ -5,18 +5,29 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Api.Controllers;
 
+/// <summary>
+/// 报告控制器，提供祖先报告、后裔报告和统计报告的生成功能
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class ReportsController : ControllerBase
 {
     private readonly IReportService _reportService;
+    private readonly ILogger<ReportsController> _logger;
 
-    public ReportsController(IReportService reportService)
+    public ReportsController(IReportService reportService, ILogger<ReportsController> logger)
     {
         _reportService = reportService;
+        _logger = logger;
     }
 
+    /// <summary>
+    /// 获取祖先报告
+    /// </summary>
+    /// <param name="memberId">成员ID</param>
+    /// <param name="generations">追溯代数，默认5代</param>
+    /// <returns>祖先报告数据</returns>
     [HttpGet("ancestor/{memberId}")]
     [ProducesResponseType(typeof(ApiResponse<AncestorReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<AncestorReportDto>), StatusCodes.Status404NotFound)]
@@ -29,10 +40,17 @@ public class ReportsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return NotFound(ApiResponse<AncestorReportDto>.Fail(ex.Message));
+            _logger.LogError(ex, "生成祖先报告失败，成员ID: {MemberId}", memberId);
+            return NotFound(ApiResponse<AncestorReportDto>.Fail("未找到对应的祖先报告数据"));
         }
     }
 
+    /// <summary>
+    /// 获取后裔报告
+    /// </summary>
+    /// <param name="memberId">成员ID</param>
+    /// <param name="generations">追溯代数，默认5代</param>
+    /// <returns>后裔报告数据</returns>
     [HttpGet("descendant/{memberId}")]
     [ProducesResponseType(typeof(ApiResponse<DescendantReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<DescendantReportDto>), StatusCodes.Status404NotFound)]
@@ -45,10 +63,16 @@ public class ReportsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return NotFound(ApiResponse<DescendantReportDto>.Fail(ex.Message));
+            _logger.LogError(ex, "生成后裔报告失败，成员ID: {MemberId}", memberId);
+            return NotFound(ApiResponse<DescendantReportDto>.Fail("未找到对应的后裔报告数据"));
         }
     }
 
+    /// <summary>
+    /// 获取统计报告
+    /// </summary>
+    /// <param name="familyTreeId">家谱ID</param>
+    /// <returns>统计报告数据</returns>
     [HttpGet("statistics/{familyTreeId}")]
     [ProducesResponseType(typeof(ApiResponse<StatisticsReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<StatisticsReportDto>), StatusCodes.Status404NotFound)]
@@ -61,10 +85,16 @@ public class ReportsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return NotFound(ApiResponse<StatisticsReportDto>.Fail(ex.Message));
+            _logger.LogError(ex, "生成统计报告失败，家谱ID: {FamilyTreeId}", familyTreeId);
+            return NotFound(ApiResponse<StatisticsReportDto>.Fail("未找到对应的统计报告数据"));
         }
     }
 
+    /// <summary>
+    /// 获取HTML格式报告
+    /// </summary>
+    /// <param name="familyTreeId">家谱ID</param>
+    /// <returns>HTML报告文件</returns>
     [HttpGet("html/{familyTreeId}")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -78,7 +108,8 @@ public class ReportsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return NotFound(ApiResponse.Fail(ex.Message));
+            _logger.LogError(ex, "生成HTML报告失败，家谱ID: {FamilyTreeId}", familyTreeId);
+            return NotFound(ApiResponse.Fail("报告生成失败，请稍后重试"));
         }
     }
 }

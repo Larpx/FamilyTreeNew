@@ -133,7 +133,7 @@ public class FamilyMember
     /// 记录创建时间
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "创建日期")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 记录最后更新时间

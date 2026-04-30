@@ -6,18 +6,30 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Api.Controllers;
 
+/// <summary>
+/// 管理员控制器，提供管理员的增删改查功能
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class AdminsController : ControllerBase
 {
     private readonly IAdminManagementService _adminManagementService;
+    private readonly ILogger<AdminsController> _logger;
 
-    public AdminsController(IAdminManagementService adminManagementService)
+    public AdminsController(IAdminManagementService adminManagementService, ILogger<AdminsController> logger)
     {
         _adminManagementService = adminManagementService;
+        _logger = logger;
     }
 
+    /// <summary>
+    /// 获取管理员分页列表
+    /// </summary>
+    /// <param name="page">页码，默认1</param>
+    /// <param name="pageSize">每页数量，默认10</param>
+    /// <param name="keyword">搜索关键词</param>
+    /// <returns>管理员分页列表</returns>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<AdminDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<PagedResult<AdminDto>>>> GetList(
@@ -29,6 +41,11 @@ public class AdminsController : ControllerBase
         return Ok(ApiResponse<PagedResult<AdminDto>>.Ok(result));
     }
 
+    /// <summary>
+    /// 根据ID获取管理员详情
+    /// </summary>
+    /// <param name="id">管理员ID</param>
+    /// <returns>管理员详情</returns>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<AdminDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -43,6 +60,11 @@ public class AdminsController : ControllerBase
         return Ok(ApiResponse<AdminDto>.Ok(result));
     }
 
+    /// <summary>
+    /// 创建管理员
+    /// </summary>
+    /// <param name="dto">管理员创建数据</param>
+    /// <returns>创建的管理员信息</returns>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<AdminDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -60,14 +82,22 @@ public class AdminsController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(ApiResponse<object>.Fail(ex.Message));
+            _logger.LogWarning(ex, "创建管理员参数无效");
+            return BadRequest(ApiResponse<object>.Fail("请求参数无效"));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ApiResponse<object>.Fail(ex.Message));
+            _logger.LogWarning(ex, "创建管理员操作失败");
+            return BadRequest(ApiResponse<object>.Fail("操作失败，请检查输入数据"));
         }
     }
 
+    /// <summary>
+    /// 更新管理员信息
+    /// </summary>
+    /// <param name="id">管理员ID</param>
+    /// <param name="dto">管理员更新数据</param>
+    /// <returns>更新后的管理员信息</returns>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<AdminDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -91,10 +121,16 @@ public class AdminsController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ApiResponse<object>.Fail(ex.Message));
+            _logger.LogWarning(ex, "更新管理员 {Id} 操作失败", id);
+            return BadRequest(ApiResponse<object>.Fail("操作失败，请检查输入数据"));
         }
     }
 
+    /// <summary>
+    /// 删除管理员
+    /// </summary>
+    /// <param name="id">管理员ID</param>
+    /// <returns>删除结果</returns>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
@@ -119,10 +155,15 @@ public class AdminsController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ApiResponse.Fail(ex.Message));
+            _logger.LogWarning(ex, "删除管理员 {Id} 操作失败", id);
+            return BadRequest(ApiResponse.Fail("操作失败，请稍后重试"));
         }
     }
 
+    /// <summary>
+    /// 获取模型验证错误列表
+    /// </summary>
+    /// <returns>验证错误消息列表</returns>
     private List<string> GetValidationErrors()
     {
         return ModelState.Values

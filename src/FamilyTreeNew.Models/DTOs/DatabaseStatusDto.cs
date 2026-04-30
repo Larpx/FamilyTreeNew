@@ -48,7 +48,7 @@ public class DatabaseStatusDto
     /// <summary>
     /// 检查时间
     /// </summary>
-    public DateTime CheckTime { get; set; } = DateTime.Now;
+    public DateTime CheckTime { get; set; } = DateTime.UtcNow;
 }
 
 /// <summary>

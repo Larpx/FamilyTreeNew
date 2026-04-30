@@ -49,7 +49,7 @@ public class Family
     /// 家族记录创建时间
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "创建时间")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 家族记录最后更新时间

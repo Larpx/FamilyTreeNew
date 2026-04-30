@@ -259,7 +259,7 @@ public class PhotoMapperTests
             ThumbnailPath = "/photos/thumbnails/test.jpg",
             Title = "Test Photo",
             Description = "Test Description",
-            UploadedAt = DateTime.Now,
+            UploadedAt = DateTime.UtcNow,
             UploadedBy = "testuser"
         };
 
@@ -286,7 +286,7 @@ public class PhotoMapperTests
             PhotoPath = "/photos/test.jpg",
             ThumbnailPath = "/photos/thumbnails/test.jpg",
             Title = "Test",
-            UploadedAt = DateTime.Now,
+            UploadedAt = DateTime.UtcNow,
             Member = new FamilyTreeNew.Models.Entities.FamilyMember
             {
                 Surname = "张",
@@ -309,7 +309,7 @@ public class PhotoMapperTests
             PhotoPath = "/photos/test.jpg",
             ThumbnailPath = "/photos/thumbnails/test.jpg",
             Title = "Test",
-            UploadedAt = DateTime.Now
+            UploadedAt = DateTime.UtcNow
         };
 
         var dto = PhotoMapper.ToDto(photo);

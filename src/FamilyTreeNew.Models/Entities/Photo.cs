@@ -55,7 +55,7 @@ public class Photo
     /// 照片上传时间
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "上传日期")]
-    public DateTime UploadedAt { get; set; } = DateTime.Now;
+    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 上传者用户名

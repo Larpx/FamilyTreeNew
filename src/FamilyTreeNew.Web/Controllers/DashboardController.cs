@@ -1,48 +1,35 @@
-using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-public class DashboardController : Controller
+/// <summary>
+/// 仪表盘控制器
+/// 提供管理后台首页的统计数据和概览信息
+/// </summary>
+public class DashboardController : AdminControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<DashboardController> _logger;
 
     public DashboardController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<DashboardController> logger)
+        : base(httpClientFactory, configuration)
     {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
         _logger = logger;
     }
 
-    private HttpClient GetApiClient()
-    {
-        var client = _httpClientFactory.CreateClient();
-        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-        client.BaseAddress = new Uri(apiBaseUrl);
-        
-        var token = HttpContext.Session.GetString("JwtToken");
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        
-        return client;
-    }
-
+    /// <summary>
+    /// 仪表盘首页
+    /// 展示家谱数量、成员数量、相册数量、数据库状态和最近家谱列表
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         var viewModel = new DashboardViewModel();
 
@@ -105,11 +92,33 @@ public class DashboardController : Controller
     }
 }
 
+/// <summary>
+/// 仪表盘视图模型
+/// </summary>
 public class DashboardViewModel
 {
+    /// <summary>
+    /// 家谱总数
+    /// </summary>
     public int TotalFamilyTrees { get; set; }
+
+    /// <summary>
+    /// 成员总数
+    /// </summary>
     public int TotalMembers { get; set; }
+
+    /// <summary>
+    /// 相册总数
+    /// </summary>
     public int TotalAlbums { get; set; }
+
+    /// <summary>
+    /// 数据库状态信息
+    /// </summary>
     public DatabaseStatusDto? DatabaseStatus { get; set; }
+
+    /// <summary>
+    /// 最近创建的家谱列表
+    /// </summary>
     public List<FamilyTreeDto> RecentFamilyTrees { get; set; } = new();
 }

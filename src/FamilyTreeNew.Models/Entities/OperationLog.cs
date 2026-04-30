@@ -43,7 +43,7 @@ public class OperationLog
     /// 操作执行时间
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "操作时间")]
-    public DateTime OperationTime { get; set; } = DateTime.Now;
+    public DateTime OperationTime { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 操作者的IP地址

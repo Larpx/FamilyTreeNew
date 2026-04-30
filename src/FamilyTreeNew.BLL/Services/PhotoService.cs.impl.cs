@@ -2,6 +2,7 @@ using FamilyTreeNew.BLL.Helpers;
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 using SkiaSharp;
 
 namespace FamilyTreeNew.BLL.Services;
@@ -15,6 +16,7 @@ public class PhotoService : IPhotoService
     private readonly IPhotoRepository _photoRepository;
     private readonly IAlbumRepository _albumRepository;
     private readonly IFamilyMemberRepository _memberRepository;
+    private readonly ILogger<PhotoService> _logger;
 
     /// <summary>
     /// 缩略图宽度
@@ -26,11 +28,12 @@ public class PhotoService : IPhotoService
     /// </summary>
     private const int ThumbnailHeight = 300;
 
-    public PhotoService(IPhotoRepository photoRepository, IAlbumRepository albumRepository, IFamilyMemberRepository memberRepository)
+    public PhotoService(IPhotoRepository photoRepository, IAlbumRepository albumRepository, IFamilyMemberRepository memberRepository, ILogger<PhotoService> logger)
     {
         _photoRepository = photoRepository;
         _albumRepository = albumRepository;
         _memberRepository = memberRepository;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -125,7 +128,7 @@ public class PhotoService : IPhotoService
                 ThumbnailPath = relativeThumbnailPath,
                 Title = dto.Title ?? Path.GetFileNameWithoutExtension(file.FileName),
                 Description = dto.Description,
-                UploadedAt = DateTime.Now,
+                UploadedAt = DateTime.UtcNow,
                 UploadedBy = dto.UploadedBy
             };
 
@@ -197,7 +200,7 @@ public class PhotoService : IPhotoService
             var member = await _memberRepository.GetByIdAsync(dto.MemberId);
             if (member != null)
             {
-                member.UpdatedAt = DateTime.Now;
+                member.UpdatedAt = DateTime.UtcNow;
                 await _memberRepository.UpdateAsync(member);
             }
         }

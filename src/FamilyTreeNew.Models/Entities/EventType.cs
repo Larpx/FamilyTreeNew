@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 事件类型实体
+/// 定义事件的分类，如出生、逝世、迁徙、任职等
+/// </summary>
 [SugarTable("EventTypes")]
 public class EventType
 {
@@ -24,7 +28,7 @@ public class EventType
     public bool IsEnabled { get; set; } = true;
 
     [SugarColumn(IsNullable = false, ColumnDescription = "创建时间")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [Navigate(NavigateType.OneToMany, nameof(Event.EventTypeId))]
     public List<Event>? Events { get; set; }

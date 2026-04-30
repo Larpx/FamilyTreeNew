@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 using MiniExcelLibs;
 
 namespace FamilyTreeNew.BLL.Services;
@@ -14,11 +15,13 @@ public class ExcelImportService : IExcelImportService
 {
     private readonly IFamilyMemberRepository _memberRepository;
     private readonly IFamilyTreeRepository _familyTreeRepository;
+    private readonly ILogger<ExcelImportService> _logger;
 
-    public ExcelImportService(IFamilyMemberRepository memberRepository, IFamilyTreeRepository familyTreeRepository)
+    public ExcelImportService(IFamilyMemberRepository memberRepository, IFamilyTreeRepository familyTreeRepository, ILogger<ExcelImportService> logger)
     {
         _memberRepository = memberRepository;
         _familyTreeRepository = familyTreeRepository;
+        _logger = logger;
     }
 
     /// <summary>
@@ -152,7 +155,7 @@ public class ExcelImportService : IExcelImportService
                         Note = GetCellValue(row, "小注"),
                         DeathDateLunar = GetCellValue(row, "卒亡农历"),
                         Remarks = GetCellValue(row, "备注"),
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     };
 
                     var birthDateStr = GetCellValue(row, "生辰公历");
@@ -185,11 +188,12 @@ public class ExcelImportService : IExcelImportService
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(ex, "导入第 {RowNumber} 行数据时发生错误", excelRowNumber);
                     result.Errors.Add(new ExcelImportErrorDto
                     {
                         RowNumber = excelRowNumber,
                         FieldName = "处理错误",
-                        ErrorMessage = ex.Message
+                        ErrorMessage = "该行数据处理失败"
                     });
                 }
             }
@@ -210,8 +214,9 @@ public class ExcelImportService : IExcelImportService
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "导入家谱 {FamilyTreeId} 的Excel数据时发生错误", familyTreeId);
             result.Success = false;
-            result.Message = $"导入过程中发生错误: {ex.Message}";
+            result.Message = "导入过程中发生错误，请检查文件格式是否正确";
             return result;
         }
     }

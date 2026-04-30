@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Api.Controllers;
 
+/// <summary>
+/// 照片管理控制器
+/// 提供照片的上传、查询、更新、删除和成员关联功能
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -13,15 +17,22 @@ public class PhotosController : ControllerBase
 {
     private readonly IPhotoService _photoService;
     private readonly IAlbumService _albumService;
+    private readonly ILogger<PhotosController> _logger;
 
-    public PhotosController(IPhotoService photoService, IAlbumService albumService)
+    public PhotosController(IPhotoService photoService, IAlbumService albumService, ILogger<PhotosController> logger)
     {
         _photoService = photoService;
         _albumService = albumService;
+        _logger = logger;
     }
 
+    /// <summary>
+    /// 获取照片列表
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<PhotoDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<PhotoDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<PagedResult<PhotoDto>>>> GetList([FromQuery] PhotoQueryDto query)
     {
         try
@@ -35,8 +46,14 @@ public class PhotosController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 获取照片详情
+    /// </summary>
     [HttpGet("{id}")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<PhotoDto>>> GetById(Guid id)
     {
         try
@@ -54,7 +71,14 @@ public class PhotosController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 上传照片
+    /// </summary>
     [HttpPost("upload")]
+    [ProducesResponseType(typeof(ApiResponse<List<PhotoDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<List<PhotoDto>>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<List<PhotoDto>>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<List<PhotoDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<PhotoDto>>>> Upload([FromForm] PhotoUploadDto dto, List<IFormFile> files)
     {
         try
@@ -112,7 +136,13 @@ public class PhotosController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 更新照片信息
+    /// </summary>
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<PhotoDto>>> Update(Guid id, [FromBody] PhotoUpdateDto dto)
     {
         try
@@ -130,7 +160,13 @@ public class PhotosController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 删除照片
+    /// </summary>
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse>> Delete(Guid id)
     {
         try
@@ -148,7 +184,14 @@ public class PhotosController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 关联照片与成员
+    /// </summary>
     [HttpPost("{id}/link-member")]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<PhotoDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<PhotoDto>>> LinkMember(Guid id, [FromBody] LinkMemberDto dto)
     {
         try

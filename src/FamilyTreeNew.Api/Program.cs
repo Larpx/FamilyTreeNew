@@ -1,9 +1,12 @@
 using System.IO.Compression;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FamilyTreeNew.Api.Middleware;
 using FamilyTreeNew.BLL.Configuration;
 using FamilyTreeNew.BLL.Extensions;
 using FamilyTreeNew.DAL.Extensions;
+using FamilyTreeNew.Models.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -17,7 +20,15 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.WriteIndented = false;
+                options.JsonSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
+                options.JsonSerializerOptions.Converters.Add(new NullableUtcDateTimeJsonConverter());
+            });
 
         builder.Services.AddAntiforgery(options =>
         {

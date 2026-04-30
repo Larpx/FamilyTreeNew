@@ -88,7 +88,7 @@ public class AlbumService : IAlbumService
             FamilyTreeId = dto.FamilyTreeId,
             Name = dto.Name,
             Description = dto.Description,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _albumRepository.InsertAsync(album);
@@ -115,7 +115,7 @@ public class AlbumService : IAlbumService
 
         album.Name = dto.Name;
         album.Description = dto.Description;
-        album.UpdatedAt = DateTime.Now;
+        album.UpdatedAt = DateTime.UtcNow;
 
         await _albumRepository.UpdateAsync(album);
 

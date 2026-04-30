@@ -38,7 +38,7 @@ public class BackupService : IBackupService
 
     public async Task<BackupDto> CreateBackupAsync()
     {
-        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
         var fileName = $"backup_{_databaseName}_{timestamp}.sql";
         var filePath = Path.Combine(_backupDirectory, fileName);
 
@@ -67,7 +67,7 @@ public class BackupService : IBackupService
                 FileName = fileName,
                 FilePath = filePath,
                 FileSize = fileInfo.Length,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 IsSuccess = true
             };
         }
@@ -79,7 +79,7 @@ public class BackupService : IBackupService
                 FileName = fileName,
                 FilePath = filePath,
                 IsSuccess = false,
-                ErrorMessage = ex.Message
+                ErrorMessage = "创建备份失败，请查看系统日志"
             };
         }
     }
@@ -127,7 +127,7 @@ public class BackupService : IBackupService
             {
                 FileName = fileName,
                 IsSuccess = true,
-                RestoredAt = DateTime.Now
+                RestoredAt = DateTime.UtcNow
             };
         }
         catch (Exception ex)
@@ -137,7 +137,7 @@ public class BackupService : IBackupService
             {
                 FileName = fileName,
                 IsSuccess = false,
-                ErrorMessage = ex.Message
+                ErrorMessage = "恢复备份失败，请查看系统日志"
             };
         }
     }

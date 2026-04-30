@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 来源引用实体
+/// 记录来源与目标实体（成员、事件、家谱）之间的引用关系
+/// </summary>
 [SugarTable("SourceCitations")]
 public class SourceCitation
 {
@@ -21,7 +25,7 @@ public class SourceCitation
     public string? Note { get; set; }
 
     [SugarColumn(IsNullable = false, ColumnDescription = "创建时间")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [Navigate(NavigateType.OneToOne, nameof(SourceId))]
     public Source? Source { get; set; }

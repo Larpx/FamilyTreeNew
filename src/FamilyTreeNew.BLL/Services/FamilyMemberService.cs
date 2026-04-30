@@ -102,7 +102,7 @@ public class FamilyMemberService : IFamilyMemberService
             DeathDateLunar = dto.DeathDateLunar,
             DeathDateSolar = dto.DeathDateSolar,
             Remarks = dto.Remarks,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _memberRepository.InsertAsync(entity);
@@ -137,7 +137,7 @@ public class FamilyMemberService : IFamilyMemberService
         entity.DeathDateLunar = dto.DeathDateLunar;
         entity.DeathDateSolar = dto.DeathDateSolar;
         entity.Remarks = dto.Remarks;
-        entity.UpdatedAt = DateTime.Now;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _memberRepository.UpdateAsync(entity);
         return MapToDto(entity);

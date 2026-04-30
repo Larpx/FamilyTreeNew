@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Api.Controllers;
 
+/// <summary>
+/// 家族控制器，提供家族的增删改查功能
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -19,6 +22,10 @@ public class FamiliesController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 获取所有家族列表
+    /// </summary>
+    /// <returns>家族列表</returns>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<FamilyResponseDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<FamilyResponseDto>>>> GetAll()
@@ -35,6 +42,11 @@ public class FamiliesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 根据ID获取家族详情
+    /// </summary>
+    /// <param name="id">家族ID</param>
+    /// <returns>家族详情</returns>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status404NotFound)]
@@ -56,6 +68,11 @@ public class FamiliesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 创建家族
+    /// </summary>
+    /// <param name="dto">家族创建数据</param>
+    /// <returns>创建的家族信息</returns>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status400BadRequest)]
@@ -82,6 +99,12 @@ public class FamiliesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 更新家族信息
+    /// </summary>
+    /// <param name="id">家族ID</param>
+    /// <param name="dto">家族更新数据</param>
+    /// <returns>更新后的家族信息</returns>
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status400BadRequest)]
@@ -113,6 +136,11 @@ public class FamiliesController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 删除家族
+    /// </summary>
+    /// <param name="id">家族ID</param>
+    /// <returns>删除结果</returns>
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]

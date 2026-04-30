@@ -1,48 +1,34 @@
-using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-public class AlbumManagementController : Controller
+/// <summary>
+/// 相册管理控制器
+/// 提供相册的增删改查和照片管理功能
+/// </summary>
+public class AlbumManagementController : AdminControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<AlbumManagementController> _logger;
 
     public AlbumManagementController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<AlbumManagementController> logger)
+        : base(httpClientFactory, configuration)
     {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
         _logger = logger;
     }
 
-    private HttpClient GetApiClient()
-    {
-        var client = _httpClientFactory.CreateClient();
-        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-        client.BaseAddress = new Uri(apiBaseUrl);
-        
-        var token = HttpContext.Session.GetString("JwtToken");
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        
-        return client;
-    }
-
+    /// <summary>
+    /// 相册列表页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, Guid? familyTreeId = null, string? keyword = null)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -72,12 +58,12 @@ public class AlbumManagementController : Controller
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<AlbumDto>>>(content);
-                
+
                 ViewBag.SelectedFamilyTreeId = familyTreeId;
                 ViewBag.Keyword = keyword;
                 ViewBag.PageIndex = page;
                 ViewBag.PageSize = pageSize;
-                
+
                 return View(result?.Data);
             }
 
@@ -92,13 +78,14 @@ public class AlbumManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 创建相册页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Create(Guid? familyTreeId)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -127,14 +114,15 @@ public class AlbumManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 提交创建相册
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(AlbumCreateDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         if (!ModelState.IsValid)
         {
@@ -171,7 +159,7 @@ public class AlbumManagementController : Controller
 
             var errorContent = await response.Content.ReadAsStringAsync();
             var errorResult = JsonConvert.DeserializeObject<ApiResponse<AlbumDto>>(errorContent);
-            
+
             if (errorResult?.Errors != null && errorResult.Errors.Any())
             {
                 foreach (var error in errorResult.Errors)
@@ -210,13 +198,14 @@ public class AlbumManagementController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// 编辑相册页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -227,7 +216,7 @@ public class AlbumManagementController : Controller
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<AlbumDetailDto>>(content);
-                
+
                 if (result?.Data != null)
                 {
                     var updateDto = new AlbumUpdateDto
@@ -254,14 +243,15 @@ public class AlbumManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 提交编辑相册
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, AlbumUpdateDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         var familyTreeId = Request.Form["FamilyTreeId"];
         ViewBag.AlbumId = id;
@@ -285,7 +275,7 @@ public class AlbumManagementController : Controller
 
             var errorContent = await response.Content.ReadAsStringAsync();
             var errorResult = JsonConvert.DeserializeObject<ApiResponse<AlbumDto>>(errorContent);
-            
+
             if (errorResult?.Errors != null && errorResult.Errors.Any())
             {
                 foreach (var error in errorResult.Errors)
@@ -307,14 +297,15 @@ public class AlbumManagementController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// 删除相册
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -341,13 +332,14 @@ public class AlbumManagementController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// 相册详情页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Details(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {

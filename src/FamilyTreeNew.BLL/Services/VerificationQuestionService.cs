@@ -1,5 +1,6 @@
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -14,17 +15,24 @@ public interface IVerificationQuestionService
     Task<bool> AddQuestionsToFamilyTreeAsync(Guid familyTreeId, List<CreateVerificationQuestionDto> questions);
 }
 
+/// <summary>
+/// 验证问题服务
+/// 管理家谱访问验证问题的增删改查
+/// </summary>
 public class VerificationQuestionService : IVerificationQuestionService
 {
     private readonly DAL.Repositories.IVerificationQuestionRepository _repository;
     private readonly DAL.Repositories.IFamilyTreeRepository _familyTreeRepository;
+    private readonly ILogger<VerificationQuestionService> _logger;
 
     public VerificationQuestionService(
         DAL.Repositories.IVerificationQuestionRepository repository,
-        DAL.Repositories.IFamilyTreeRepository familyTreeRepository)
+        DAL.Repositories.IFamilyTreeRepository familyTreeRepository,
+        ILogger<VerificationQuestionService> logger)
     {
         _repository = repository;
         _familyTreeRepository = familyTreeRepository;
+        _logger = logger;
     }
 
     public async Task<List<VerificationQuestionDto>> GetAllAsync()
@@ -60,10 +68,11 @@ public class VerificationQuestionService : IVerificationQuestionService
             AnswerKeyword = dto.AnswerKeyword,
             Order = dto.Order,
             IsEnabled = dto.IsEnabled,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _repository.InsertAsync(entity);
+        _logger.LogInformation("创建验证问题，ID: {QuestionId}，家谱: {FamilyTreeId}", entity.Id, dto.FamilyTreeId);
         return MapToDto(entity);
     }
 
@@ -81,6 +90,7 @@ public class VerificationQuestionService : IVerificationQuestionService
         existing.IsEnabled = dto.IsEnabled;
 
         await _repository.UpdateAsync(existing);
+        _logger.LogInformation("更新验证问题，ID: {QuestionId}", id);
         return MapToDto(existing);
     }
 
@@ -93,6 +103,7 @@ public class VerificationQuestionService : IVerificationQuestionService
         }
 
         await _repository.DeleteAsync(id);
+        _logger.LogInformation("删除验证问题，ID: {QuestionId}", id);
         return true;
     }
 
@@ -114,7 +125,7 @@ public class VerificationQuestionService : IVerificationQuestionService
                 AnswerKeyword = question.AnswerKeyword,
                 Order = question.Order > 0 ? question.Order : i + 1,
                 IsEnabled = question.IsEnabled,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
             await _repository.InsertAsync(entity);
         }
@@ -125,6 +136,7 @@ public class VerificationQuestionService : IVerificationQuestionService
             await _familyTreeRepository.UpdateAsync(familyTree);
         }
 
+        _logger.LogInformation("为家谱 {FamilyTreeId} 批量添加 {Count} 个验证问题", familyTreeId, questions.Count);
         return true;
     }
 

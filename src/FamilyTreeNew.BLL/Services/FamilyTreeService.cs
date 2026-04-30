@@ -55,7 +55,7 @@ public class FamilyTreeService : IFamilyTreeService
             Description = dto.Description,
             RequireVerification = dto.RequireVerification,
             IsEnabled = dto.IsEnabled,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _familyTreeRepository.InsertAsync(entity);
@@ -72,7 +72,7 @@ public class FamilyTreeService : IFamilyTreeService
         entity.Description = dto.Description;
         entity.RequireVerification = dto.RequireVerification;
         entity.IsEnabled = dto.IsEnabled;
-        entity.UpdatedAt = DateTime.Now;
+        entity.UpdatedAt = DateTime.UtcNow;
 
         await _familyTreeRepository.UpdateAsync(entity);
         var memberCount = await _familyTreeRepository.GetMemberCountAsync(id);

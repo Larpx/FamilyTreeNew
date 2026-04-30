@@ -1,48 +1,34 @@
-using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-public class MemberManagementController : Controller
+/// <summary>
+/// 成员管理控制器
+/// 提供家谱成员的增删改查功能
+/// </summary>
+public class MemberManagementController : AdminControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<MemberManagementController> _logger;
 
     public MemberManagementController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<MemberManagementController> logger)
+        : base(httpClientFactory, configuration)
     {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
         _logger = logger;
     }
 
-    private HttpClient GetApiClient()
-    {
-        var client = _httpClientFactory.CreateClient();
-        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-        client.BaseAddress = new Uri(apiBaseUrl);
-        
-        var token = HttpContext.Session.GetString("JwtToken");
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        
-        return client;
-    }
-
+    /// <summary>
+    /// 成员列表页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 20, Guid? familyTreeId = null, string? keyword = null)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -79,12 +65,12 @@ public class MemberManagementController : Controller
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyMemberDto>>>(content);
-                    
+
                     ViewBag.SelectedFamilyTreeId = familyTreeId;
                     ViewBag.Keyword = keyword;
                     ViewBag.PageIndex = page;
                     ViewBag.PageSize = pageSize;
-                    
+
                     return View(result?.Data);
                 }
             }
@@ -99,13 +85,14 @@ public class MemberManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 创建成员页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Create(Guid familyTreeId)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -135,14 +122,15 @@ public class MemberManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 提交创建成员
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(FamilyMemberCreateDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         if (!ModelState.IsValid)
         {
@@ -180,7 +168,7 @@ public class MemberManagementController : Controller
 
             var errorContent = await response.Content.ReadAsStringAsync();
             var errorResult = JsonConvert.DeserializeObject<ApiResponse<FamilyMemberDto>>(errorContent);
-            
+
             if (errorResult?.Errors != null && errorResult.Errors.Any())
             {
                 foreach (var error in errorResult.Errors)
@@ -220,13 +208,14 @@ public class MemberManagementController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// 编辑成员页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -237,7 +226,7 @@ public class MemberManagementController : Controller
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<FamilyMemberDto>>(content);
-                
+
                 if (result?.Data != null)
                 {
                     var parentsResponse = await client.GetAsync($"/api/familytrees/{result.Data.FamilyTreeId}/members?pageSize=1000");
@@ -285,14 +274,15 @@ public class MemberManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 提交编辑成员
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, FamilyMemberUpdateDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         var familyTreeId = Request.Form["FamilyTreeId"];
         ViewBag.FamilyTreeId = familyTreeId;
@@ -333,7 +323,7 @@ public class MemberManagementController : Controller
 
             var errorContent = await response.Content.ReadAsStringAsync();
             var errorResult = JsonConvert.DeserializeObject<ApiResponse<FamilyMemberDto>>(errorContent);
-            
+
             if (errorResult?.Errors != null && errorResult.Errors.Any())
             {
                 foreach (var error in errorResult.Errors)
@@ -372,14 +362,15 @@ public class MemberManagementController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// 删除成员
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id, Guid familyTreeId)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -406,13 +397,14 @@ public class MemberManagementController : Controller
         return RedirectToAction(nameof(Index), new { familyTreeId });
     }
 
+    /// <summary>
+    /// 成员详情页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Details(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {

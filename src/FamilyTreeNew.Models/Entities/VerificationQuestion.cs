@@ -49,7 +49,7 @@ public class VerificationQuestion
     /// 问题创建时间
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "创建日期")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 导航属性：所属家谱

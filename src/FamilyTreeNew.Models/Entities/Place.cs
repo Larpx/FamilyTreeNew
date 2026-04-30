@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 地点实体
+/// 记录与家谱成员相关的地理位置信息，支持省市区和经纬度
+/// </summary>
 [SugarTable("Places")]
 public class Place
 {
@@ -36,7 +40,7 @@ public class Place
     public bool IsEnabled { get; set; } = true;
 
     [SugarColumn(IsNullable = false, ColumnDescription = "创建时间")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [SugarColumn(IsNullable = true, ColumnDescription = "更新时间")]
     public DateTime? UpdatedAt { get; set; }

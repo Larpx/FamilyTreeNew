@@ -85,5 +85,5 @@ public class StatisticsReportDto
     
     public Dictionary<string, int> ResidenceDistribution { get; set; } = new Dictionary<string, int>();
     
-    public DateTime GeneratedAt { get; set; } = DateTime.Now;
+    public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
 }

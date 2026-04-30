@@ -4,6 +4,9 @@ using FamilyTreeNew.Models.DTOs;
 
 namespace FamilyTreeNew.Api.Controllers;
 
+/// <summary>
+/// 验证问题控制器，提供验证问题的增删改查功能
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class VerificationQuestionsController : ControllerBase
@@ -19,7 +22,12 @@ public class VerificationQuestionsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 获取所有验证问题列表
+    /// </summary>
+    /// <returns>验证问题列表</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(ApiResponse<List<VerificationQuestionDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<List<VerificationQuestionDto>>>> GetAll()
     {
         try
@@ -34,7 +42,14 @@ public class VerificationQuestionsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 根据ID获取验证问题详情
+    /// </summary>
+    /// <param name="id">验证问题ID</param>
+    /// <returns>验证问题详情</returns>
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<VerificationQuestionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<VerificationQuestionDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<VerificationQuestionDto>>> GetById(Guid id)
     {
         try
@@ -53,7 +68,14 @@ public class VerificationQuestionsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 创建验证问题
+    /// </summary>
+    /// <param name="dto">验证问题创建数据</param>
+    /// <returns>创建的验证问题信息</returns>
     [HttpPost]
+    [ProducesResponseType(typeof(ApiResponse<VerificationQuestionDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<VerificationQuestionDto>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<VerificationQuestionDto>>> Create([FromBody] CreateVerificationQuestionDto dto)
     {
         try
@@ -80,7 +102,16 @@ public class VerificationQuestionsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 更新验证问题
+    /// </summary>
+    /// <param name="id">验证问题ID</param>
+    /// <param name="dto">验证问题更新数据</param>
+    /// <returns>更新后的验证问题信息</returns>
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<VerificationQuestionDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<VerificationQuestionDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<VerificationQuestionDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<VerificationQuestionDto>>> Update(Guid id, [FromBody] UpdateVerificationQuestionDto dto)
     {
         try
@@ -105,7 +136,14 @@ public class VerificationQuestionsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 删除验证问题
+    /// </summary>
+    /// <param name="id">验证问题ID</param>
+    /// <returns>删除结果</returns>
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse>> Delete(Guid id)
     {
         try

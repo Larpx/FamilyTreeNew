@@ -16,7 +16,7 @@ public static class TestDataFactory
             PasswordSalt = salt,
             RealName = "Test User",
             Email = "test@example.com",
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
             IsEnabled = isEnabled
         };
     }
@@ -28,7 +28,7 @@ public static class TestDataFactory
             Id = id ?? Guid.NewGuid(),
             Name = name,
             Description = "Test Description",
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
             RequireVerification = false,
             IsEnabled = true
         };
@@ -54,7 +54,7 @@ public static class TestDataFactory
             PersonalInfo = "个人信息",
             Note = "小注",
             IsDeceased = false,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
     }
 
@@ -66,7 +66,7 @@ public static class TestDataFactory
             FamilyTreeId = familyTreeId ?? Guid.NewGuid(),
             Name = name,
             Description = "Test Album Description",
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
     }
 
@@ -81,7 +81,7 @@ public static class TestDataFactory
             ThumbnailPath = "/photos/thumbnails/test.jpg",
             Title = "Test Photo",
             Description = "Test Description",
-            UploadedAt = DateTime.Now,
+            UploadedAt = DateTime.UtcNow,
             UploadedBy = "testuser"
         };
     }
@@ -95,7 +95,7 @@ public static class TestDataFactory
             OperationType = "Login",
             Module = "Auth",
             Content = "Test operation",
-            OperationTime = DateTime.Now,
+            OperationTime = DateTime.UtcNow,
             IpAddress = "127.0.0.1"
         };
     }

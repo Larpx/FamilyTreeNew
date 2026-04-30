@@ -49,7 +49,7 @@ public class Admin
     /// 账户创建时间
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "创建日期")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 最后一次登录系统的时间

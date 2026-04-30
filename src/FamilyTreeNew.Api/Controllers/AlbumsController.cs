@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FamilyTreeNew.Api.Controllers;
 
+/// <summary>
+/// 相册管理控制器
+/// 提供相册的增删改查功能
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -12,15 +16,22 @@ public class AlbumsController : ControllerBase
 {
     private readonly IAlbumService _albumService;
     private readonly IFamilyTreeService _familyTreeService;
+    private readonly ILogger<AlbumsController> _logger;
 
-    public AlbumsController(IAlbumService albumService, IFamilyTreeService familyTreeService)
+    public AlbumsController(IAlbumService albumService, IFamilyTreeService familyTreeService, ILogger<AlbumsController> logger)
     {
         _albumService = albumService;
         _familyTreeService = familyTreeService;
+        _logger = logger;
     }
 
+    /// <summary>
+    /// 获取相册列表
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<AlbumDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<AlbumDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<PagedResult<AlbumDto>>>> GetList([FromQuery] AlbumQueryDto query)
     {
         try
@@ -34,8 +45,14 @@ public class AlbumsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 获取相册详情
+    /// </summary>
     [HttpGet("{id}")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDetailDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDetailDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDetailDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<AlbumDetailDto>>> GetById(Guid id)
     {
         try
@@ -53,7 +70,14 @@ public class AlbumsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 创建相册
+    /// </summary>
     [HttpPost]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<AlbumDto>>> Create([FromBody] AlbumCreateDto dto)
     {
         try
@@ -81,7 +105,14 @@ public class AlbumsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 更新相册
+    /// </summary>
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<AlbumDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<AlbumDto>>> Update(Guid id, [FromBody] AlbumUpdateDto dto)
     {
         try
@@ -108,7 +139,13 @@ public class AlbumsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 删除相册
+    /// </summary>
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse>> Delete(Guid id)
     {
         try

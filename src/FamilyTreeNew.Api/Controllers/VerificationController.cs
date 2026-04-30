@@ -4,6 +4,10 @@ using FamilyTreeNew.Models.DTOs;
 
 namespace FamilyTreeNew.Api.Controllers;
 
+/// <summary>
+/// 家谱访问验证控制器
+/// 提供家谱访问验证、验证问题管理和令牌校验功能
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class VerificationController : ControllerBase
@@ -22,7 +26,13 @@ public class VerificationController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 验证答案
+    /// </summary>
     [HttpPost("verify")]
+    [ProducesResponseType(typeof(ApiResponse<VerificationResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<VerificationResultDto>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<VerificationResultDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<VerificationResultDto>>> VerifyAnswer([FromBody] VerifyAnswerDto dto)
     {
         try
@@ -44,7 +54,13 @@ public class VerificationController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 获取家谱验证状态
+    /// </summary>
     [HttpGet("familytrees/{familyTreeId}/status")]
+    [ProducesResponseType(typeof(ApiResponse<FamilyTreeVerificationStatusDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<FamilyTreeVerificationStatusDto>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<FamilyTreeVerificationStatusDto>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<FamilyTreeVerificationStatusDto>>> GetFamilyTreeVerificationStatus(Guid familyTreeId)
     {
         try
@@ -64,7 +80,12 @@ public class VerificationController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 获取家谱验证问题列表
+    /// </summary>
     [HttpGet("familytrees/{familyTreeId}/questions")]
+    [ProducesResponseType(typeof(ApiResponse<List<VerificationQuestionDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<List<VerificationQuestionDto>>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse<List<VerificationQuestionDto>>>> GetFamilyTreeQuestions(Guid familyTreeId)
     {
         try
@@ -79,7 +100,14 @@ public class VerificationController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 批量添加验证问题到家谱
+    /// </summary>
     [HttpPost("familytrees/{familyTreeId}/questions")]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponse>> AddQuestionsToFamilyTree(
         Guid familyTreeId,
         [FromBody] List<CreateVerificationQuestionDto> questions)
@@ -122,7 +150,13 @@ public class VerificationController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 验证访问令牌
+    /// </summary>
     [HttpPost("validate-token")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
     public ActionResult<ApiResponse<bool>> ValidateToken([FromBody] ValidateTokenRequest request)
     {
         try

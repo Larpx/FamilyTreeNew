@@ -31,7 +31,7 @@ public class FamilyTree
     /// 家谱创建时间
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "创建日期")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 是否需要验证才能查看，true表示需要回答验证问题

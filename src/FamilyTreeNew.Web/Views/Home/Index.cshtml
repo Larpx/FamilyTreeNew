@@ -1,11 +1,11 @@
 @using System.Linq
-@model IEnumerable<FamilyTreeNew.Models.DTOs.FamilyResponseDto>
+@model IEnumerable<FamilyTreeNew.Models.DTOs.FamilyTreeDto>
 @{
     ViewData["Title"] = "首页";
-    var familyList = (Model ?? Enumerable.Empty<FamilyTreeNew.Models.DTOs.FamilyResponseDto>())
+    var familyTreeList = (Model ?? Enumerable.Empty<FamilyTreeNew.Models.DTOs.FamilyTreeDto>())
         .OrderByDescending(f => f.CreatedAt)
         .ToList();
-    var latestCreatedAt = familyList.FirstOrDefault()?.CreatedAt;
+    var latestCreatedAt = familyTreeList.FirstOrDefault()?.CreatedAt;
 }
 
 <div class="home-page">
@@ -29,7 +29,7 @@
                         <div class="home-stat-grid">
                             <article class="home-stat-item">
                                 <span class="home-stat-label">收录家谱</span>
-                                <strong class="home-stat-value">@familyList.Count</strong>
+                                <strong class="home-stat-value">@familyTreeList.Count</strong>
                             </article>
                             <article class="home-stat-item">
                                 <span class="home-stat-label">最近更新</span>
@@ -75,25 +75,25 @@
                 <p>优先展示最近收录的家谱信息</p>
             </div>
 
-            @if (familyList.Any())
+            @if (familyTreeList.Any())
             {
                 <div class="row g-4">
-                    @foreach (var family in familyList.Take(6))
+                    @foreach (var familyTree in familyTreeList.Take(6))
                     {
                         <div class="col-lg-4 col-md-6">
                             <article class="home-family-card">
                                 <div class="home-family-head">
-                                    <h3>@family.FamilyName</h3>
-                                    <span>@family.CreatedAt.ToString("yyyy-MM-dd")</span>
+                                    <h3>@familyTree.Name</h3>
+                                    <span>@familyTree.CreatedAt.ToString("yyyy-MM-dd")</span>
                                 </div>
-                                <p>@(string.IsNullOrWhiteSpace(family.Description) ? "暂无简介" : family.Description)</p>
-                                <a asp-controller="FamilyTree" asp-action="Index" class="home-family-link">查看族谱</a>
+                                <p>@(string.IsNullOrWhiteSpace(familyTree.Description) ? "暂无简介" : familyTree.Description)</p>
+                                <a asp-controller="FamilyTree" asp-action="Detail" asp-route-id="@familyTree.Id" class="home-family-link">查看家谱</a>
                             </article>
                         </div>
                     }
                 </div>
 
-                @if (familyList.Count > 6)
+                @if (familyTreeList.Count > 6)
                 {
                     <div class="home-more-wrap">
                         <a asp-controller="FamilyTree" asp-action="Index" class="home-btn home-btn-primary">查看全部家谱</a>

@@ -57,13 +57,13 @@ public class SystemSettingsService : ISystemSettingsService
             {
                 settings = new SystemSettings();
                 MapFromDto(settings, dto);
-                settings.CreatedAt = DateTime.Now;
+                settings.CreatedAt = DateTime.UtcNow;
                 await _context.Db.Insertable(settings).ExecuteCommandAsync();
             }
             else
             {
                 MapFromDto(settings, dto);
-                settings.UpdatedAt = DateTime.Now;
+                settings.UpdatedAt = DateTime.UtcNow;
                 await _context.Db.Updateable(settings).ExecuteCommandAsync();
             }
 
@@ -92,7 +92,7 @@ public class SystemSettingsService : ISystemSettingsService
             SessionTimeout = 120,
             EnableOperationLog = true,
             LogRetentionDays = 90,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await _context.Db.Insertable(settings).ExecuteCommandAsync();

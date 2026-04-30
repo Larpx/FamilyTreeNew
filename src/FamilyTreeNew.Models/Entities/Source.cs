@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 来源实体
+/// 记录家谱数据的来源信息，如书籍、文献、口述等
+/// </summary>
 [SugarTable("Sources")]
 public class Source
 {
@@ -36,7 +40,7 @@ public class Source
     public bool IsEnabled { get; set; } = true;
 
     [SugarColumn(IsNullable = false, ColumnDescription = "创建时间")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [SugarColumn(IsNullable = true, ColumnDescription = "更新时间")]
     public DateTime? UpdatedAt { get; set; }

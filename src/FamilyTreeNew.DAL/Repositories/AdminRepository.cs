@@ -79,7 +79,7 @@ public class AdminRepository : BaseRepositoryGuid<Admin>, IAdminRepository
     public async Task<int> UpdateLastLoginTimeAsync(Guid adminId)
     {
         return await Db.Updateable<Admin>()
-            .SetColumns(a => a.LastLoginAt == DateTime.Now)
+            .SetColumns(a => a.LastLoginAt == DateTime.UtcNow)
             .Where(a => a.Id == adminId)
             .ExecuteCommandAsync();
     }

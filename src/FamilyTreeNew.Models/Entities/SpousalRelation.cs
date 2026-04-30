@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 配偶关系实体
+/// 记录家谱成员之间的婚姻关系，包括结婚和离婚信息
+/// </summary>
 [SugarTable("SpousalRelations")]
 public class SpousalRelation
 {
@@ -39,7 +43,7 @@ public class SpousalRelation
     public string? Remarks { get; set; }
 
     [SugarColumn(IsNullable = false, ColumnDescription = "创建时间")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [SugarColumn(IsNullable = true, ColumnDescription = "更新时间")]
     public DateTime? UpdatedAt { get; set; }

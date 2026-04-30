@@ -37,7 +37,7 @@ public class Album
     /// 相册创建时间
     /// </summary>
     [SugarColumn(IsNullable = false, ColumnDescription = "创建日期")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// 相册最后更新时间

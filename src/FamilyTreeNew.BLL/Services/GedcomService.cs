@@ -1,24 +1,32 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.Entities;
 using FamilyTreeNew.Models.DTOs;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text;
 
 namespace FamilyTreeNew.BLL.Services;
 
+/// <summary>
+/// GEDCOM格式导入导出服务
+/// 支持将家谱数据导出为GEDCOM 5.5.1格式，以及从GEDCOM文件导入成员数据
+/// </summary>
 public class GedcomService : IGedcomService
 {
     private readonly IFamilyTreeRepository _familyTreeRepository;
     private readonly IFamilyMemberRepository _familyMemberRepository;
     private readonly IFamilyMemberService _familyMemberService;
+    private readonly ILogger<GedcomService> _logger;
 
-    public GedcomService(IFamilyTreeRepository familyTreeRepository, 
+    public GedcomService(IFamilyTreeRepository familyTreeRepository,
         IFamilyMemberRepository familyMemberRepository,
-        IFamilyMemberService familyMemberService)
+        IFamilyMemberService familyMemberService,
+        ILogger<GedcomService> logger)
     {
         _familyTreeRepository = familyTreeRepository;
         _familyMemberRepository = familyMemberRepository;
         _familyMemberService = familyMemberService;
+        _logger = logger;
     }
 
     public async Task<string> ExportToGedcomAsync(Guid familyTreeId)
@@ -30,7 +38,7 @@ public class GedcomService : IGedcomService
         }
 
         var members = await _familyMemberRepository.GetByFamilyTreeIdAsync(familyTreeId);
-        
+
         var gedcom = new StringBuilder();
         gedcom.AppendLine("0 HEAD");
         gedcom.AppendLine("1 SOUR FamilyTreeNew");
@@ -39,14 +47,14 @@ public class GedcomService : IGedcomService
         gedcom.AppendLine("2 VERS 5.5.1");
         gedcom.AppendLine("2 FORM LINEAGE-LINKED");
         gedcom.AppendLine("1 CHAR UTF-8");
-        gedcom.AppendLine("1 DATE " + DateTime.Now.ToString("yyyy-MM-dd"));
+        gedcom.AppendLine("1 DATE " + DateTime.UtcNow.ToString("yyyy-MM-dd"));
 
         foreach (var member in members)
         {
             gedcom.AppendLine();
             gedcom.AppendLine($"0 @I{member.Id.ToString().Replace("-", "")}@ INDI");
             gedcom.AppendLine($"1 NAME {EscapeGedcomString(member.Surname)} /{EscapeGedcomString(member.FirstName)}/");
-            
+
             if (!string.IsNullOrEmpty(member.Alias))
             {
                 gedcom.AppendLine($"1 NICK {EscapeGedcomString(member.Alias)}");
@@ -106,6 +114,7 @@ public class GedcomService : IGedcomService
         gedcom.AppendLine();
         gedcom.AppendLine("0 TRLR");
 
+        _logger.LogInformation("导出GEDCOM文件，家谱ID: {FamilyTreeId}，成员数: {MemberCount}", familyTreeId, members.Count);
         return gedcom.ToString();
     }
 
@@ -114,7 +123,7 @@ public class GedcomService : IGedcomService
         try
         {
             var lines = gedcomContent.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            
+
             var memberMap = new Dictionary<string, Guid>();
             Guid? currentMemberId = null;
             FamilyMemberCreateDto? currentMember = null;
@@ -213,11 +222,13 @@ public class GedcomService : IGedcomService
                 await CreateMember(currentMember, memberMap);
             }
 
+            _logger.LogInformation("导入GEDCOM文件，家谱ID: {FamilyTreeId}，导入成员数: {MemberCount}", familyTreeId, memberMap.Count);
             return (true, $"成功导入 {memberMap.Count} 个成员");
         }
         catch (Exception ex)
         {
-            return (false, $"导入失败: {ex.Message}");
+            _logger.LogError(ex, "导入GEDCOM文件失败，家谱ID: {FamilyTreeId}", familyTreeId);
+            return (false, "导入失败，请检查文件格式");
         }
     }
 

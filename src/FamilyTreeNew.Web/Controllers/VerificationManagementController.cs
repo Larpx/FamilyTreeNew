@@ -1,48 +1,34 @@
-using System.Net.Http.Headers;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace FamilyTreeNew.Web.Controllers;
 
-public class VerificationManagementController : Controller
+/// <summary>
+/// 验证问题管理控制器
+/// 提供验证问题的增删改查功能
+/// </summary>
+public class VerificationManagementController : AdminControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<VerificationManagementController> _logger;
 
     public VerificationManagementController(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<VerificationManagementController> logger)
+        : base(httpClientFactory, configuration)
     {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
         _logger = logger;
     }
 
-    private HttpClient GetApiClient()
-    {
-        var client = _httpClientFactory.CreateClient();
-        var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5000";
-        client.BaseAddress = new Uri(apiBaseUrl);
-        
-        var token = HttpContext.Session.GetString("JwtToken");
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        
-        return client;
-    }
-
+    /// <summary>
+    /// 验证问题列表页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -67,13 +53,14 @@ public class VerificationManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 创建验证问题页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -97,14 +84,15 @@ public class VerificationManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 提交创建验证问题
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateVerificationQuestionDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         if (!ModelState.IsValid)
         {
@@ -140,7 +128,8 @@ public class VerificationManagementController : Controller
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();
-            ModelState.AddModelError(string.Empty, "创建失败: " + errorContent);
+            var errorResult = JsonConvert.DeserializeObject<ApiResponse>(errorContent);
+            ModelState.AddModelError(string.Empty, errorResult?.Message ?? "创建失败");
         }
         catch (Exception ex)
         {
@@ -168,13 +157,14 @@ public class VerificationManagementController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// 编辑验证问题页面
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Edit(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {
@@ -186,7 +176,7 @@ public class VerificationManagementController : Controller
                 var content = await response.Content.ReadAsStringAsync();
                 var apiResult = JsonConvert.DeserializeObject<ApiResponse<VerificationQuestionDto>>(content);
                 var result = apiResult?.Data;
-                
+
                 if (result != null)
                 {
                     var updateDto = new UpdateVerificationQuestionDto
@@ -220,14 +210,15 @@ public class VerificationManagementController : Controller
         }
     }
 
+    /// <summary>
+    /// 提交编辑验证问题
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, UpdateVerificationQuestionDto model)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         ViewBag.QuestionId = id;
 
@@ -265,7 +256,8 @@ public class VerificationManagementController : Controller
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();
-            ModelState.AddModelError(string.Empty, "更新失败: " + errorContent);
+            var errorResult = JsonConvert.DeserializeObject<ApiResponse>(errorContent);
+            ModelState.AddModelError(string.Empty, errorResult?.Message ?? "更新失败");
         }
         catch (Exception ex)
         {
@@ -293,14 +285,15 @@ public class VerificationManagementController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// 删除验证问题
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JwtToken")))
-        {
-            return RedirectToAction("Login", "Admin");
-        }
+        var loginCheck = CheckLoginOrRedirect();
+        if (loginCheck != null) return loginCheck;
 
         try
         {

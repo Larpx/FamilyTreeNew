@@ -16,16 +16,18 @@ public class FamilyMembersController : ControllerBase
     private readonly IFamilyMemberService _memberService;
     private readonly IFamilyTreeService _familyTreeService;
     private readonly IMemoryCache _memoryCache;
+    private readonly ILogger<FamilyMembersController> _logger;
 
     private static readonly string MemberListCacheKey = "Member_List_{0}_{1}_{2}_{3}_{4}_{5}_{6}";
     private static readonly string MemberDetailCacheKey = "Member_Detail_{0}";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
-    public FamilyMembersController(IFamilyMemberService memberService, IFamilyTreeService familyTreeService, IMemoryCache memoryCache)
+    public FamilyMembersController(IFamilyMemberService memberService, IFamilyTreeService familyTreeService, IMemoryCache memoryCache, ILogger<FamilyMembersController> logger)
     {
         _memberService = memberService;
         _familyTreeService = familyTreeService;
         _memoryCache = memoryCache;
+        _logger = logger;
     }
 
     /// <summary>

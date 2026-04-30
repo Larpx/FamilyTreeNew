@@ -2,6 +2,10 @@ using SqlSugar;
 
 namespace FamilyTreeNew.Models.Entities;
 
+/// <summary>
+/// 事件实体
+/// 记录家谱成员的各类事件，如出生、逝世、迁徙等
+/// </summary>
 [SugarTable("Events")]
 public class Event
 {
@@ -36,7 +40,7 @@ public class Event
     public string? Remarks { get; set; }
 
     [SugarColumn(IsNullable = false, ColumnDescription = "创建时间")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     [SugarColumn(IsNullable = true, ColumnDescription = "更新时间")]
     public DateTime? UpdatedAt { get; set; }
