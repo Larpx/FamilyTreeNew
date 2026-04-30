@@ -32,10 +32,10 @@ public class FamilyMemberRepository : BaseRepositoryGuid<FamilyMember>, IFamilyM
 
     /// <inheritdoc/>
     public async Task<(List<FamilyMember> Items, int TotalCount)> GetPagedByFamilyTreeAsync(
-        Guid familyTreeId, int pageIndex, int pageSize, string? keyword, int? generation, Guid? parentId)
+        Guid? familyTreeId, int pageIndex, int pageSize, string? keyword, int? generation, Guid? parentId)
     {
         var query = Db.Queryable<FamilyMember>()
-            .Where(m => m.FamilyTreeId == familyTreeId)
+            .WhereIF(familyTreeId.HasValue, m => m.FamilyTreeId == familyTreeId!.Value)
             .WhereIF(!string.IsNullOrWhiteSpace(keyword), m =>
                 m.Surname.Contains(keyword!) ||
                 m.FirstName.Contains(keyword!) ||

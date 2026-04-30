@@ -21,19 +21,8 @@ public class FamilyMemberService : IFamilyMemberService
     /// <inheritdoc/>
     public async Task<PagedResult<FamilyMemberDto>> GetPagedAsync(FamilyMemberQueryDto query)
     {
-        if (!query.FamilyTreeId.HasValue)
-        {
-            return new PagedResult<FamilyMemberDto>
-            {
-                Items = new List<FamilyMemberDto>(),
-                TotalCount = 0,
-                PageIndex = query.PageIndex,
-                PageSize = query.PageSize
-            };
-        }
-
         var (items, totalCount) = await _memberRepository.GetPagedByFamilyTreeAsync(
-            query.FamilyTreeId.Value, query.PageIndex, query.PageSize, query.Keyword, query.Generation, query.ParentId);
+            query.FamilyTreeId, query.PageIndex, query.PageSize, query.Keyword, query.Generation, query.ParentId);
 
         var parentIds = items
             .Where(i => i.ParentId.HasValue)

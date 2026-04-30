@@ -33,46 +33,46 @@ public class MemberManagementController : AdminControllerBase
         try
         {
             var client = GetApiClient();
+            var familyTrees = new List<FamilyTreeDto>();
 
-            var familyTreesResponse = await client.GetAsync($"/api/familytrees?pageSize=100&familyTreeId={familyTreeId}");
+            var familyTreesResponse = await client.GetAsync("/api/familytrees?pageSize=100");
             if (familyTreesResponse.IsSuccessStatusCode)
             {
                 var content = await familyTreesResponse.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyTreeDto>>>(content);
-                ViewBag.FamilyTrees = result?.Data?.Items ?? new List<FamilyTreeDto>();
+                familyTrees = result?.Data?.Items ?? new List<FamilyTreeDto>();
             }
 
-            if (!familyTreeId.HasValue)
+            ViewBag.FamilyTrees = familyTrees;
+            ViewBag.SelectedFamilyTreeId = familyTreeId;
+            ViewBag.CreateFamilyTreeId = familyTreeId ?? familyTrees.FirstOrDefault()?.Id;
+            ViewBag.Keyword = keyword;
+            ViewBag.PageIndex = page;
+            ViewBag.PageSize = pageSize;
+
+            var queryParameters = new List<string>
             {
-                var firstTree = ViewBag.FamilyTrees as List<FamilyTreeDto>;
-                if (firstTree != null && firstTree.Any())
-                {
-                    familyTreeId = firstTree.First().Id;
-                }
-            }
+                $"pageIndex={page}",
+                $"pageSize={pageSize}"
+            };
 
             if (familyTreeId.HasValue)
             {
-                var url = $"/api/familymembers?familyTreeId={familyTreeId}&pageIndex={page}&pageSize={pageSize}";
-                if (!string.IsNullOrEmpty(keyword))
-                {
-                    url += $"&keyword={Uri.EscapeDataString(keyword)}";
-                }
+                queryParameters.Add($"familyTreeId={familyTreeId}");
+            }
 
-                var response = await client.GetAsync(url);
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                queryParameters.Add($"keyword={Uri.EscapeDataString(keyword)}");
+            }
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyMemberDto>>>(content);
+            var response = await client.GetAsync($"/api/familymembers?{string.Join("&", queryParameters)}");
 
-                    ViewBag.SelectedFamilyTreeId = familyTreeId;
-                    ViewBag.Keyword = keyword;
-                    ViewBag.PageIndex = page;
-                    ViewBag.PageSize = pageSize;
-
-                    return View(result?.Data);
-                }
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<ApiResponse<PagedResult<FamilyMemberDto>>>(content);
+                return View(result?.Data ?? new PagedResult<FamilyMemberDto>());
             }
 
             return View(new PagedResult<FamilyMemberDto>());

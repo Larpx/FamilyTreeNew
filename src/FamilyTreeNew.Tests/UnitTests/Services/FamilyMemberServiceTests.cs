@@ -45,13 +45,24 @@ public class FamilyMemberServiceTests
     }
 
     [Fact]
-    public async Task GetPagedAsync_WithoutFamilyTreeId_ReturnsEmptyResult()
+    public async Task GetPagedAsync_WithoutFamilyTreeId_ReturnsAllMembers()
     {
+        var members = new List<FamilyMember>
+        {
+            TestDataFactory.CreateTestFamilyMember(surname: "张", firstName: "三"),
+            TestDataFactory.CreateTestFamilyMember(surname: "李", firstName: "四")
+        };
+
+        _mockMemberRepository.Setup(x => x.GetPagedByFamilyTreeAsync(null, 1, 20, null, null, null))
+            .ReturnsAsync((members, 2));
+        _mockMemberRepository.Setup(x => x.GetParentNamesAsync(It.IsAny<List<Guid>>()))
+            .ReturnsAsync(new Dictionary<Guid, string>());
+
         var query = new FamilyMemberQueryDto { PageIndex = 1, PageSize = 20 };
         var result = await _memberService.GetPagedAsync(query);
 
-        result.Items.Should().BeEmpty();
-        result.TotalCount.Should().Be(0);
+        result.Items.Should().HaveCount(2);
+        result.TotalCount.Should().Be(2);
     }
 
     [Fact]

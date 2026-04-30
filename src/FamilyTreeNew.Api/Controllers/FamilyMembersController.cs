@@ -33,23 +33,16 @@ public class FamilyMembersController : ControllerBase
     /// <summary>
     /// 获取家族成员列表（分页）
     /// </summary>
-    /// <param name="query">查询参数，包含家谱ID、分页、关键词和世代过滤</param>
+    /// <param name="query">查询参数，包含可选家谱ID、分页、关键词和世代过滤</param>
     /// <returns>分页的成员列表</returns>
     /// <response code="200">成功获取成员列表</response>
-    /// <response code="400">未指定家谱ID</response>
     [HttpGet]
     [ResponseCache(Duration = 300, VaryByQueryKeys = new[] { "FamilyTreeId", "PageIndex", "PageSize", "Keyword", "Generation", "ParentId" })]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<FamilyMemberDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<PagedResult<FamilyMemberDto>>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ApiResponse<PagedResult<FamilyMemberDto>>>> GetList([FromQuery] FamilyMemberQueryDto query)
     {
         try
         {
-            if (!query.FamilyTreeId.HasValue)
-            {
-                return BadRequest(ApiResponse<PagedResult<FamilyMemberDto>>.Fail("请指定家谱ID"));
-            }
-
             var cacheKey = string.Format(MemberListCacheKey, 
                 query.FamilyTreeId, query.PageIndex, query.PageSize, 
                 query.Keyword ?? "", query.Generation?.ToString() ?? "", 

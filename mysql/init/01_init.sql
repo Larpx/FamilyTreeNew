@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `FamilyMembers` (
     `Alias` VARCHAR(100) NULL COMMENT '字号别称',
     `Ranking` VARCHAR(20) NULL COMMENT '排行',
     `GenerationName` VARCHAR(50) NULL COMMENT '字辈',
+    `Gender` VARCHAR(10) NULL COMMENT '性别',
     `BirthDateSolar` DATETIME NULL COMMENT '生辰公历',
     `BirthDateLunar` VARCHAR(50) NULL COMMENT '生辰农历',
     `Residence` VARCHAR(200) NULL COMMENT '居住地',
@@ -64,7 +65,6 @@ CREATE TABLE IF NOT EXISTS `Admins` (
     `Username` VARCHAR(50) NOT NULL COMMENT '用户名',
     `Password` VARCHAR(255) NOT NULL COMMENT '密码（加密存储）',
     `PasswordSalt` VARCHAR(100) NULL COMMENT '密码盐值',
-    `PermissionLevel` INT NOT NULL DEFAULT 1 COMMENT '权限级别',
     `RealName` VARCHAR(100) NULL COMMENT '真实姓名',
     `Email` VARCHAR(100) NULL COMMENT '邮箱',
     `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建日期',
@@ -175,78 +175,7 @@ CREATE TABLE IF NOT EXISTS `Families` (
     INDEX `idx_families_family_name` (`FamilyName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='家族表';
 
--- 10. 角色表 (Roles)
-CREATE TABLE IF NOT EXISTS `Roles` (
-    `Id` CHAR(36) NOT NULL COMMENT '角色ID',
-    `Name` VARCHAR(50) NOT NULL COMMENT '角色名称',
-    `Description` VARCHAR(200) NULL COMMENT '角色描述',
-    `Code` VARCHAR(50) NOT NULL COMMENT '角色编码',
-    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
-    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `UpdatedAt` DATETIME NULL COMMENT '更新时间',
-    PRIMARY KEY (`Id`),
-    UNIQUE INDEX `idx_roles_code` (`Code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色表';
-
--- 11. 权限表 (Permissions)
-CREATE TABLE IF NOT EXISTS `Permissions` (
-    `Id` CHAR(36) NOT NULL COMMENT '权限ID',
-    `Code` VARCHAR(100) NOT NULL COMMENT '权限编码',
-    `Name` VARCHAR(100) NOT NULL COMMENT '权限名称',
-    `Type` VARCHAR(50) NOT NULL COMMENT '权限类型(menu/button/api)',
-    `Url` VARCHAR(200) NULL COMMENT '权限URL',
-    `Method` VARCHAR(10) NULL COMMENT 'HTTP方法',
-    `ParentId` CHAR(36) NULL COMMENT '父权限ID',
-    `SortOrder` INT NOT NULL DEFAULT 0 COMMENT '排序号',
-    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
-    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (`Id`),
-    UNIQUE INDEX `idx_permissions_code` (`Code`),
-    INDEX `idx_permissions_parent_id` (`ParentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='权限表';
-
--- 12. 用户角色关联表 (UserRoles)
-CREATE TABLE IF NOT EXISTS `UserRoles` (
-    `Id` CHAR(36) NOT NULL COMMENT '主键ID',
-    `AdminId` CHAR(36) NOT NULL COMMENT '管理员ID',
-    `RoleId` CHAR(36) NOT NULL COMMENT '角色ID',
-    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (`Id`),
-    UNIQUE INDEX `idx_user_roles_admin_role` (`AdminId`, `RoleId`),
-    INDEX `idx_user_roles_admin_id` (`AdminId`),
-    INDEX `idx_user_roles_role_id` (`RoleId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户角色关联表';
-
--- 13. 角色权限关联表 (RolePermissions)
-CREATE TABLE IF NOT EXISTS `RolePermissions` (
-    `Id` CHAR(36) NOT NULL COMMENT '主键ID',
-    `RoleId` CHAR(36) NOT NULL COMMENT '角色ID',
-    `PermissionId` CHAR(36) NOT NULL COMMENT '权限ID',
-    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (`Id`),
-    UNIQUE INDEX `idx_role_permissions_role_permission` (`RoleId`, `PermissionId`),
-    INDEX `idx_role_permissions_role_id` (`RoleId`),
-    INDEX `idx_role_permissions_permission_id` (`PermissionId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色权限关联表';
-
--- 14. 菜单表 (Menus)
-CREATE TABLE IF NOT EXISTS `Menus` (
-    `Id` CHAR(36) NOT NULL COMMENT '菜单ID',
-    `ParentId` CHAR(36) NULL COMMENT '父菜单ID',
-    `Name` VARCHAR(100) NOT NULL COMMENT '菜单名称',
-    `Url` VARCHAR(200) NULL COMMENT '菜单URL',
-    `Icon` VARCHAR(100) NULL COMMENT '图标样式',
-    `PermissionCode` VARCHAR(100) NULL COMMENT '权限编码',
-    `SortOrder` INT NOT NULL DEFAULT 0 COMMENT '排序号',
-    `IsEnabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否启用',
-    `IsVisible` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否显示',
-    `CreatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `UpdatedAt` DATETIME NULL COMMENT '更新时间',
-    PRIMARY KEY (`Id`),
-    INDEX `idx_menus_parent_id` (`ParentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单表';
-
--- 15. 配偶关系表 (SpousalRelations)
+-- 10. 配偶关系表 (SpousalRelations)
 CREATE TABLE IF NOT EXISTS `SpousalRelations` (
     `Id` CHAR(36) NOT NULL COMMENT '配偶关系ID',
     `FamilyTreeId` CHAR(36) NOT NULL COMMENT '家谱ID',
@@ -267,7 +196,7 @@ CREATE TABLE IF NOT EXISTS `SpousalRelations` (
     INDEX `idx_spousal_relations_wife_id` (`WifeId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配偶关系表';
 
--- 16. 事件类型表 (EventTypes)
+-- 11. 事件类型表 (EventTypes)
 CREATE TABLE IF NOT EXISTS `EventTypes` (
     `Id` CHAR(36) NOT NULL COMMENT '事件类型ID',
     `Name` VARCHAR(100) NOT NULL COMMENT '事件类型名称',
@@ -280,7 +209,7 @@ CREATE TABLE IF NOT EXISTS `EventTypes` (
     UNIQUE INDEX `idx_event_types_code` (`Code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='事件类型表';
 
--- 17. 地点表 (Places) -- 必须在 Events 之前创建
+-- 12. 地点表 (Places) -- 必须在 Events 之前创建
 CREATE TABLE IF NOT EXISTS `Places` (
     `Id` CHAR(36) NOT NULL COMMENT '地点ID',
     `Name` VARCHAR(200) NOT NULL COMMENT '地点名称',
@@ -299,7 +228,7 @@ CREATE TABLE IF NOT EXISTS `Places` (
     INDEX `idx_places_city` (`City`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='地点表';
 
--- 18. 事件表 (Events)
+-- 13. 事件表 (Events)
 CREATE TABLE IF NOT EXISTS `Events` (
     `Id` CHAR(36) NOT NULL COMMENT '事件ID',
     `EventTypeId` CHAR(36) NOT NULL COMMENT '事件类型ID',
@@ -320,7 +249,7 @@ CREATE TABLE IF NOT EXISTS `Events` (
     INDEX `idx_events_place_id` (`PlaceId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='事件表';
 
--- 19. 来源表 (Sources)
+-- 14. 来源表 (Sources)
 CREATE TABLE IF NOT EXISTS `Sources` (
     `Id` CHAR(36) NOT NULL COMMENT '来源ID',
     `Title` VARCHAR(200) NOT NULL COMMENT '来源标题',
@@ -338,7 +267,7 @@ CREATE TABLE IF NOT EXISTS `Sources` (
     INDEX `idx_sources_type` (`Type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='来源表';
 
--- 20. 来源引用表 (SourceCitations)
+-- 15. 来源引用表 (SourceCitations)
 CREATE TABLE IF NOT EXISTS `SourceCitations` (
     `Id` CHAR(36) NOT NULL COMMENT '引用ID',
     `SourceId` CHAR(36) NOT NULL COMMENT '来源ID',
@@ -372,8 +301,8 @@ WHERE NOT EXISTS (SELECT 1 FROM `SystemSettings`);
 
 -- 管理员
 -- 默认账号: admin  默认密码: admin123
-INSERT INTO `Admins` (`Id`, `Username`, `Password`, `PasswordSalt`, `PermissionLevel`, `RealName`, `Email`, `CreatedAt`, `IsEnabled`)
-SELECT '10000000-0000-0000-0000-000000000001', 'admin', 'RmblliwioiHcibr884EC00ulmd3CUmcUOwSaMg2nlDM=', 'AQIDBAUGBwgJCgsMDQ4PEA==', 99, '系统管理员', 'admin@familytree.com', NOW(), 1
+INSERT INTO `Admins` (`Id`, `Username`, `Password`, `PasswordSalt`, `RealName`, `Email`, `CreatedAt`, `IsEnabled`)
+SELECT '10000000-0000-0000-0000-000000000001', 'admin', 'RmblliwioiHcibr884EC00ulmd3CUmcUOwSaMg2nlDM=', 'AQIDBAUGBwgJCgsMDQ4PEA==', '系统管理员', 'admin@familytree.com', NOW(), 1
 WHERE NOT EXISTS (SELECT 1 FROM `Admins` WHERE `Username` = 'admin');
 
 -- 事件类型
@@ -407,36 +336,6 @@ INSERT INTO `Sources` (`Id`, `Title`, `Author`, `Publisher`, `Year`, `Type`, `De
 SELECT '93000000-0000-0000-0000-000000000002', '沧县县志', '沧县地方志编纂委员会', '河北人民出版社', 2005, '地方志', '沧县官方地方志，记录了沧县历史沿革', '《沧县县志》，河北人民出版社，2005年', 1, NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `Sources` WHERE `Id` = '93000000-0000-0000-0000-000000000002');
 
--- 角色
-INSERT INTO `Roles` (`Id`, `Name`, `Description`, `Code`, `IsEnabled`, `CreatedAt`) SELECT 'a1000000-0000-0000-0000-000000000001', '超级管理员', '拥有系统最高权限', 'SuperAdmin', 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Roles` WHERE `Code` = 'SuperAdmin');
-INSERT INTO `Roles` (`Id`, `Name`, `Description`, `Code`, `IsEnabled`, `CreatedAt`) SELECT 'a1000000-0000-0000-0000-000000000002', '管理员', '拥有大部分管理权限', 'Admin', 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Roles` WHERE `Code` = 'Admin');
-INSERT INTO `Roles` (`Id`, `Name`, `Description`, `Code`, `IsEnabled`, `CreatedAt`) SELECT 'a1000000-0000-0000-0000-000000000003', '编辑', '拥有家谱编辑权限', 'Editor', 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Roles` WHERE `Code` = 'Editor');
-INSERT INTO `Roles` (`Id`, `Name`, `Description`, `Code`, `IsEnabled`, `CreatedAt`) SELECT 'a1000000-0000-0000-0000-000000000004', '查看者', '仅可查看家谱', 'Viewer', 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Roles` WHERE `Code` = 'Viewer');
-
--- 权限
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000001', 'family_tree', '家谱管理', 'menu', '/familytrees', NULL, NULL, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000002', 'family_tree_list', '查看家谱列表', 'button', '/api/familytrees', 'GET', 'c1000000-0000-0000-0000-000000000001', 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree_list');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000003', 'family_tree_create', '创建家谱', 'button', '/api/familytrees', 'POST', 'c1000000-0000-0000-0000-000000000001', 2, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree_create');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000004', 'family_tree_edit', '编辑家谱', 'button', '/api/familytrees/{id}', 'PUT', 'c1000000-0000-0000-0000-000000000001', 3, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree_edit');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000005', 'family_tree_delete', '删除家谱', 'button', '/api/familytrees/{id}', 'DELETE', 'c1000000-0000-0000-0000-000000000001', 4, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'family_tree_delete');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000006', 'member_management', '成员管理', 'menu', '/members', NULL, NULL, 2, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'member_management');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000007', 'role_management', '角色管理', 'menu', '/roles', NULL, NULL, 3, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'role_management');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000008', 'permission_management', '权限管理', 'menu', '/permissions', NULL, NULL, 4, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'permission_management');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000009', 'menu_management', '菜单管理', 'menu', '/menus', NULL, NULL, 5, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'menu_management');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000010', 'system_settings', '系统设置', 'menu', '/settings', NULL, NULL, 6, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'system_settings');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000011', 'album_management', '相册管理', 'menu', '/albums', NULL, NULL, 7, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'album_management');
-INSERT INTO `Permissions` (`Id`, `Code`, `Name`, `Type`, `Url`, `Method`, `ParentId`, `SortOrder`, `IsEnabled`, `CreatedAt`) SELECT 'c1000000-0000-0000-0000-000000000012', 'event_management', '事件管理', 'menu', '/events', NULL, NULL, 8, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Permissions` WHERE `Code` = 'event_management');
-
--- 菜单
-INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`) SELECT 'e1000000-0000-0000-0000-000000000001', NULL, '家谱管理', '/familytrees', 'fa-solid fa-tree', 'family_tree', 1, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/familytrees');
-INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`) SELECT 'e1000000-0000-0000-0000-000000000002', NULL, '成员管理', '/members', 'fa-solid fa-users', 'member_management', 2, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/members');
-INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`) SELECT 'e1000000-0000-0000-0000-000000000003', NULL, '相册管理', '/albums', 'fa-solid fa-images', 'album_management', 3, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/albums');
-INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`) SELECT 'e1000000-0000-0000-0000-000000000004', NULL, '事件记录', '/events', 'fa-solid fa-calendar-alt', 'event_management', 4, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/events');
-INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`) SELECT 'e1000000-0000-0000-0000-000000000005', NULL, '角色管理', '/roles', 'fa-solid fa-user-tag', 'role_management', 5, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/roles');
-INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`) SELECT 'e1000000-0000-0000-0000-000000000006', NULL, '权限管理', '/permissions', 'fa-solid fa-key', 'permission_management', 6, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/permissions');
-INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`) SELECT 'e1000000-0000-0000-0000-000000000007', NULL, '菜单管理', '/menus', 'fa-solid fa-bars', 'menu_management', 7, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/menus');
-INSERT INTO `Menus` (`Id`, `ParentId`, `Name`, `Url`, `Icon`, `PermissionCode`, `SortOrder`, `IsEnabled`, `IsVisible`, `CreatedAt`) SELECT 'e1000000-0000-0000-0000-000000000008', NULL, '系统设置', '/settings', 'fa-solid fa-cog', 'system_settings', 8, 1, 1, NOW() WHERE NOT EXISTS (SELECT 1 FROM `Menus` WHERE `Url` = '/settings');
-
 -- -------------------------------------------------
 -- 2.2 家谱数据（被 FamilyMembers/VerificationQuestions/Albums 等依赖）
 -- -------------------------------------------------
@@ -452,103 +351,103 @@ WHERE NOT EXISTS (SELECT 1 FROM `FamilyTrees` WHERE `Id` = '20000000-0000-0000-0
 -- -------------------------------------------------
 
 -- 第一代（始祖）- 李德源
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', NULL, 1, '李', '德源', '清源', '长子', '德', '1920-03-15 08:00:00', '庚申年二月初五', '河北沧州', '地主/私塾先生', '李氏家族迁居河北后的第五代传人。自幼聪慧好学，熟读四书五经，后设馆授徒，培养子弟数十人。为人忠厚老实，乐善好施，在乡里享有很高声誉。', '热心教育', 1, '丁丑年腊月初十', '1997-01-18 00:00:00', '家族第一代，家谱始修者', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', NULL, 1, '李', '德源', '清源', '长子', '德', 'M', '1920-03-15 08:00:00', '庚申年二月初五', '河北沧州', '地主/私塾先生', '李氏家族迁居河北后的第五代传人。自幼聪慧好学，熟读四书五经，后设馆授徒，培养子弟数十人。为人忠厚老实，乐善好施，在乡里享有很高声誉。', '热心教育', 1, '丁丑年腊月初十', '1997-01-18 00:00:00', '家族第一代，家谱始修者', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000001');
 
 -- 第一代配偶 - 王秀兰（李德源之妻）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', NULL, 1, '王', '秀兰', NULL, '长媳', NULL, '1922-08-20 10:00:00', '壬戌年七月初一', '河北沧州', '家庭主妇', '出身书香门第，知书达理。相夫教子，操持家务一生。', '贤良淑德', 1, '乙酉年四月十五', '2005-05-22 00:00:00', '李德源之妻', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', NULL, 1, '王', '秀兰', NULL, '长媳', NULL, 'F', '1922-08-20 10:00:00', '壬戌年七月初一', '河北沧州', '家庭主妇', '出身书香门第，知书达理。相夫教子，操持家务一生。', '贤良淑德', 1, '乙酉年四月十五', '2005-05-22 00:00:00', '李德源之妻', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000002');
 
 -- 第二代 - 李文华（李德源长子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 2, '李', '文华', '耀庭', '长子', '文', '1945-06-10 09:30:00', '乙酉年四月廿三', '河北沧州', '中学教师', '李德源长子，继承父志从事教育工作。先后在县中学任教三十余年，培养学生数千人，其中多人考入名牌大学。曾获省级优秀教师称号。', '教育世家', 1, '辛丑年九月初八', '2021-10-13 00:00:00', '教育工作者，桃李满天下', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 2, '李', '文华', '耀庭', '长子', '文', 'M', '1945-06-10 09:30:00', '乙酉年四月廿三', '河北沧州', '中学教师', '李德源长子，继承父志从事教育工作。先后在县中学任教三十余年，培养学生数千人，其中多人考入名牌大学。曾获省级优秀教师称号。', '教育世家', 1, '辛丑年九月初八', '2021-10-13 00:00:00', '教育工作者，桃李满天下', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000003');
 
 -- 第二代配偶 - 张桂英（李文华之妻）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000001', NULL, 2, '张', '桂英', NULL, '长媳', NULL, '1948-02-14 06:00:00', '丁亥年腊月廿八', '河北沧州', '家庭主妇', '勤劳善良，孝敬公婆，抚养子女成才。', NULL, 1, '庚子年三月十二', '2020-04-04 00:00:00', '李文华之妻', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000001', NULL, 2, '张', '桂英', NULL, '长媳', NULL, 'F', '1948-02-14 06:00:00', '丁亥年腊月廿八', '河北沧州', '家庭主妇', '勤劳善良，孝敬公婆，抚养子女成才。', NULL, 1, '庚子年三月十二', '2020-04-04 00:00:00', '李文华之妻', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000004');
 
 -- 第二代 - 李文彬（李德源次子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 2, '李', '文彬', '雅轩', '次子', '文', '1948-11-25 14:00:00', '戊子年十月十五', '北京', '工程师', '早年参军，后转业至北京某研究所从事技术工作。为人正直，业务能力强，多次获得表彰奖励。', '技术骨干', 0, NULL, NULL, '工程师，定居北京', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 2, '李', '文彬', '雅轩', '次子', '文', 'M', '1948-11-25 14:00:00', '戊子年十月十五', '北京', '工程师', '早年参军，后转业至北京某研究所从事技术工作。为人正直，业务能力强，多次获得表彰奖励。', '技术骨干', 0, NULL, NULL, '工程师，定居北京', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000005');
 
 -- 第二代配偶 - 刘秀珍（李文彬之妻）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000001', NULL, 2, '刘', '秀珍', NULL, '次媳', NULL, '1952-05-03 11:00:00', '壬辰年三月廿十', '北京', '会计', '毕业于财会学校，在企业从事财务工作多年。持家有方，家庭和睦。', NULL, 0, NULL, NULL, '李文彬之妻', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000001', NULL, 2, '刘', '秀珍', NULL, '次媳', NULL, 'F', '1952-05-03 11:00:00', '壬辰年三月廿十', '北京', '会计', '毕业于财会学校，在企业从事财务工作多年。持家有方，家庭和睦。', NULL, 0, NULL, NULL, '李文彬之妻', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000006');
 
 -- 第二代 - 李文秀（李德源之女）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000007', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 2, '李', '文秀', '婷婷', '长女', '文', '1950-09-08 16:00:00', '庚寅年八月初七', '天津', '医生', '医科大学毕业，在天津某医院工作多年，救死扶伤，医德高尚。退休后被返聘继续服务患者。', '医者仁心', 0, NULL, NULL, '医生，定居天津', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000007', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', 2, '李', '文秀', '婷婷', '长女', '文', 'F', '1950-09-08 16:00:00', '庚寅年八月初七', '天津', '医生', '医科大学毕业，在天津某医院工作多年，救死扶伤，医德高尚。退休后被返聘继续服务患者。', '医者仁心', 0, NULL, NULL, '医生，定居天津', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000007');
 
 -- 第三代 - 李建国（李文华长子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000008', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', 3, '李', '建国', '志强', '长子', '建', '1968-03-22 08:00:00', '戊申年二月廿三', '河北沧州', '公务员', '河北师范大学毕业后进入县政府工作，历任科员、科长、副局长等职。为政清廉，心系百姓，多次被评为优秀公务员。', '勤政爱民', 0, NULL, NULL, '公务员', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000008', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', 3, '李', '建国', '志强', '长子', '建', 'M', '1968-03-22 08:00:00', '戊申年二月廿三', '河北沧州', '公务员', '河北师范大学毕业后进入县政府工作，历任科员、科长、副局长等职。为政清廉，心系百姓，多次被评为优秀公务员。', '勤政爱民', 0, NULL, NULL, '公务员', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000008');
 
 -- 第三代配偶 - 陈淑芬（李建国之妻）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000009', '20000000-0000-0000-0000-000000000001', NULL, 3, '陈', '淑芬', NULL, '长媳', NULL, '1970-07-15 10:30:00', '庚戌年五月廿二', '河北沧州', '小学教师', '从事教育工作三十余年，爱岗敬业，深受学生爱戴。', NULL, 0, NULL, NULL, '李建国之妻', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000009', '20000000-0000-0000-0000-000000000001', NULL, 3, '陈', '淑芬', NULL, '长媳', NULL, 'F', '1970-07-15 10:30:00', '庚戌年五月廿二', '河北沧州', '小学教师', '从事教育工作三十余年，爱岗敬业，深受学生爱戴。', NULL, 0, NULL, NULL, '李建国之妻', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000009');
 
 -- 第三代 - 李建华（李文华次子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000010', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', 3, '李', '建华', '耀华', '次子', '建', '1972-11-30 14:00:00', '壬子年十月初五', '石家庄', '律师', '政法大学毕业后成为执业律师，在石家庄开设律师事务所。擅长民商法律事务，热心公益法律服务。', '法律服务', 0, NULL, NULL, '律师', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000010', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', 3, '李', '建华', '耀华', '次子', '建', 'M', '1972-11-30 14:00:00', '壬子年十月初五', '石家庄', '律师', '政法大学毕业后成为执业律师，在石家庄开设律师事务所。擅长民商法律事务，热心公益法律服务。', '法律服务', 0, NULL, NULL, '律师', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000010');
 
 -- 第三代 - 李建梅（李文华之女）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000011', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', 3, '李', '建梅', '冬梅', '长女', '建', '1975-04-18 09:00:00', '乙卯年三月初五', '天津', '护士长', '卫校毕业后在天津医院工作，从护士成长为护士长。工作中任劳任怨，多次获得优秀护士称号。', NULL, 0, NULL, NULL, '护士长', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000011', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000003', 3, '李', '建梅', '冬梅', '长女', '建', 'F', '1975-04-18 09:00:00', '乙卯年三月初五', '天津', '护士长', '卫校毕业后在天津医院工作，从护士成长为护士长。工作中任劳任怨，多次获得优秀护士称号。', NULL, 0, NULL, NULL, '护士长', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000011');
 
 -- 第三代 - 李志刚（李文彬长子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000012', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000005', 3, '李', '志刚', '铁军', '长子', '志', '1973-08-05 07:00:00', '癸丑年六月廿七', '北京', '软件工程师', '清华大学计算机系毕业后进入知名互联网公司工作，现任技术总监。参与多个重大项目开发，为中国互联网发展贡献力量。', '技术精英', 0, NULL, NULL, '软件工程师', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000012', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000005', 3, '李', '志刚', '铁军', '长子', '志', 'M', '1973-08-05 07:00:00', '癸丑年六月廿七', '北京', '软件工程师', '清华大学计算机系毕业后进入知名互联网公司工作，现任技术总监。参与多个重大项目开发，为中国互联网发展贡献力量。', '技术精英', 0, NULL, NULL, '软件工程师', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000012');
 
 -- 第三代 - 李志红（李文彬之女）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000013', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000005', 3, '李', '志红', '晓红', '长女', '志', '1978-12-10 15:00:00', '戊午年十一月初一', '北京', '大学教师', '北京大学中文系毕业后留校任教，现为副教授。专心学术研究，在核心期刊发表论文十余篇。', '学术研究', 0, NULL, NULL, '大学教师', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000013', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000005', 3, '李', '志红', '晓红', '长女', '志', 'F', '1978-12-10 15:00:00', '戊午年十一月初一', '北京', '大学教师', '北京大学中文系毕业后留校任教，现为副教授。专心学术研究，在核心期刊发表论文十余篇。', '学术研究', 0, NULL, NULL, '大学教师', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000013');
 
 -- 第三代 - 李建军（李文秀之子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000014', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000007', 3, '李', '建军', '大勇', '独子', '建', '1976-02-28 11:00:00', '丙辰年正月初九', '天津', '医生', '继承母业，医科大学毕业后在天津总医院工作。擅长心内科，救死扶伤，深得患者信赖。', '医学世家', 0, NULL, NULL, '医生', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000014', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000007', 3, '李', '建军', '大勇', '独子', '建', 'M', '1976-02-28 11:00:00', '丙辰年正月初九', '天津', '医生', '继承母业，医科大学毕业后在天津总医院工作。擅长心内科，救死扶伤，深得患者信赖。', '医学世家', 0, NULL, NULL, '医生', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000014');
 
 -- 第四代 - 李明（李建国之子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000015', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000008', 4, '李', '明', '晨曦', '长子', '明', '1995-06-20 10:00:00', '乙亥年五月十二', '北京', '金融分析师', '人民大学金融系毕业后进入投资银行工作。勤奋好学，专业能力强，前途光明。', NULL, 0, NULL, NULL, '年轻一代', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000015', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000008', 4, '李', '明', '晨曦', '长子', '明', 'M', '1995-06-20 10:00:00', '乙亥年五月十二', '北京', '金融分析师', '人民大学金融系毕业后进入投资银行工作。勤奋好学，专业能力强，前途光明。', NULL, 0, NULL, NULL, '年轻一代', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000015');
 
 -- 第四代 - 李芳（李建国之女）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000016', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000008', 4, '李', '芳', '雅琴', '长女', '明', '1998-09-15 14:00:00', '戊寅年八月初四', '上海', '设计师', '艺术学院设计专业毕业后在上海从事平面设计工作。作品富有创意，风格独特。', NULL, 0, NULL, NULL, '设计师', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000016', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000008', 4, '李', '芳', '雅琴', '长女', '明', 'F', '1998-09-15 14:00:00', '戊寅年八月初四', '上海', '设计师', '艺术学院设计专业毕业后在上海从事平面设计工作。作品富有创意，风格独特。', NULL, 0, NULL, NULL, '设计师', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000016');
 
 -- 第四代 - 李强（李建华之子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000017', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000010', 4, '李', '强', '正阳', '长子', '明', '2000-01-05 09:00:00', '己卯年十一月廿九', '石家庄', '法学生（研究生）', '法学院毕业后继续攻读法律硕士学位，立志成为优秀律师。', NULL, 0, NULL, NULL, '法学生', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000017', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000010', 4, '李', '强', '正阳', '长子', '明', 'M', '2000-01-05 09:00:00', '己卯年十一月廿九', '石家庄', '法学生（研究生）', '法学院毕业后继续攻读法律硕士学位，立志成为优秀律师。', NULL, 0, NULL, NULL, '法学生', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000017');
 
 -- 第四代 - 李欣（李志刚之女）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000018', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000012', 4, '李', '欣', '悦宁', '长女', '明', '2002-11-12 16:00:00', '壬午年十月初八', '北京', '大学生', '品学兼优，正在985高校计算机专业学习。', NULL, 0, NULL, NULL, '大学生', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000018', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000012', 4, '李', '欣', '悦宁', '长女', '明', 'F', '2002-11-12 16:00:00', '壬午年十月初八', '北京', '大学生', '品学兼优，正在985高校计算机专业学习。', NULL, 0, NULL, NULL, '大学生', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000018');
 
 -- 第四代 - 李宇（李建军之子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000019', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000014', 4, '李', '宇', '天宇', '长子', '明', '2005-03-08 08:00:00', '乙酉年正月廿七', '天津', '高中生', '品学兼优，全面发展，多次获得三好学生称号。', '学业优秀', 0, NULL, NULL, '高中生', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000019', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000014', 4, '李', '宇', '天宇', '长子', '明', 'M', '2005-03-08 08:00:00', '乙酉年正月廿七', '天津', '高中生', '品学兼优，全面发展，多次获得三好学生称号。', '学业优秀', 0, NULL, NULL, '高中生', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000019');
 
 -- 第五代 - 李晨（李明之子）
-INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
-SELECT '30000000-0000-0000-0000-000000000020', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000015', 5, '李', '晨', '朝阳', '长子', '晨', '2020-08-15 10:00:00', '庚子年六月廿六', '北京', '学龄前儿童', '聪明活泼，热爱学习。', '最小的家族成员', 0, NULL, NULL, '第五代', NOW(), NOW()
+INSERT INTO `FamilyMembers` (`Id`, `FamilyTreeId`, `ParentId`, `Generation`, `Surname`, `FirstName`, `Alias`, `Ranking`, `GenerationName`, `Gender`, `BirthDateSolar`, `BirthDateLunar`, `Residence`, `Occupation`, `PersonalInfo`, `Note`, `IsDeceased`, `DeathDateLunar`, `DeathDateSolar`, `Remarks`, `CreatedAt`, `UpdatedAt`)
+SELECT '30000000-0000-0000-0000-000000000020', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000015', 5, '李', '晨', '朝阳', '长子', '晨', 'M', '2020-08-15 10:00:00', '庚子年六月廿六', '北京', '学龄前儿童', '聪明活泼，热爱学习。', '最小的家族成员', 0, NULL, NULL, '第五代', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM `FamilyMembers` WHERE `Id` = '30000000-0000-0000-0000-000000000020');
 
 -- -------------------------------------------------
@@ -590,25 +489,8 @@ INSERT INTO `Events` (`Id`, `EventTypeId`, `FamilyTreeId`, `MemberId`, `PlaceId`
 INSERT INTO `SourceCitations` (`Id`, `SourceId`, `TargetType`, `TargetId`, `Note`, `CreatedAt`) SELECT '95000000-0000-0000-0000-000000000001', '93000000-0000-0000-0000-000000000001', 'FamilyTree', '20000000-0000-0000-0000-000000000001', '李氏族谱关于家族起源的记载', NOW() WHERE NOT EXISTS (SELECT 1 FROM `SourceCitations` WHERE `Id` = '95000000-0000-0000-0000-000000000001');
 
 -- -------------------------------------------------
--- 2.5 RBAC 关联数据
+-- 2.5 操作日志数据
 -- -------------------------------------------------
-
--- 用户角色关联
-INSERT INTO `UserRoles` (`Id`, `AdminId`, `RoleId`, `CreatedAt`) SELECT 'b1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', NOW() WHERE NOT EXISTS (SELECT 1 FROM `UserRoles` WHERE `AdminId` = '10000000-0000-0000-0000-000000000001');
-
--- 角色权限关联（超级管理员拥有所有权限）
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000001');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000002', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000002');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000003', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000003');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000004', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000004', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000004');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000005', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000005', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000005');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000006', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000006', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000006');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000007', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000007', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000007');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000008', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000008', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000008');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000009', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000009', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000009');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000010', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000010', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000010');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000011', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000011', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000011');
-INSERT INTO `RolePermissions` (`Id`, `RoleId`, `PermissionId`, `CreatedAt`) SELECT 'd1000000-0000-0000-0000-000000000012', 'a1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000012', NOW() WHERE NOT EXISTS (SELECT 1 FROM `RolePermissions` WHERE `RoleId` = 'a1000000-0000-0000-0000-000000000001' AND `PermissionId` = 'c1000000-0000-0000-0000-000000000012');
 
 -- 操作日志
 INSERT INTO `OperationLogs` (`Id`, `AdminId`, `OperationType`, `Module`, `Content`, `OperationTime`, `IpAddress`, `UserAgent`, `IsSuccess`, `ErrorMessage`) SELECT 'f1000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'CREATE', 'DatabaseInit', '初始化数据库并写入测试数据', NOW(), '127.0.0.1', 'InitScript/2.0', 1, NULL WHERE NOT EXISTS (SELECT 1 FROM `OperationLogs` WHERE `Id` = 'f1000000-0000-0000-0000-000000000001');
@@ -644,16 +526,6 @@ ALTER TABLE `OperationLogs`
 ALTER TABLE `Families`
     ADD CONSTRAINT `fk_families_family_tree` FOREIGN KEY (`FamilyTreeId`) REFERENCES `FamilyTrees` (`Id`) ON DELETE CASCADE,
     ADD CONSTRAINT `fk_families_head_member` FOREIGN KEY (`HeadMemberId`) REFERENCES `FamilyMembers` (`Id`) ON DELETE SET NULL;
-
--- UserRoles -> Admins, Roles
-ALTER TABLE `UserRoles`
-    ADD CONSTRAINT `fk_user_roles_admin` FOREIGN KEY (`AdminId`) REFERENCES `Admins` (`Id`) ON DELETE CASCADE,
-    ADD CONSTRAINT `fk_user_roles_role` FOREIGN KEY (`RoleId`) REFERENCES `Roles` (`Id`) ON DELETE CASCADE;
-
--- RolePermissions -> Roles, Permissions
-ALTER TABLE `RolePermissions`
-    ADD CONSTRAINT `fk_role_permissions_role` FOREIGN KEY (`RoleId`) REFERENCES `Roles` (`Id`) ON DELETE CASCADE,
-    ADD CONSTRAINT `fk_role_permissions_permission` FOREIGN KEY (`PermissionId`) REFERENCES `Permissions` (`Id`) ON DELETE CASCADE;
 
 -- SpousalRelations -> FamilyTrees, FamilyMembers
 ALTER TABLE `SpousalRelations`

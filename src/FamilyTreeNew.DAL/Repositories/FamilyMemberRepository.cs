@@ -68,7 +68,7 @@ public interface IFamilyMemberRepository
     /// <param name="parentId">父成员ID（可选）</param>
     /// <returns>分页数据和总记录数</returns>
     Task<(List<FamilyMember> Items, int TotalCount)> GetPagedByFamilyTreeAsync(
-        Guid familyTreeId, int pageIndex, int pageSize, string? keyword, int? generation, Guid? parentId);
+        Guid? familyTreeId, int pageIndex, int pageSize, string? keyword, int? generation, Guid? parentId);
 
     /// <summary>
     /// 获取指定家谱的所有成员
