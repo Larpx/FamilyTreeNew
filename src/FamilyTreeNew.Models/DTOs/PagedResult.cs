@@ -40,14 +40,4 @@ public class PagedResult<T>
     /// 是否有下一页
     /// </summary>
     public bool HasNext => PageIndex < TotalPages;
-
-    /// <summary>
-    /// 是否有上一页（兼容命名）
-    /// </summary>
-    public bool HasPreviousPage => HasPrevious;
-
-    /// <summary>
-    /// 是否有下一页（兼容命名）
-    /// </summary>
-    public bool HasNextPage => HasNext;
 }

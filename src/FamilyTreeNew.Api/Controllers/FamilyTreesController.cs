@@ -2,7 +2,6 @@ using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace FamilyTreeNew.Api.Controllers;
 
@@ -11,32 +10,25 @@ namespace FamilyTreeNew.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class FamilyTreesController : ControllerBase
 {
     private readonly IFamilyTreeService _familyTreeService;
     private readonly IFamilyMemberService _memberService;
     private readonly IExcelImportService _excelImportService;
-    private readonly IMemoryCache _memoryCache;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<FamilyTreesController> _logger;
-
-    private static readonly string FamilyTreeListCacheKey = "FamilyTree_List_{0}_{1}_{2}_{3}_{4}";
-    private static readonly string FamilyTreeDetailCacheKey = "FamilyTree_Detail_{0}";
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
-    private static long FamilyTreeListCacheVersion = 0;
 
     public FamilyTreesController(
         IFamilyTreeService familyTreeService,
         IFamilyMemberService memberService,
         IExcelImportService excelImportService,
-        IMemoryCache memoryCache,
         IWebHostEnvironment environment,
         ILogger<FamilyTreesController> logger)
     {
         _familyTreeService = familyTreeService;
         _memberService = memberService;
         _excelImportService = excelImportService;
-        _memoryCache = memoryCache;
         _environment = environment;
         _logger = logger;
     }
@@ -48,32 +40,13 @@ public class FamilyTreesController : ControllerBase
     /// <returns>分页的家谱列表</returns>
     /// <response code="200">成功获取家谱列表</response>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<FamilyTreeDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<PagedResult<FamilyTreeDto>>>> GetList([FromQuery] FamilyTreeQueryDto query)
     {
         try
         {
-            var cacheKey = string.Format(
-                FamilyTreeListCacheKey,
-                FamilyTreeListCacheVersion,
-                query.PageIndex,
-                query.PageSize,
-                query.Keyword ?? "",
-                query.IsEnabled?.ToString() ?? "");
-            
-            if (_memoryCache.TryGetValue(cacheKey, out PagedResult<FamilyTreeDto>? cachedResult) && cachedResult != null)
-            {
-                return Ok(ApiResponse<PagedResult<FamilyTreeDto>>.Ok(cachedResult));
-            }
-
             var result = await _familyTreeService.GetPagedAsync(query);
-            
-            _memoryCache.Set(cacheKey, result, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = CacheDuration,
-                SlidingExpiration = TimeSpan.FromMinutes(2)
-            });
-            
             return Ok(ApiResponse<PagedResult<FamilyTreeDto>>.Ok(result));
         }
         catch (Exception ex)
@@ -91,31 +64,19 @@ public class FamilyTreesController : ControllerBase
     /// <response code="200">成功获取家谱详情</response>
     /// <response code="404">家谱不存在</response>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ApiResponse<FamilyTreeDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<FamilyTreeDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<FamilyTreeDto>>> GetById(Guid id)
     {
         try
         {
-            var cacheKey = string.Format(FamilyTreeDetailCacheKey, id);
-            
-            if (_memoryCache.TryGetValue(cacheKey, out FamilyTreeDto? cachedResult) && cachedResult != null)
-            {
-                return Ok(ApiResponse<FamilyTreeDto>.Ok(cachedResult));
-            }
-
             var result = await _familyTreeService.GetByIdAsync(id);
             if (result == null)
             {
                 return NotFound(ApiResponse<FamilyTreeDto>.Fail("家谱不存在"));
             }
-            
-            _memoryCache.Set(cacheKey, result, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = CacheDuration,
-                SlidingExpiration = TimeSpan.FromMinutes(2)
-            });
-            
+
             return Ok(ApiResponse<FamilyTreeDto>.Ok(result));
         }
         catch (Exception ex)
@@ -150,7 +111,6 @@ public class FamilyTreesController : ControllerBase
             }
 
             var result = await _familyTreeService.CreateAsync(dto);
-            InvalidateFamilyTreeCache();
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<FamilyTreeDto>.Ok(result, "家谱创建成功"));
         }
         catch (Exception ex)
@@ -192,8 +152,7 @@ public class FamilyTreesController : ControllerBase
             {
                 return NotFound(ApiResponse<FamilyTreeDto>.Fail("家谱不存在"));
             }
-            
-            InvalidateFamilyTreeCache(id);
+
             return Ok(ApiResponse<FamilyTreeDto>.Ok(result, "家谱更新成功"));
         }
         catch (Exception ex)
@@ -223,8 +182,7 @@ public class FamilyTreesController : ControllerBase
             {
                 return NotFound(ApiResponse.Fail("家谱不存在"));
             }
-            
-            InvalidateFamilyTreeCache(id);
+
             return Ok(ApiResponse.Ok("家谱删除成功"));
         }
         catch (Exception ex)
@@ -247,6 +205,7 @@ public class FamilyTreesController : ControllerBase
     /// <response code="200">成功获取成员列表</response>
     /// <response code="404">家谱不存在</response>
     [HttpGet("{id}/members")]
+    [AllowAnonymous]
     [ResponseCache(Duration = 300, VaryByQueryKeys = new[] { "id", "pageIndex", "pageSize", "keyword", "generation", "parentId" })]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<FamilyMemberDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<FamilyMemberDto>>), StatusCodes.Status404NotFound)]
@@ -319,7 +278,6 @@ public class FamilyTreesController : ControllerBase
 
             dto.FamilyTreeId = id;
             var result = await _memberService.CreateAsync(dto);
-            InvalidateFamilyTreeCache(id);
             return CreatedAtAction(nameof(FamilyMembersController.GetById), "FamilyMembers", new { id = result.Id }, ApiResponse<FamilyMemberDto>.Ok(result, "成员添加成功"));
         }
         catch (ArgumentException)
@@ -372,7 +330,6 @@ public class FamilyTreesController : ControllerBase
 
             if (result.Success)
             {
-                InvalidateFamilyTreeCache(id);
                 return Ok(ApiResponse<ExcelImportResultDto>.Ok(result, result.Message));
             }
             else
@@ -393,6 +350,7 @@ public class FamilyTreesController : ControllerBase
     /// <returns>Excel模板文件</returns>
     /// <response code="200">返回模板文件</response>
     [HttpGet("template")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public IActionResult DownloadTemplate()
     {
@@ -414,17 +372,6 @@ public class FamilyTreesController : ControllerBase
         {
             _logger.LogError(ex, "请求处理失败");
             return StatusCode(500, ApiResponse.Fail("生成模板失败，请稍后重试"));
-        }
-    }
-
-    private void InvalidateFamilyTreeCache(Guid? familyTreeId = null)
-    {
-        Interlocked.Increment(ref FamilyTreeListCacheVersion);
-
-        if (familyTreeId.HasValue)
-        {
-            var detailKey = string.Format(FamilyTreeDetailCacheKey, familyTreeId.Value);
-            _memoryCache.Remove(detailKey);
         }
     }
 }

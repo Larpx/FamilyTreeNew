@@ -22,7 +22,16 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 ["Jwt:Issuer"] = "FamilyTreeNew",
                 ["Jwt:Audience"] = "FamilyTreeNewUsers",
                 ["Jwt:ExpirationMinutes"] = "120",
-                ["ConnectionStrings:DefaultConnection"] = "Server=localhost;Port=3306;Database=FamilyTreeDb_Test;User=root;Password=test_password;CharSet=utf8mb4;"
+                ["ConnectionStrings:DefaultConnection"] = "Server=localhost;Port=3306;Database=FamilyTreeDb_Test;User=root;Password=test_password;CharSet=utf8mb4;",
+                ["Security:MaxLoginAttempts"] = "5",
+                ["Security:LockoutDurationMinutes"] = "15",
+                ["Security:PasswordMinLength"] = "8",
+                ["Security:RequireUppercase"] = "true",
+                ["Security:RequireLowercase"] = "true",
+                ["Security:RequireDigit"] = "true",
+                ["Security:RequireSpecialChar"] = "true",
+                ["Security:MaxRequestPerMinute"] = "60",
+                ["Security:MaxLoginAttemptsPerMinute"] = "5"
             });
         });
 

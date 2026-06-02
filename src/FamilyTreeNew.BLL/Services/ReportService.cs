@@ -29,11 +29,37 @@ public class ReportService : IReportService
         var member = await _familyMemberRepository.GetByIdAsync(memberId);
         if (member == null)
         {
-            throw new Exception("成员不存在");
+            throw new ArgumentException("成员不存在");
         }
 
         var ancestors = new List<AncestorNode>();
-        await CollectAncestors(memberId, 1, generations, ancestors);
+
+        var visited = new HashSet<Guid>();
+        var membersToLoad = new List<Guid> { memberId };
+        var allMembers = new Dictionary<Guid, FamilyMember>();
+
+        while (membersToLoad.Count > 0)
+        {
+            var batch = membersToLoad.Where(id => !visited.Contains(id)).Distinct().ToList();
+            membersToLoad.Clear();
+
+            foreach (var id in batch)
+            {
+                if (visited.Contains(id)) continue;
+                visited.Add(id);
+
+                var m = await _familyMemberRepository.GetByIdAsync(id);
+                if (m == null) continue;
+                allMembers[id] = m;
+
+                if (m.ParentId.HasValue && !visited.Contains(m.ParentId.Value))
+                {
+                    membersToLoad.Add(m.ParentId.Value);
+                }
+            }
+        }
+
+        CollectAncestorsInMemory(memberId, 1, generations, ancestors, allMembers);
 
         _logger.LogInformation("生成祖先报告，成员ID: {MemberId}，世代数: {Generations}", memberId, generations);
         return new AncestorReportDto
@@ -45,26 +71,26 @@ public class ReportService : IReportService
         };
     }
 
-    private async Task CollectAncestors(Guid memberId, int generation, int maxGenerations, List<AncestorNode> ancestors)
+    /// <summary>
+    /// 在内存中递归收集祖先节点
+    /// </summary>
+    private static void CollectAncestorsInMemory(Guid memberId, int generation, int maxGenerations, List<AncestorNode> ancestors, Dictionary<Guid, FamilyMember> allMembers)
     {
         if (generation > maxGenerations) return;
 
-        var member = await _familyMemberRepository.GetByIdAsync(memberId);
-        if (member == null || member.ParentId == null) return;
+        if (!allMembers.TryGetValue(memberId, out var member) || member.ParentId == null) return;
 
-        var parent = await _familyMemberRepository.GetByIdAsync(member.ParentId.Value);
-        if (parent != null)
+        if (!allMembers.TryGetValue(member.ParentId.Value, out var parent)) return;
+
+        var node = new AncestorNode
         {
-            var node = new AncestorNode
-            {
-                Id = parent.Id,
-                Name = $"{parent.Surname}{parent.FirstName}",
-                Generation = generation
-            };
-            ancestors.Add(node);
+            Id = parent.Id,
+            Name = $"{parent.Surname}{parent.FirstName}",
+            Generation = generation
+        };
+        ancestors.Add(node);
 
-            await CollectAncestors(parent.Id, generation + 1, maxGenerations, ancestors);
-        }
+        CollectAncestorsInMemory(parent.Id, generation + 1, maxGenerations, ancestors, allMembers);
     }
 
     public async Task<DescendantReportDto> GenerateDescendantReportAsync(Guid memberId, int generations = 5)
@@ -72,11 +98,19 @@ public class ReportService : IReportService
         var member = await _familyMemberRepository.GetByIdAsync(memberId);
         if (member == null)
         {
-            throw new Exception("成员不存在");
+            throw new ArgumentException("成员不存在");
         }
 
         var descendants = new List<DescendantNode>();
-        await CollectDescendants(memberId, 1, generations, descendants);
+
+        var memberFamilyTreeId = member.FamilyTreeId;
+        var allMembers = await _familyMemberRepository.GetByFamilyTreeIdAsync(memberFamilyTreeId);
+        var childrenByParent = allMembers
+            .Where(m => m.ParentId.HasValue)
+            .GroupBy(m => m.ParentId!.Value)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        CollectDescendantsInMemory(memberId, 1, generations, descendants, childrenByParent);
 
         _logger.LogInformation("生成后裔报告，成员ID: {MemberId}，世代数: {Generations}", memberId, generations);
         return new DescendantReportDto
@@ -88,11 +122,15 @@ public class ReportService : IReportService
         };
     }
 
-    private async Task CollectDescendants(Guid parentId, int generation, int maxGenerations, List<DescendantNode> nodes)
+    /// <summary>
+    /// 在内存中递归收集后裔节点
+    /// </summary>
+    private static void CollectDescendantsInMemory(Guid parentId, int generation, int maxGenerations, List<DescendantNode> nodes, Dictionary<Guid, List<FamilyMember>> childrenByParent)
     {
         if (generation > maxGenerations) return;
 
-        var children = await _familyMemberRepository.GetChildrenAsync(parentId);
+        if (!childrenByParent.TryGetValue(parentId, out var children)) return;
+
         foreach (var child in children)
         {
             var node = new DescendantNode
@@ -105,7 +143,7 @@ public class ReportService : IReportService
             };
             nodes.Add(node);
 
-            await CollectDescendants(child.Id, generation + 1, maxGenerations, node.Children);
+            CollectDescendantsInMemory(child.Id, generation + 1, maxGenerations, node.Children, childrenByParent);
         }
     }
 
@@ -114,7 +152,7 @@ public class ReportService : IReportService
         var familyTree = await _familyTreeRepository.GetByIdAsync(familyTreeId);
         if (familyTree == null)
         {
-            throw new Exception("家谱不存在");
+            throw new ArgumentException("家谱不存在");
         }
 
         var members = await _familyMemberRepository.GetByFamilyTreeIdAsync(familyTreeId);

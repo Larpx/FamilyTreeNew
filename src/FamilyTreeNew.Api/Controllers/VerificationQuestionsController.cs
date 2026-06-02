@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
@@ -9,6 +10,7 @@ namespace FamilyTreeNew.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class VerificationQuestionsController : ControllerBase
 {
     private readonly IVerificationQuestionService _service;

@@ -2,7 +2,6 @@ using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace FamilyTreeNew.Api.Controllers;
 
@@ -11,22 +10,17 @@ namespace FamilyTreeNew.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class FamilyMembersController : ControllerBase
 {
     private readonly IFamilyMemberService _memberService;
     private readonly IFamilyTreeService _familyTreeService;
-    private readonly IMemoryCache _memoryCache;
     private readonly ILogger<FamilyMembersController> _logger;
 
-    private static readonly string MemberListCacheKey = "Member_List_{0}_{1}_{2}_{3}_{4}_{5}_{6}";
-    private static readonly string MemberDetailCacheKey = "Member_Detail_{0}";
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
-
-    public FamilyMembersController(IFamilyMemberService memberService, IFamilyTreeService familyTreeService, IMemoryCache memoryCache, ILogger<FamilyMembersController> logger)
+    public FamilyMembersController(IFamilyMemberService memberService, IFamilyTreeService familyTreeService, ILogger<FamilyMembersController> logger)
     {
         _memberService = memberService;
         _familyTreeService = familyTreeService;
-        _memoryCache = memoryCache;
         _logger = logger;
     }
 
@@ -37,34 +31,19 @@ public class FamilyMembersController : ControllerBase
     /// <returns>分页的成员列表</returns>
     /// <response code="200">成功获取成员列表</response>
     [HttpGet]
+    [AllowAnonymous]
     [ResponseCache(Duration = 300, VaryByQueryKeys = new[] { "FamilyTreeId", "PageIndex", "PageSize", "Keyword", "Generation", "ParentId" })]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<FamilyMemberDto>>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<PagedResult<FamilyMemberDto>>>> GetList([FromQuery] FamilyMemberQueryDto query)
     {
         try
         {
-            var cacheKey = string.Format(MemberListCacheKey, 
-                query.FamilyTreeId, query.PageIndex, query.PageSize, 
-                query.Keyword ?? "", query.Generation?.ToString() ?? "", 
-                query.ParentId?.ToString() ?? "", "");
-
-            if (_memoryCache.TryGetValue(cacheKey, out PagedResult<FamilyMemberDto>? cachedResult) && cachedResult != null)
-            {
-                return Ok(ApiResponse<PagedResult<FamilyMemberDto>>.Ok(cachedResult));
-            }
-
             var result = await _memberService.GetPagedAsync(query);
-
-            _memoryCache.Set(cacheKey, result, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = CacheDuration,
-                SlidingExpiration = TimeSpan.FromMinutes(2)
-            });
-
             return Ok(ApiResponse<PagedResult<FamilyMemberDto>>.Ok(result));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "获取成员列表失败");
             return StatusCode(500, ApiResponse<PagedResult<FamilyMemberDto>>.Fail("获取成员列表失败，请稍后重试"));
         }
     }
@@ -77,6 +56,7 @@ public class FamilyMembersController : ControllerBase
     /// <response code="200">成功获取成员详情</response>
     /// <response code="404">成员不存在</response>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ResponseCache(Duration = 300, VaryByQueryKeys = new[] { "id" })]
     [ProducesResponseType(typeof(ApiResponse<FamilyMemberDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<FamilyMemberDto>), StatusCodes.Status404NotFound)]
@@ -84,29 +64,17 @@ public class FamilyMembersController : ControllerBase
     {
         try
         {
-            var cacheKey = string.Format(MemberDetailCacheKey, id);
-
-            if (_memoryCache.TryGetValue(cacheKey, out FamilyMemberDto? cachedResult) && cachedResult != null)
-            {
-                return Ok(ApiResponse<FamilyMemberDto>.Ok(cachedResult));
-            }
-
             var result = await _memberService.GetByIdAsync(id);
             if (result == null)
             {
                 return NotFound(ApiResponse<FamilyMemberDto>.Fail("成员不存在"));
             }
 
-            _memoryCache.Set(cacheKey, result, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = CacheDuration,
-                SlidingExpiration = TimeSpan.FromMinutes(2)
-            });
-
             return Ok(ApiResponse<FamilyMemberDto>.Ok(result));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "获取成员详情失败，成员ID: {Id}", id);
             return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail("获取成员详情失败，请稍后重试"));
         }
     }
@@ -143,15 +111,16 @@ public class FamilyMembersController : ControllerBase
             }
 
             var result = await _memberService.CreateAsync(dto);
-            InvalidateMemberCache(dto.FamilyTreeId);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<FamilyMemberDto>.Ok(result, "成员创建成功"));
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            _logger.LogWarning(ex, "创建成员参数错误");
             return BadRequest(ApiResponse<FamilyMemberDto>.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "创建成员失败");
             return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail("创建成员失败，请稍后重试"));
         }
     }
@@ -189,15 +158,16 @@ public class FamilyMembersController : ControllerBase
                 return NotFound(ApiResponse<FamilyMemberDto>.Fail("成员不存在"));
             }
 
-            InvalidateMemberCache(result.FamilyTreeId, id);
             return Ok(ApiResponse<FamilyMemberDto>.Ok(result, "成员更新成功"));
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            _logger.LogWarning(ex, "更新成员参数错误，成员ID: {Id}", id);
             return BadRequest(ApiResponse<FamilyMemberDto>.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "更新成员失败，成员ID: {Id}", id);
             return StatusCode(500, ApiResponse<FamilyMemberDto>.Fail("更新成员失败，请稍后重试"));
         }
     }
@@ -231,30 +201,18 @@ public class FamilyMembersController : ControllerBase
                 return NotFound(ApiResponse.Fail("成员不存在"));
             }
 
-            InvalidateMemberCache(member.FamilyTreeId, id);
             return Ok(ApiResponse.Ok("成员删除成功"));
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException ex)
         {
+            _logger.LogWarning(ex, "删除成员操作无效，成员ID: {Id}", id);
             return BadRequest(ApiResponse.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "删除成员失败，成员ID: {Id}", id);
             return StatusCode(500, ApiResponse.Fail("删除成员失败，请稍后重试"));
         }
     }
 
-    /// <summary>
-    /// 使成员缓存失效
-    /// </summary>
-    /// <param name="familyTreeId">家谱ID</param>
-    /// <param name="memberId">成员ID（可选）</param>
-    private void InvalidateMemberCache(Guid familyTreeId, Guid? memberId = null)
-    {
-        if (memberId.HasValue)
-        {
-            var detailKey = string.Format(MemberDetailCacheKey, memberId.Value);
-            _memoryCache.Remove(detailKey);
-        }
-    }
 }

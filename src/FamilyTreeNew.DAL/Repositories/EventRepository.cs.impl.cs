@@ -46,4 +46,15 @@ public class EventRepository : BaseRepositoryGuid<Event>, IEventRepository
             .Where(e => e.PlaceId == placeId)
             .ToListAsync();
     }
+
+    /// <inheritdoc/>
+    public async Task<Event?> GetByIdWithDetailsAsync(Guid id)
+    {
+        return await Db.Queryable<Event>()
+            .Includes(e => e.EventType)
+            .Includes(e => e.Place)
+            .Includes(e => e.Member)
+            .In(id)
+            .FirstAsync();
+    }
 }

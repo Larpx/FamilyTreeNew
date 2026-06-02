@@ -13,183 +13,168 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.min.css" />
     <link href="https://fonts.font.im/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <style>
-        :root {
-            --primary-color: #4a6fa5;
-            --primary-dark: #3d5a80;
-            --secondary-color: #98c1d9;
-            --accent-color: #ee6c4d;
-            --bg-light: #f8f9fa;
-            --text-dark: #293241;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-primary-dark);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: var(--space-5);
         }
-        
+
         .login-container {
             width: 100%;
             max-width: 420px;
         }
-        
+
         .login-card {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
             overflow: hidden;
         }
-        
+
         .login-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
+            background: var(--color-primary);
+            color: var(--text-inverse);
             padding: 40px 30px;
             text-align: center;
         }
-        
+
         .login-header .logo {
             font-size: 48px;
             margin-bottom: 15px;
         }
-        
+
         .login-header h1 {
-            font-size: 24px;
+            font-size: var(--text-xl);
             font-weight: 500;
-            margin-bottom: 5px;
+            margin-bottom: var(--space-1);
         }
-        
+
         .login-header p {
-            font-size: 14px;
+            font-size: var(--text-sm);
             opacity: 0.9;
         }
-        
+
         .login-body {
             padding: 40px 30px;
         }
-        
+
         .form-floating {
-            margin-bottom: 20px;
+            margin-bottom: var(--space-5);
         }
-        
+
         .form-floating .form-control {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
             height: 55px;
-            font-size: 15px;
+            font-size: var(--text-sm);
             transition: all 0.3s ease;
         }
-        
+
         .form-floating .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(74, 111, 165, 0.15);
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
         }
-        
+
         .form-floating label {
             padding-left: 15px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
-        
+
         .form-floating .input-group-text {
             background: transparent;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             border-right: none;
-            border-radius: 10px 0 0 10px;
-            color: var(--primary-color);
+            border-radius: var(--radius-md) 0 0 var(--radius-md);
+            color: var(--color-primary);
         }
-        
+
         .form-floating .form-control {
             border-left: none;
-            border-radius: 0 10px 10px 0;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
         }
-        
+
         .input-group:focus-within .input-group-text {
-            border-color: var(--primary-color);
+            border-color: var(--color-primary);
         }
-        
+
         .btn-login {
             width: 100%;
             padding: 15px;
-            font-size: 16px;
+            font-size: var(--text-base);
             font-weight: 500;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: var(--radius-md);
+            background: var(--color-primary);
             border: none;
-            color: white;
+            color: var(--text-inverse);
             transition: all 0.3s ease;
-            margin-top: 10px;
+            margin-top: var(--space-2);
         }
-        
+
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(74, 111, 165, 0.4);
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+            box-shadow: var(--shadow-md);
+            background: var(--color-primary-dark);
         }
-        
+
         .btn-login:active {
             transform: translateY(0);
         }
-        
+
         .validation-summary-valid {
             display: none;
         }
-        
+
         .validation-summary-errors {
-            background: #fff3f3;
-            border: 1px solid #ffcdd2;
-            border-radius: 10px;
+            background: var(--color-error-light);
+            border: 1px solid var(--color-error);
+            border-radius: var(--radius-md);
             padding: 15px;
-            margin-bottom: 20px;
-            color: #c62828;
+            margin-bottom: var(--space-5);
+            color: var(--color-error-dark);
         }
-        
+
         .validation-summary-errors ul {
             list-style: none;
             margin: 0;
             padding: 0;
         }
-        
+
         .validation-summary-errors li {
-            font-size: 14px;
+            font-size: var(--text-sm);
         }
-        
+
         .validation-summary-errors li:before {
             content: "• ";
-            color: #c62828;
+            color: var(--color-error-dark);
         }
-        
+
         .alert {
-            border-radius: 10px;
-            margin-bottom: 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-5);
         }
-        
+
         .login-footer {
             text-align: center;
-            padding: 20px 30px;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
+            padding: var(--space-5) 30px;
+            background: var(--bg-light);
+            border-top: 1px solid var(--border-color);
         }
-        
+
         .login-footer a {
-            color: var(--primary-color);
+            color: var(--color-primary);
             text-decoration: none;
-            font-size: 14px;
+            font-size: var(--text-sm);
         }
-        
+
         .login-footer a:hover {
             text-decoration: underline;
         }
-        
+
         .password-toggle {
             position: absolute;
             right: 15px;
@@ -197,26 +182,26 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: #6c757d;
+            color: var(--text-secondary);
             cursor: pointer;
             z-index: 10;
         }
-        
+
         .password-toggle:hover {
-            color: var(--primary-color);
+            color: var(--color-primary);
         }
-        
+
         @@media (max-width: 480px) {
             .login-header {
                 padding: 30px 20px;
             }
-            
+
             .login-body {
                 padding: 30px 20px;
             }
-            
+
             .login-header h1 {
-                font-size: 20px;
+                font-size: var(--text-lg);
             }
         }
     </style>
@@ -231,16 +216,16 @@
                 <h1>家族族谱管理系统</h1>
                 <p>Family Tree Management System</p>
             </div>
-            
+
             <div class="login-body">
                 @if (!ViewData.ModelState.IsValid)
                 {
                     <div class="validation-summary-errors" asp-validation-summary="All"></div>
                 }
-                
+
                 <form asp-action="Login" method="post">
                     @Html.AntiForgeryToken()
-                    
+
                     <div class="form-floating">
                         <div class="input-group">
                             <span class="input-group-text">
@@ -251,7 +236,7 @@
                         </div>
                         <span asp-validation-for="Username" class="text-danger small"></span>
                     </div>
-                    
+
                     <div class="form-floating position-relative">
                         <div class="input-group">
                             <span class="input-group-text">
@@ -265,13 +250,13 @@
                         </div>
                         <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-login">
                         <i class="bi bi-box-arrow-in-right me-2"></i>登录
                     </button>
                 </form>
             </div>
-            
+
             <div class="login-footer">
                 <a href="/">
                     <i class="bi bi-house-fill me-1"></i>返回首页
@@ -279,7 +264,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
@@ -288,7 +273,7 @@
         function togglePassword() {
             var passwordInput = document.getElementById('password');
             var toggleIcon = document.getElementById('toggleIcon');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.classList.remove('bi-eye-fill');

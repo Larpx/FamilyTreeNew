@@ -12,7 +12,7 @@
  * 将返回的 HTML 内容注入到内容区域中。
  * 
  * AJAX 加载脚本的处理策略：
- * 1. 内联脚本（window.familyTreeId/membersData 赋值）通过 eval 同步执行
+ * 1. 内联脚本（window.familyTreeId/membersData 赋值）通过动态创建 script 元素执行
  * 2. 外部脚本（图表模块JS）通过动态创建 script 元素加载
  * 3. 使用 Promise 链确保脚本按顺序加载完成
  * 4. 避免重复加载已存在的脚本（通过 data-chart-script 标记）
@@ -20,6 +20,13 @@
  */
 (function () {
     'use strict';
+
+    var escapeHtml = function (text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(text));
+        return div.innerHTML;
+    };
 
     var FamilyTreeApp = {
         /** 当前激活的视图名称 */
@@ -96,7 +103,7 @@
          * 
          * 脚本处理策略：
          * 1. 提取所有 <script> 标签
-         * 2. 内联脚本通过 eval 同步执行（设置全局变量等）
+         * 2. 内联脚本通过动态创建 script 元素执行（设置全局变量等）
          * 3. 外部脚本通过动态创建 <script> 元素按顺序加载
          * 4. 已加载的脚本通过 data-chart-script 属性标记，避免重复加载
          * 5. D3 等已在主页面加载的库会被跳过
@@ -145,7 +152,10 @@
 
                     inlineScripts.forEach(function (text) {
                         try {
-                            eval(text);
+                            var inlineScript = document.createElement('script');
+                            inlineScript.textContent = text;
+                            inlineScript.setAttribute('data-chart-script', 'true');
+                            document.body.appendChild(inlineScript);
                         } catch (e) {
                             console.error('执行内联脚本失败:', e);
                         }
@@ -262,6 +272,16 @@
                 ? new Date(member.deathDateSolar).toLocaleDateString('zh-CN')
                 : (member.deathDateLunar || '');
 
+            var safeName = escapeHtml(member.fullName);
+            var safeAlias = escapeHtml(member.alias);
+            var safeGenName = escapeHtml(member.generationName);
+            var safeResidence = escapeHtml(member.residence);
+            var safeOccupation = escapeHtml(member.occupation);
+            var safeRanking = escapeHtml(member.ranking);
+            var safePersonalInfo = escapeHtml(member.personalInfo);
+            var safeNote = escapeHtml(member.note);
+            var safeRemarks = escapeHtml(member.remarks);
+
             return ''
                 + '<div class="member-detail">'
                 + '  <div class="detail-header-section">'
@@ -271,9 +291,9 @@
                 + '      </svg>'
                 + '    </div>'
                 + '    <div class="member-basic">'
-                + '      <h4 class="member-fullname">' + (member.fullName || '') + '</h4>'
-                + (member.alias ? '      <p class="member-alias">字号: ' + member.alias + '</p>' : '')
-                + '      <p class="member-generation">第' + (member.generation || 1) + '世' + (member.generationName ? ' · ' + member.generationName : '') + '</p>'
+                + '      <h4 class="member-fullname">' + safeName + '</h4>'
+                + (member.alias ? '      <p class="member-alias">字号: ' + safeAlias + '</p>' : '')
+                + '      <p class="member-generation">第' + (member.generation || 1) + '世' + (member.generationName ? ' · ' + safeGenName : '') + '</p>'
                 + '    </div>'
                 + '  </div>'
                 + '  <div class="detail-section">'
@@ -281,12 +301,12 @@
                 + '    <div class="info-grid">'
                 + '      <div class="info-item">'
                 + '        <span class="info-label">出生日期</span>'
-                + '        <span class="info-value">' + birthDate + '</span>'
+                + '        <span class="info-value">' + escapeHtml(birthDate) + '</span>'
                 + '      </div>'
                 + (deathDate ? ''
                     + '      <div class="info-item">'
                     + '        <span class="info-label">逝世日期</span>'
-                    + '        <span class="info-value">' + deathDate + '</span>'
+                    + '        <span class="info-value">' + escapeHtml(deathDate) + '</span>'
                     + '      </div>' : '')
                 + '      <div class="info-item">'
                 + '        <span class="info-label">状态</span>'
@@ -295,34 +315,34 @@
                 + (member.residence ? ''
                     + '      <div class="info-item">'
                     + '        <span class="info-label">居住地</span>'
-                    + '        <span class="info-value">' + member.residence + '</span>'
+                    + '        <span class="info-value">' + safeResidence + '</span>'
                     + '      </div>' : '')
                 + (member.occupation ? ''
                     + '      <div class="info-item">'
                     + '        <span class="info-label">职业</span>'
-                    + '        <span class="info-value">' + member.occupation + '</span>'
+                    + '        <span class="info-value">' + safeOccupation + '</span>'
                     + '      </div>' : '')
                 + (member.ranking ? ''
                     + '      <div class="info-item">'
                     + '        <span class="info-label">排行</span>'
-                    + '        <span class="info-value">' + member.ranking + '</span>'
+                    + '        <span class="info-value">' + safeRanking + '</span>'
                     + '      </div>' : '')
                 + '    </div>'
                 + '  </div>'
                 + (member.personalInfo ? ''
                     + '  <div class="detail-section">'
                     + '    <h5 class="section-title">个人信息</h5>'
-                    + '    <p class="section-content">' + member.personalInfo + '</p>'
+                    + '    <p class="section-content">' + safePersonalInfo + '</p>'
                     + '  </div>' : '')
                 + (member.note ? ''
                     + '  <div class="detail-section">'
                     + '    <h5 class="section-title">备注</h5>'
-                    + '    <p class="section-content">' + member.note + '</p>'
+                    + '    <p class="section-content">' + safeNote + '</p>'
                     + '  </div>' : '')
                 + (member.remarks ? ''
                     + '  <div class="detail-section">'
                     + '    <h5 class="section-title">其他备注</h5>'
-                    + '    <p class="section-content">' + member.remarks + '</p>'
+                    + '    <p class="section-content">' + safeRemarks + '</p>'
                     + '  </div>' : '')
                 + '</div>';
         }

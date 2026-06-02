@@ -57,6 +57,11 @@ public interface IAdminRepository : IBaseRepositoryGuid<Admin>
     /// </summary>
     /// <param name="id">管理员ID</param>
     new Task<bool> ExistsAsync(Guid id);
+
+    /// <summary>
+    /// 获取管理员总数
+    /// </summary>
+    Task<int> GetCountAsync();
 }
 
 /// <summary>
@@ -119,5 +124,11 @@ public class AdminRepository : BaseRepositoryGuid<Admin>, IAdminRepository
     public new Task<bool> ExistsAsync(Guid id)
     {
         return base.ExistsAsync(id);
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> GetCountAsync()
+    {
+        return await Db.Queryable<Admin>().CountAsync();
     }
 }

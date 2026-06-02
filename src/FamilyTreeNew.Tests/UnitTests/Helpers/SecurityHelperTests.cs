@@ -1,5 +1,7 @@
 using FamilyTreeNew.BLL.Helpers;
+using FamilyTreeNew.Models.DTOs;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace FamilyTreeNew.Tests.UnitTests.Helpers;
@@ -155,5 +157,91 @@ public class SecurityHelperTests
     {
         var result = PasswordValidator.Validate("Password@12345678");
         result.IsValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void PasswordValidator_Instance_UsesConfigurationSettings()
+    {
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            { "Security:PasswordMinLength", "8" },
+            { "Security:RequireUppercase", "true" },
+            { "Security:RequireLowercase", "true" },
+            { "Security:RequireDigit", "true" },
+            { "Security:RequireSpecialChar", "true" }
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings!)
+            .Build();
+        var validator = new PasswordValidator(configuration);
+
+        var result = validator.Validate("Strong@Pass123");
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PasswordValidator_Instance_RejectsWeakPassword()
+    {
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            { "Security:PasswordMinLength", "8" },
+            { "Security:RequireUppercase", "true" },
+            { "Security:RequireLowercase", "true" },
+            { "Security:RequireDigit", "true" },
+            { "Security:RequireSpecialChar", "true" }
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings!)
+            .Build();
+        var validator = new PasswordValidator(configuration);
+
+        var result = validator.Validate("weak");
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().NotBeEmpty();
+    }
+}
+
+public class ApiResponseTests
+{
+    [Fact]
+    public void ApiResponse_Ok_WithMessage_ReturnsSuccessResponse()
+    {
+        var response = ApiResponse.Ok("操作成功");
+
+        response.Success.Should().BeTrue();
+        response.Message.Should().Be("操作成功");
+        response.Code.Should().Be(200);
+    }
+
+    [Fact]
+    public void ApiResponse_Fail_WithMessage_ReturnsFailureResponse()
+    {
+        var response = ApiResponse.Fail("操作失败");
+
+        response.Success.Should().BeFalse();
+        response.Message.Should().Be("操作失败");
+        response.Code.Should().Be(400);
+    }
+
+    [Fact]
+    public void ApiResponse_GenericOk_WithData_ReturnsSuccessResponse()
+    {
+        var data = new List<string> { "item1", "item2" };
+        var response = ApiResponse<List<string>>.Ok(data, "查询成功");
+
+        response.Success.Should().BeTrue();
+        response.Data.Should().BeEquivalentTo(data);
+        response.Message.Should().Be("查询成功");
+    }
+
+    [Fact]
+    public void ApiResponse_GenericFail_WithErrors_ReturnsFailureResponse()
+    {
+        var errors = new List<string> { "错误1", "错误2" };
+        var response = ApiResponse<string>.Fail("验证失败", 400, errors);
+
+        response.Success.Should().BeFalse();
+        response.Message.Should().Be("验证失败");
+        response.Errors.Should().BeEquivalentTo(errors);
     }
 }

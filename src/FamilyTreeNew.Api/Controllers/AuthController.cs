@@ -36,20 +36,16 @@ public class AuthController : ControllerBase
     /// <param name="request">登录请求，包含用户名和密码</param>
     /// <returns>登录响应，包含JWT Token和用户信息</returns>
     [HttpPost("login")]
-    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
+    [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<LoginResponseDto>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginRequestDto request)
     {
         try
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new LoginResponseDto
-                {
-                    Success = false,
-                    Message = "请求数据验证失败"
-                });
+                return BadRequest(ApiResponse<LoginResponseDto>.Fail("请求数据验证失败"));
             }
 
             var ipAddress = HttpContext.GetClientIpAddress();
@@ -60,20 +56,16 @@ public class AuthController : ControllerBase
             if (result.Success)
             {
                 _logger.LogInformation("管理员 {Username} 登录成功", request.Username);
-                return Ok(result);
+                return Ok(ApiResponse<LoginResponseDto>.Ok(result, "登录成功"));
             }
 
             _logger.LogWarning("管理员 {Username} 登录失败：{Message}", request.Username, result.Message);
-            return Unauthorized(result);
+            return Unauthorized(ApiResponse<LoginResponseDto>.Fail(result.Message, 401));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "登录过程中发生异常");
-            return StatusCode(500, new LoginResponseDto
-            {
-                Success = false,
-                Message = "服务器内部错误，请稍后重试"
-            });
+            return StatusCode(500, ApiResponse<LoginResponseDto>.Fail("服务器内部错误，请稍后重试", 500));
         }
     }
 
@@ -85,7 +77,7 @@ public class AuthController : ControllerBase
     [HttpGet("info")]
     [ProducesResponseType(typeof(ApiResponse<AdminInfoDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetInfo()
+    public async Task<ActionResult<ApiResponse<AdminInfoDto>>> GetInfo()
     {
         try
         {
@@ -127,7 +119,7 @@ public class AuthController : ControllerBase
     [HttpPost("change-password")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
+    public async Task<ActionResult<ApiResponse<object>>> ChangePassword([FromBody] ChangePasswordRequestDto request)
     {
         try
         {
@@ -150,15 +142,15 @@ public class AuthController : ControllerBase
                     adminId, "修改密码", "认证", "密码修改成功",
                     HttpContext.GetClientIpAddress(), Request.Headers.UserAgent.ToString());
 
-                return Ok(ApiResponse.Ok(message));
+                return Ok(ApiResponse<object>.Ok(message));
             }
 
-            return BadRequest(ApiResponse.Fail(message));
+            return BadRequest(ApiResponse<object>.Fail(message));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "修改密码时发生异常");
-            return StatusCode(500, ApiResponse.Fail("服务器内部错误", 500));
+            return StatusCode(500, ApiResponse<object>.Fail("服务器内部错误", 500));
         }
     }
 
@@ -169,7 +161,7 @@ public class AuthController : ControllerBase
     [Authorize]
     [HttpPost("logout")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Logout()
+    public async Task<ActionResult<ApiResponse<object>>> Logout()
     {
         try
         {
@@ -184,12 +176,12 @@ public class AuthController : ControllerBase
             }
 
             _logger.LogInformation("管理员 {Username} 登出成功", username);
-            return Ok(ApiResponse.Ok("登出成功"));
+            return Ok(ApiResponse<object>.Ok("登出成功"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "登出时发生异常");
-            return StatusCode(500, ApiResponse.Fail("服务器内部错误", 500));
+            return StatusCode(500, ApiResponse<object>.Fail("服务器内部错误", 500));
         }
     }
 }

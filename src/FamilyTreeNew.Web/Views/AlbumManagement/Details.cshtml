@@ -123,7 +123,7 @@
             </div>
             <div class="card-body">
                 <form asp-action="Delete" asp-route-id="@Model.Id" method="post" 
-                      onsubmit="return confirm('确定要删除这个相册吗？此操作将同时删除所有照片！');">
+                      onsubmit="return confirm('确定要删除吗？此操作不可撤销。');">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-danger w-100">
                         <i class="bi bi-trash me-1"></i>删除相册
@@ -136,19 +136,6 @@
 
 @section Styles {
     <style>
-        .lazy-img {
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .lazy-img.lazy-loaded {
-            opacity: 1;
-        }
-        .lazy-img.lazy-loading {
-            background: #f0f0f0;
-        }
-        .lazy-img.lazy-error {
-            background: #ffebee;
-        }
     </style>
 }
 

@@ -30,4 +30,43 @@ bld/
 msbuild.log
 msbuild.err
 msbuild.wrn
-/.github
+
+# 敏感文件 - 数据保护密钥
+**/DataProtection-Keys/
+
+# 敏感文件 - 数据库备份
+**/wwwroot/backups/
+
+# 敏感文件 - 用户上传
+**/wwwroot/uploads/
+
+# 环境变量文件
+.env
+.env.local
+.env.production
+
+# 发布配置
+*.pubxml
+*.pubxml.user
+
+# 测试结果
+TestResults/
+*.trx
+
+# 备份文件
+*.bak
+
+# 生产环境配置
+appsettings.Production.json
+
+# NuGet
+NuGet.Config
+.nuget/
+
+# IDE
+.idea/
+*.DotSettings.user
+
+# OS
+Thumbs.db
+Desktop.ini

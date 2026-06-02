@@ -98,7 +98,13 @@ FLUSH PRIVILEGES;
 
 #### 2.2.2 初始化数据库结构
 
-数据库表结构将在首次启动时自动创建。
+数据库表结构将在首次启动时自动创建。也可手动执行初始化脚本：
+
+```bash
+mysql -u root -p FamilyTreeDb < mysql/init/01_init.sql
+```
+
+默认管理员账户：`admin` / `Admin@123456`（首次登录后请立即修改密码）
 
 ### 2.3 应用部署
 
@@ -172,7 +178,7 @@ Restart=always
 RestartSec=10
 User=www-data
 Environment=JWT_SECRET_KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
-Environment=DB_CONNECTION_STRING=Server=localhost;Port=3306;Database=FamilyTreeDb;User=root;Password=your_password;CharSet=utf8mb4;
+Environment=DB_CONNECTION_STRING=Server=localhost;Port=3306;Database=FamilyTreeDb;User=familytree;Password=your_secure_password;CharSet=utf8mb4;
 
 [Install]
 WantedBy=multi-user.target
@@ -198,8 +204,8 @@ sc.exe start FamilyTreeNew
 
 ### 2.4 验证安装
 
-1. 打开浏览器访问 `http://localhost:5000`
-2. 访问API文档 `http://localhost:5000/api-docs`
+1. 打开浏览器访问 `http://localhost:5000`（API）或 `http://localhost:5002`（Web前端）
+2. 访问API文档 `http://localhost:5000/swagger`
 3. 使用默认管理员账户登录：
    - 用户名：admin
    - 密码：Admin@123456
@@ -307,14 +313,20 @@ export JWT_SECRET_KEY="YourSuperSecretKeyThatIsAtLeast32CharactersLong!"
 
 ### 3.3 环境变量优先级
 
-环境变量优先级高于配置文件：
+环境变量优先级高于配置文件，详见项目根目录 `.env.example` 文件：
 
-| 环境变量 | 说明 |
-|----------|------|
-| `JWT_SECRET_KEY` | JWT签名密钥（必须设置） |
-| `DB_CONNECTION_STRING` | 数据库连接字符串 |
-| `ASPNETCORE_ENVIRONMENT` | 运行环境（Development/Production） |
-| `ASPNETCORE_URLS` | 监听URL |
+| 环境变量 | 说明 | 必填 |
+|----------|------|------|
+| `JWT_SECRET_KEY` | JWT签名密钥（必须至少32字符） | ✅ |
+| `MYSQL_ROOT_PASSWORD` | MySQL root密码 | ✅ (Docker) |
+| `MYSQL_PASSWORD` | MySQL应用用户密码 | ✅ (Docker) |
+| `MYSQL_USER` | MySQL应用用户名（默认familytree） | ❌ |
+| `MYSQL_PORT` | MySQL端口（默认3306） | ❌ |
+| `API_PORT` | API服务端口（默认5000） | ❌ |
+| `WEB_PORT` | Web前端端口（默认5002） | ❌ |
+| `DB_CONNECTION_STRING` | 数据库连接字符串（覆盖appsettings.json） | ❌ |
+| `ASPNETCORE_ENVIRONMENT` | 运行环境（Development/Production） | ❌ |
+| `ASPNETCORE_URLS` | 监听URL | ❌ |
 
 ---
 
@@ -324,58 +336,78 @@ export JWT_SECRET_KEY="YourSuperSecretKeyThatIsAtLeast32CharactersLong!"
 
 #### 4.1.1 创建docker-compose.yml
 
-```yaml
-version: '3.8'
+项目根目录已包含 `docker-compose.yml`，可直接使用。也可参考以下配置：
 
+```yaml
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: familytree-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请设置 MYSQL_ROOT_PASSWORD 环境变量}
+      MYSQL_DATABASE: FamilyTreeDb
+      MYSQL_USER: ${MYSQL_USER:-familytree}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?请设置 MYSQL_PASSWORD 环境变量}
+      TZ: Asia/Shanghai
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - mysql_backup:/backup
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - familytree-network
+
   api:
-    image: familytree-api:latest
     build:
       context: .
       dockerfile: src/FamilyTreeNew.Api/Dockerfile
-    ports:
-      - "5000:5000"
-      - "5001:5001"
+    container_name: familytree-api
+    restart: unless-stopped
     environment:
-      - JWT_SECRET_KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
-      - DB_CONNECTION_STRING=Server=db;Port=3306;Database=FamilyTreeDb;User=root;Password=root_password;CharSet=utf8mb4;
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - DB_CONNECTION_STRING=Server=mysql;Port=3306;Database=FamilyTreeDb;User=familytree;Password=${MYSQL_PASSWORD};CharSet=utf8mb4;
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?请设置 JWT_SECRET_KEY 环境变量}
+    ports:
+      - "${API_PORT:-5000}:5000"
     depends_on:
-      - db
-    restart: always
+      mysql:
+        condition: service_healthy
     networks:
       - familytree-network
 
   web:
-    image: familytree-web:latest
     build:
       context: .
       dockerfile: src/FamilyTreeNew.Web/Dockerfile
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - api
-    restart: always
-    networks:
-      - familytree-network
-
-  db:
-    image: mysql:8.0
+    container_name: familytree-web
+    restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=root_password
-      - MYSQL_DATABASE=FamilyTreeDb
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./mysql/init:/docker-entrypoint-initdb.d
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5002
+      - DB_CONNECTION_STRING=Server=mysql;Port=3306;Database=FamilyTreeDb;User=familytree;Password=${MYSQL_PASSWORD};CharSet=utf8mb4;
+      - API_BASE_URL=http://api:5000
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?请设置 JWT_SECRET_KEY 环境变量}
     ports:
-      - "3306:3306"
-    restart: always
+      - "${WEB_PORT:-5002}:5002"
+    depends_on:
+      api:
+        condition: service_healthy
     networks:
       - familytree-network
 
 volumes:
-  mysql-data:
+  mysql_data:
+  mysql_backup:
+  api_uploads:
+  api_backups:
 
 networks:
   familytree-network:
@@ -415,7 +447,10 @@ docker run -d \
   --name familytree-mysql \
   -e MYSQL_ROOT_PASSWORD=root_password \
   -e MYSQL_DATABASE=FamilyTreeDb \
+  -e MYSQL_USER=familytree \
+  -e MYSQL_PASSWORD=your_secure_password \
   -v mysql-data:/var/lib/mysql \
+  -v ./mysql/init:/docker-entrypoint-initdb.d:ro \
   -p 3306:3306 \
   mysql:8.0
 
@@ -423,10 +458,18 @@ docker run -d \
 docker run -d \
   --name familytree-api \
   -e JWT_SECRET_KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLong! \
-  -e DB_CONNECTION_STRING=Server=familytree-mysql;Port=3306;Database=FamilyTreeDb;User=root;Password=root_password;CharSet=utf8mb4; \
+  -e DB_CONNECTION_STRING=Server=familytree-mysql;Port=3306;Database=FamilyTreeDb;User=familytree;Password=your_secure_password;CharSet=utf8mb4; \
   -p 5000:5000 \
-  -p 5001:5001 \
   familytree-api:latest
+
+# 运行Web前端
+docker run -d \
+  --name familytree-web \
+  -e JWT_SECRET_KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLong! \
+  -e DB_CONNECTION_STRING=Server=familytree-mysql;Port=3306;Database=FamilyTreeDb;User=familytree;Password=your_secure_password;CharSet=utf8mb4; \
+  -e API_BASE_URL=http://familytree-api:5000 \
+  -p 5002:5002 \
+  familytree-web:latest
 ```
 
 ### 4.3 Docker注意事项

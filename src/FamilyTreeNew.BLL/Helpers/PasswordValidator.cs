@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using FamilyTreeNew.BLL.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace FamilyTreeNew.BLL.Helpers;
 
@@ -16,14 +18,44 @@ public class PasswordValidationResult
     };
 }
 
-public static class PasswordValidator
+/// <summary>
+/// 密码验证器，从IConfiguration读取Security配置节的密码策略参数
+/// </summary>
+public class PasswordValidator
 {
+    private readonly int _minLength;
+    private readonly bool _requireUppercase;
+    private readonly bool _requireLowercase;
+    private readonly bool _requireDigit;
+    private readonly bool _requireSpecialChar;
+
     private static readonly Regex UppercasePattern = new(@"[A-Z]", RegexOptions.Compiled);
     private static readonly Regex LowercasePattern = new(@"[a-z]", RegexOptions.Compiled);
     private static readonly Regex DigitPattern = new(@"[0-9]", RegexOptions.Compiled);
     private static readonly Regex SpecialCharPattern = new(@"[!@#$%^&*()_+\-=\[\]{};':""\\|,.<>/?]", RegexOptions.Compiled);
     private static readonly Regex CommonPatterns = new(@"(password|123456|qwerty|admin|root|user)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    public PasswordValidator(IConfiguration configuration)
+    {
+        var settings = configuration.GetSecuritySettings();
+        _minLength = settings.PasswordMinLength;
+        _requireUppercase = settings.RequireUppercase;
+        _requireLowercase = settings.RequireLowercase;
+        _requireDigit = settings.RequireDigit;
+        _requireSpecialChar = settings.RequireSpecialChar;
+    }
+
+    /// <summary>
+    /// 使用配置中的密码策略验证密码
+    /// </summary>
+    public PasswordValidationResult Validate(string? password)
+    {
+        return Validate(password, _minLength, _requireUppercase, _requireLowercase, _requireDigit, _requireSpecialChar);
+    }
+
+    /// <summary>
+    /// 使用指定参数验证密码（保留兼容性）
+    /// </summary>
     public static PasswordValidationResult Validate(string? password, int minLength = 8, bool requireUppercase = true,
         bool requireLowercase = true, bool requireDigit = true, bool requireSpecialChar = true)
     {

@@ -5,13 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
-public interface IOperationLogService
-{
-    Task LogAsync(Guid? adminId, string operationType, string module, string? content, string? ipAddress = null, string? userAgent = null, bool isSuccess = true, string? errorMessage = null);
-    Task<PagedResult<OperationLog>> GetListAsync(int pageIndex = 1, int pageSize = 20);
-    Task<PagedResult<OperationLog>> GetByAdminIdAsync(Guid adminId, int pageIndex = 1, int pageSize = 20);
-}
-
 /// <summary>
 /// 操作日志服务
 /// 记录和查询管理员操作日志

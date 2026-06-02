@@ -57,7 +57,7 @@ public class SystemController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting database status");
+            _logger.LogError(ex, "获取数据库状态失败");
             return StatusCode(500, ApiResponse<DatabaseStatusDto>.Fail("获取数据库状态失败"));
         }
     }
@@ -82,7 +82,7 @@ public class SystemController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting system settings");
+            _logger.LogError(ex, "获取系统设置失败");
             return StatusCode(500, ApiResponse<SystemSettingsDto>.Fail("获取系统设置失败"));
         }
     }
@@ -116,7 +116,7 @@ public class SystemController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating system settings");
+            _logger.LogError(ex, "更新系统设置失败");
             return StatusCode(500, ApiResponse<SystemSettingsDto>.Fail("更新系统设置失败"));
         }
     }
@@ -140,7 +140,7 @@ public class SystemController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating backup");
+            _logger.LogError(ex, "创建备份失败");
             return StatusCode(500, ApiResponse<BackupDto>.Fail("创建备份失败"));
         }
     }
@@ -160,7 +160,7 @@ public class SystemController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting backup list");
+            _logger.LogError(ex, "获取备份列表失败");
             return StatusCode(500, ApiResponse<BackupListDto>.Fail("获取备份列表失败"));
         }
     }
@@ -190,7 +190,7 @@ public class SystemController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error restoring backup");
+            _logger.LogError(ex, "恢复备份失败");
             return StatusCode(500, ApiResponse<RestoreDto>.Fail("恢复备份失败"));
         }
     }
@@ -221,7 +221,7 @@ public class SystemController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting backup");
+            _logger.LogError(ex, "删除备份失败，文件名: {FileName}", fileName);
             return StatusCode(500, ApiResponse.Fail("删除备份失败"));
         }
     }

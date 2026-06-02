@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using FamilyTreeNew.Api.Extensions;
 using FamilyTreeNew.BLL.Helpers;
+using Microsoft.Extensions.Configuration;
 
 namespace FamilyTreeNew.Api.Middleware;
 
@@ -31,18 +32,21 @@ public class RateLimitingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<RateLimitingMiddleware> _logger;
+    private readonly int _maxRequestsPerMinute;
+    private readonly int _maxLoginAttemptsPerMinute;
     private static readonly ConcurrentDictionary<string, RateLimitInfo> _rateLimitStore = new();
-    private const int MaxRequestsPerMinute = 60;
-    private const int MaxLoginAttemptsPerMinute = 5;
     private static readonly TimeSpan WindowSize = TimeSpan.FromMinutes(1);
     private static long _lastCleanupTicks = DateTime.UtcNow.Ticks;
     private static readonly TimeSpan CleanupInterval = TimeSpan.FromMinutes(5);
     private const int MaxEntries = 100000;
 
-    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger)
+    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IConfiguration configuration)
     {
         _next = next;
         _logger = logger;
+        var securitySection = configuration.GetSection("Security");
+        _maxRequestsPerMinute = securitySection.GetValue("MaxRequestPerMinute", 60);
+        _maxLoginAttemptsPerMinute = securitySection.GetValue("MaxLoginAttemptsPerMinute", 5);
     }
 
     /// <summary>
@@ -56,7 +60,7 @@ public class RateLimitingMiddleware
         var key = $"{clientIp}:{path}";
 
         var isLoginEndpoint = path.Contains("/api/auth/login", StringComparison.OrdinalIgnoreCase);
-        var maxRequests = isLoginEndpoint ? MaxLoginAttemptsPerMinute : MaxRequestsPerMinute;
+        var maxRequests = isLoginEndpoint ? _maxLoginAttemptsPerMinute : _maxRequestsPerMinute;
 
         var now = DateTime.UtcNow;
         CleanupExpiredEntries(now);

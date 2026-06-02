@@ -4,6 +4,8 @@ using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
 using FamilyTreeNew.Tests.Helpers;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -19,7 +21,9 @@ public class FamilyMemberServiceTests
     {
         _mockMemberRepository = new Mock<IFamilyMemberRepository>();
         _mockFamilyTreeRepository = new Mock<IFamilyTreeRepository>();
-        _memberService = new FamilyMemberService(_mockMemberRepository.Object, _mockFamilyTreeRepository.Object);
+        var memoryCache = new MemoryCache(new MemoryCacheOptions());
+        var logger = new Mock<ILogger<FamilyMemberService>>().Object;
+        _memberService = new FamilyMemberService(_mockMemberRepository.Object, _mockFamilyTreeRepository.Object, memoryCache, logger);
     }
 
     [Fact]
@@ -190,6 +194,9 @@ public class FamilyMemberServiceTests
     public async Task DeleteAsync_WithValidIdAndNoChildren_ReturnsTrue()
     {
         var memberId = Guid.NewGuid();
+        var existingMember = TestDataFactory.CreateTestFamilyMember(id: memberId);
+        _mockMemberRepository.Setup(x => x.GetByIdAsync(memberId))
+            .ReturnsAsync(existingMember);
         _mockMemberRepository.Setup(x => x.ExistsAsync(memberId))
             .ReturnsAsync(true);
         _mockMemberRepository.Setup(x => x.HasChildrenAsync(memberId))
@@ -206,6 +213,9 @@ public class FamilyMemberServiceTests
     public async Task DeleteAsync_WithChildren_ThrowsInvalidOperationException()
     {
         var memberId = Guid.NewGuid();
+        var existingMember = TestDataFactory.CreateTestFamilyMember(id: memberId);
+        _mockMemberRepository.Setup(x => x.GetByIdAsync(memberId))
+            .ReturnsAsync(existingMember);
         _mockMemberRepository.Setup(x => x.ExistsAsync(memberId))
             .ReturnsAsync(true);
         _mockMemberRepository.Setup(x => x.HasChildrenAsync(memberId))

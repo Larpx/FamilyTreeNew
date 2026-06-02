@@ -1,6 +1,9 @@
+using FamilyTreeNew.BLL.Helpers;
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -11,16 +14,34 @@ public class FamilyMemberService : IFamilyMemberService
 {
     private readonly IFamilyMemberRepository _memberRepository;
     private readonly IFamilyTreeRepository _familyTreeRepository;
+    private readonly IMemoryCache _memoryCache;
+    private readonly ILogger<FamilyMemberService> _logger;
 
-    public FamilyMemberService(IFamilyMemberRepository memberRepository, IFamilyTreeRepository familyTreeRepository)
+    private static readonly string MemberListCacheKey = "Member_List_{0}_{1}_{2}_{3}_{4}_{5}_{6}";
+    private static readonly string MemberDetailCacheKey = "Member_Detail_{0}";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+
+    public FamilyMemberService(IFamilyMemberRepository memberRepository, IFamilyTreeRepository familyTreeRepository, IMemoryCache memoryCache, ILogger<FamilyMemberService> logger)
     {
         _memberRepository = memberRepository;
         _familyTreeRepository = familyTreeRepository;
+        _memoryCache = memoryCache;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
     public async Task<PagedResult<FamilyMemberDto>> GetPagedAsync(FamilyMemberQueryDto query)
     {
+        var cacheKey = string.Format(MemberListCacheKey,
+            query.FamilyTreeId, query.PageIndex, query.PageSize,
+            query.Keyword ?? "", query.Generation?.ToString() ?? "",
+            query.ParentId?.ToString() ?? "", "");
+
+        if (_memoryCache.TryGetValue(cacheKey, out PagedResult<FamilyMemberDto>? cachedResult) && cachedResult != null)
+        {
+            return cachedResult;
+        }
+
         var (items, totalCount) = await _memberRepository.GetPagedByFamilyTreeAsync(
             query.FamilyTreeId, query.PageIndex, query.PageSize, query.Keyword, query.Generation, query.ParentId);
 
@@ -42,18 +63,33 @@ public class FamilyMemberService : IFamilyMemberService
             return dto;
         }).ToList();
 
-        return new PagedResult<FamilyMemberDto>
+        var result = new PagedResult<FamilyMemberDto>
         {
             Items = dtos,
             TotalCount = totalCount,
             PageIndex = query.PageIndex,
             PageSize = query.PageSize
         };
+
+        _memoryCache.Set(cacheKey, result, new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = CacheDuration,
+            SlidingExpiration = TimeSpan.FromMinutes(2)
+        });
+
+        return result;
     }
 
     /// <inheritdoc/>
     public async Task<FamilyMemberDto?> GetByIdAsync(Guid id)
     {
+        var cacheKey = string.Format(MemberDetailCacheKey, id);
+
+        if (_memoryCache.TryGetValue(cacheKey, out FamilyMemberDto? cachedResult) && cachedResult != null)
+        {
+            return cachedResult;
+        }
+
         var entity = await _memberRepository.GetByIdWithParentAsync(id);
         if (entity == null) return null;
 
@@ -62,6 +98,13 @@ public class FamilyMemberService : IFamilyMemberService
         {
             dto.ParentName = $"{entity.Parent.Surname}{entity.Parent.FirstName}";
         }
+
+        _memoryCache.Set(cacheKey, dto, new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = CacheDuration,
+            SlidingExpiration = TimeSpan.FromMinutes(2)
+        });
+
         return dto;
     }
 
@@ -85,7 +128,7 @@ public class FamilyMemberService : IFamilyMemberService
             BirthDateLunar = dto.BirthDateLunar,
             Residence = dto.Residence,
             Occupation = dto.Occupation,
-            PersonalInfo = dto.PersonalInfo,
+            PersonalInfo = InputSanitizer.SanitizeHtml(dto.PersonalInfo),
             Note = dto.Note,
             IsDeceased = dto.IsDeceased,
             DeathDateLunar = dto.DeathDateLunar,
@@ -95,6 +138,8 @@ public class FamilyMemberService : IFamilyMemberService
         };
 
         await _memberRepository.InsertAsync(entity);
+        InvalidateCache(dto.FamilyTreeId);
+        _logger.LogInformation("创建成员，ID: {MemberId}，家谱: {FamilyTreeId}", entity.Id, dto.FamilyTreeId);
         return MapToDto(entity);
     }
 
@@ -120,7 +165,7 @@ public class FamilyMemberService : IFamilyMemberService
         entity.BirthDateLunar = dto.BirthDateLunar;
         entity.Residence = dto.Residence;
         entity.Occupation = dto.Occupation;
-        entity.PersonalInfo = dto.PersonalInfo;
+        entity.PersonalInfo = InputSanitizer.SanitizeHtml(dto.PersonalInfo);
         entity.Note = dto.Note;
         entity.IsDeceased = dto.IsDeceased;
         entity.DeathDateLunar = dto.DeathDateLunar;
@@ -129,13 +174,16 @@ public class FamilyMemberService : IFamilyMemberService
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _memberRepository.UpdateAsync(entity);
+        InvalidateCache(entity.FamilyTreeId, id);
+        _logger.LogInformation("更新成员，ID: {MemberId}", id);
         return MapToDto(entity);
     }
 
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(Guid id)
     {
-        if (!await _memberRepository.ExistsAsync(id)) return false;
+        var entity = await _memberRepository.GetByIdAsync(id);
+        if (entity == null) return false;
 
         var hasChildren = await _memberRepository.HasChildrenAsync(id);
         if (hasChildren)
@@ -144,6 +192,8 @@ public class FamilyMemberService : IFamilyMemberService
         }
 
         await _memberRepository.DeleteAsync(id);
+        InvalidateCache(entity.FamilyTreeId, id);
+        _logger.LogInformation("删除成员，ID: {MemberId}", id);
         return true;
     }
 
@@ -211,5 +261,15 @@ public class FamilyMemberService : IFamilyMemberService
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt
         };
+    }
+
+    /// <inheritdoc/>
+    public void InvalidateCache(Guid familyTreeId, Guid? memberId = null)
+    {
+        if (memberId.HasValue)
+        {
+            var detailKey = string.Format(MemberDetailCacheKey, memberId.Value);
+            _memoryCache.Remove(detailKey);
+        }
     }
 }

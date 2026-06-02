@@ -47,7 +47,7 @@ public class FamiliesController : ControllerBase
     /// </summary>
     /// <param name="id">家族ID</param>
     /// <returns>家族详情</returns>
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<FamilyResponseDto>>> GetById(int id)
@@ -105,7 +105,7 @@ public class FamiliesController : ControllerBase
     /// <param name="id">家族ID</param>
     /// <param name="dto">家族更新数据</param>
     /// <returns>更新后的家族信息</returns>
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<FamilyResponseDto>), StatusCodes.Status404NotFound)]
@@ -141,7 +141,7 @@ public class FamiliesController : ControllerBase
     /// </summary>
     /// <param name="id">家族ID</param>
     /// <returns>删除结果</returns>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse>> Delete(int id)

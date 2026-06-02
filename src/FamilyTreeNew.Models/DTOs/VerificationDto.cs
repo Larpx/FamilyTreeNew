@@ -88,3 +88,21 @@ public class FamilyTreeVerificationStatusDto
     /// </summary>
     public List<VerificationQuestionDto> Questions { get; set; } = new();
 }
+
+/// <summary>
+/// 令牌验证请求DTO
+/// </summary>
+public class ValidateTokenRequestDto
+{
+    /// <summary>
+    /// 访问令牌
+    /// </summary>
+    [Required(ErrorMessage = "令牌不能为空")]
+    public string Token { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 家谱ID
+    /// </summary>
+    [Required(ErrorMessage = "家谱ID不能为空")]
+    public Guid FamilyTreeId { get; set; }
+}

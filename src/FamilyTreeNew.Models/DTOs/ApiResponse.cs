@@ -66,22 +66,6 @@ public class ApiResponse<T>
             Errors = errors ?? new List<string>()
         };
     }
-
-    /// <summary>
-    /// 创建成功响应（兼容Auth模块命名风格）
-    /// </summary>
-    /// <param name="data">响应数据</param>
-    /// <param name="message">响应消息</param>
-    /// <returns>成功的ApiResponse实例</returns>
-    public static ApiResponse<T> SuccessResult(T data, string message = "操作成功") => Ok(data, message);
-
-    /// <summary>
-    /// 创建失败响应（兼容Auth模块命名风格）
-    /// </summary>
-    /// <param name="message">错误消息</param>
-    /// <param name="code">HTTP状态码</param>
-    /// <returns>失败的ApiResponse实例</returns>
-    public static ApiResponse<T> FailResult(string message, int code = 400) => Fail(message, code);
 }
 
 /// <summary>
@@ -106,6 +90,8 @@ public class ApiResponse : ApiResponse<object>
 
     /// <summary>
     /// 创建无数据的失败响应
+    /// 通过 new 关键字返回非泛型 ApiResponse 而非基类的 ApiResponse&lt;object&gt;，
+    /// 使调用方无需指定泛型参数即可获得简洁的响应对象
     /// </summary>
     /// <param name="message">错误消息</param>
     /// <param name="code">HTTP状态码</param>

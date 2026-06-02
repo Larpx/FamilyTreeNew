@@ -1,6 +1,8 @@
+using FamilyTreeNew.BLL.Helpers;
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -8,11 +10,13 @@ public class SourceService : ISourceService
 {
     private readonly ISourceRepository _sourceRepository;
     private readonly ISourceCitationRepository _sourceCitationRepository;
+    private readonly ILogger<SourceService> _logger;
 
-    public SourceService(ISourceRepository sourceRepository, ISourceCitationRepository sourceCitationRepository)
+    public SourceService(ISourceRepository sourceRepository, ISourceCitationRepository sourceCitationRepository, ILogger<SourceService> logger)
     {
         _sourceRepository = sourceRepository;
         _sourceCitationRepository = sourceCitationRepository;
+        _logger = logger;
     }
 
     public async Task<List<SourceResponseDto>> GetAllAsync()
@@ -49,13 +53,14 @@ public class SourceService : ISourceService
             Year = dto.Year,
             Url = dto.Url,
             Type = dto.Type,
-            Description = dto.Description,
+            Description = InputSanitizer.SanitizeHtml(dto.Description),
             Citation = dto.Citation,
             IsEnabled = dto.IsEnabled,
             CreatedAt = DateTime.UtcNow
         };
 
         await _sourceRepository.InsertAsync(entity);
+        _logger.LogInformation("创建来源，ID: {SourceId}，标题: {Title}", entity.Id, dto.Title);
         return MapToDto(entity);
     }
 
@@ -70,12 +75,13 @@ public class SourceService : ISourceService
         entity.Year = dto.Year;
         entity.Url = dto.Url;
         entity.Type = dto.Type;
-        entity.Description = dto.Description;
+        entity.Description = InputSanitizer.SanitizeHtml(dto.Description);
         entity.Citation = dto.Citation;
         entity.IsEnabled = dto.IsEnabled;
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _sourceRepository.UpdateAsync(entity);
+        _logger.LogInformation("更新来源，ID: {SourceId}", id);
         return MapToDto(entity);
     }
 
@@ -90,6 +96,7 @@ public class SourceService : ISourceService
         }
 
         await _sourceRepository.DeleteAsync(id);
+        _logger.LogInformation("删除来源，ID: {SourceId}", id);
         return true;
     }
 

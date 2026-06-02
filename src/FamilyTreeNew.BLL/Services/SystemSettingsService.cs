@@ -1,28 +1,26 @@
 using FamilyTreeNew.DAL.Context;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 
 namespace FamilyTreeNew.BLL.Services;
 
-public interface ISystemSettingsService
-{
-    Task<SystemSettingsDto?> GetSettingsAsync();
-    Task<SystemSettingsDto?> UpdateSettingsAsync(UpdateSystemSettingsDto dto);
-}
-
 public class SystemSettingsService : ISystemSettingsService
 {
     private readonly SqlSugarContext _context;
     private readonly ILogger<SystemSettingsService> _logger;
+    private readonly IConfiguration _configuration;
 
     public SystemSettingsService(
         SqlSugarContext context,
-        ILogger<SystemSettingsService> logger)
+        ILogger<SystemSettingsService> logger,
+        IConfiguration configuration)
     {
         _context = context;
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task<SystemSettingsDto?> GetSettingsAsync()
@@ -79,19 +77,20 @@ public class SystemSettingsService : ISystemSettingsService
 
     private async Task<SystemSettings> CreateDefaultSettingsAsync()
     {
+        var section = _configuration.GetSection("SystemSettings:Defaults");
         var settings = new SystemSettings
         {
-            SiteName = "家族族谱",
-            SiteDescription = "记录家族历史，传承家族文化",
-            ThemeColor = "#1890ff",
-            ShowStatistics = true,
-            AllowGuestBrowse = false,
-            RequireVerification = true,
-            MaxLoginAttempts = 5,
-            LockoutDuration = 30,
-            SessionTimeout = 120,
-            EnableOperationLog = true,
-            LogRetentionDays = 90,
+            SiteName = section.GetValue("SiteName", "家族族谱"),
+            SiteDescription = section.GetValue("SiteDescription", "记录家族历史，传承家族文化"),
+            ThemeColor = section.GetValue("ThemeColor", "#1890ff"),
+            ShowStatistics = section.GetValue("ShowStatistics", true),
+            AllowGuestBrowse = section.GetValue("AllowGuestBrowse", false),
+            RequireVerification = section.GetValue("RequireVerification", true),
+            MaxLoginAttempts = section.GetValue("MaxLoginAttempts", 5),
+            LockoutDuration = section.GetValue("LockoutDuration", 30),
+            SessionTimeout = section.GetValue("SessionTimeout", 120),
+            EnableOperationLog = section.GetValue("EnableOperationLog", true),
+            LogRetentionDays = section.GetValue("LogRetentionDays", 90),
             CreatedAt = DateTime.UtcNow
         };
 

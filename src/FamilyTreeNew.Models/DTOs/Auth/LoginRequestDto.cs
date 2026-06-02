@@ -18,6 +18,6 @@ public class LoginRequestDto
     /// 密码
     /// </summary>
     [Required(ErrorMessage = "密码不能为空")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "密码长度必须在6-100个字符之间")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "密码长度必须在8-100个字符之间")]
     public string Password { get; set; } = string.Empty;
 }

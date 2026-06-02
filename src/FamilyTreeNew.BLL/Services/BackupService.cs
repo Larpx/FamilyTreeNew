@@ -8,14 +8,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.BLL.Services;
 
-public interface IBackupService
-{
-    Task<BackupDto> CreateBackupAsync();
-    Task<RestoreDto> RestoreBackupAsync(string fileName);
-    BackupListDto GetBackupList();
-    bool DeleteBackup(string fileName);
-}
-
 public class BackupService : IBackupService
 {
     private readonly SqlSugarContext _context;
@@ -47,7 +39,7 @@ public class BackupService : IBackupService
             return new BackupDto
             {
                 FileName = fileName,
-                FilePath = filePath,
+                FilePath = fileName,
                 IsSuccess = false,
                 ErrorMessage = "无效的文件路径"
             };
@@ -60,12 +52,12 @@ public class BackupService : IBackupService
             await Task.Run(() => db.DbMaintenance.BackupDataBase(_databaseName, filePath));
 
             var fileInfo = new FileInfo(filePath);
-            _logger.LogInformation("Backup created successfully: {FileName}", fileName);
+            _logger.LogInformation("备份创建成功: {FileName}", fileName);
 
             return new BackupDto
             {
                 FileName = fileName,
-                FilePath = filePath,
+                FilePath = fileName,
                 FileSize = fileInfo.Length,
                 CreatedAt = DateTime.UtcNow,
                 IsSuccess = true
@@ -73,11 +65,11 @@ public class BackupService : IBackupService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating backup");
+            _logger.LogError(ex, "创建备份失败");
             return new BackupDto
             {
                 FileName = fileName,
-                FilePath = filePath,
+                FilePath = fileName,
                 IsSuccess = false,
                 ErrorMessage = "创建备份失败，请查看系统日志"
             };
@@ -117,11 +109,11 @@ public class BackupService : IBackupService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Error executing SQL statement during restore, skipping: {Sql}", sql.Length > 100 ? sql[..100] : sql);
+                    _logger.LogWarning(ex, "恢复备份时执行SQL语句失败，已跳过: {Sql}", sql.Length > 100 ? sql[..100] : sql);
                 }
             }
 
-            _logger.LogInformation("Database restored successfully from: {FileName}", fileName);
+            _logger.LogInformation("数据库恢复成功: {FileName}", fileName);
 
             return new RestoreDto
             {
@@ -132,7 +124,7 @@ public class BackupService : IBackupService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error restoring backup");
+            _logger.LogError(ex, "恢复备份失败");
             return new RestoreDto
             {
                 FileName = fileName,
@@ -159,7 +151,7 @@ public class BackupService : IBackupService
             return new BackupDto
             {
                 FileName = Path.GetFileName(f),
-                FilePath = f,
+                FilePath = Path.GetFileName(f),
                 FileSize = fileInfo.Length,
                 CreatedAt = fileInfo.CreationTime,
                 IsSuccess = true
@@ -189,12 +181,12 @@ public class BackupService : IBackupService
         try
         {
             File.Delete(filePath);
-            _logger.LogInformation("Backup deleted: {FileName}", fileName);
+            _logger.LogInformation("备份已删除: {FileName}", fileName);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting backup: {FileName}", fileName);
+            _logger.LogError(ex, "删除备份失败: {FileName}", fileName);
             return false;
         }
     }
@@ -275,7 +267,7 @@ public class BackupService : IBackupService
         if (!Directory.Exists(_backupDirectory))
         {
             Directory.CreateDirectory(_backupDirectory);
-            _logger.LogInformation("Created backup directory: {Directory}", _backupDirectory);
+            _logger.LogInformation("已创建备份目录: {Directory}", _backupDirectory);
         }
     }
 }

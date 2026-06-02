@@ -1,6 +1,7 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -8,11 +9,13 @@ public class PlaceService : IPlaceService
 {
     private readonly IPlaceRepository _placeRepository;
     private readonly IEventRepository _eventRepository;
+    private readonly ILogger<PlaceService> _logger;
 
-    public PlaceService(IPlaceRepository placeRepository, IEventRepository eventRepository)
+    public PlaceService(IPlaceRepository placeRepository, IEventRepository eventRepository, ILogger<PlaceService> logger)
     {
         _placeRepository = placeRepository;
         _eventRepository = eventRepository;
+        _logger = logger;
     }
 
     public async Task<List<PlaceResponseDto>> GetAllAsync()
@@ -62,6 +65,7 @@ public class PlaceService : IPlaceService
         };
 
         await _placeRepository.InsertAsync(entity);
+        _logger.LogInformation("创建地点，ID: {PlaceId}，名称: {Name}", entity.Id, dto.Name);
         return MapToDto(entity);
     }
 
@@ -82,6 +86,7 @@ public class PlaceService : IPlaceService
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _placeRepository.UpdateAsync(entity);
+        _logger.LogInformation("更新地点，ID: {PlaceId}", id);
         return MapToDto(entity);
     }
 
@@ -96,6 +101,7 @@ public class PlaceService : IPlaceService
         }
 
         await _placeRepository.DeleteAsync(id);
+        _logger.LogInformation("删除地点，ID: {PlaceId}", id);
         return true;
     }
 

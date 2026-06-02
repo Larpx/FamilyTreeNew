@@ -74,4 +74,18 @@ public class PhotoRepository : BaseRepositoryGuid<Photo>, IPhotoRepository
             .OrderBy(p => p.UploadedAt, OrderByType.Asc)
             .FirstAsync();
     }
+
+    /// <inheritdoc/>
+    public async Task<List<Photo>> GetByAlbumIdsAsync(List<Guid> albumIds)
+    {
+        if (albumIds == null || albumIds.Count == 0)
+        {
+            return new List<Photo>();
+        }
+
+        return await Db.Queryable<Photo>()
+            .Where(p => albumIds.Contains(p.AlbumId))
+            .OrderBy(p => p.UploadedAt, OrderByType.Desc)
+            .ToListAsync();
+    }
 }

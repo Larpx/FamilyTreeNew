@@ -41,7 +41,7 @@ public class ReportsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "生成祖先报告失败，成员ID: {MemberId}", memberId);
-            return NotFound(ApiResponse<AncestorReportDto>.Fail("未找到对应的祖先报告数据"));
+            return StatusCode(500, ApiResponse<AncestorReportDto>.Fail("生成祖先报告失败"));
         }
     }
 
@@ -64,7 +64,7 @@ public class ReportsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "生成后裔报告失败，成员ID: {MemberId}", memberId);
-            return NotFound(ApiResponse<DescendantReportDto>.Fail("未找到对应的后裔报告数据"));
+            return StatusCode(500, ApiResponse<DescendantReportDto>.Fail("生成后裔报告失败"));
         }
     }
 
@@ -86,7 +86,7 @@ public class ReportsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "生成统计报告失败，家谱ID: {FamilyTreeId}", familyTreeId);
-            return NotFound(ApiResponse<StatisticsReportDto>.Fail("未找到对应的统计报告数据"));
+            return StatusCode(500, ApiResponse<StatisticsReportDto>.Fail("生成统计报告失败"));
         }
     }
 
@@ -109,7 +109,7 @@ public class ReportsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "生成HTML报告失败，家谱ID: {FamilyTreeId}", familyTreeId);
-            return NotFound(ApiResponse.Fail("报告生成失败，请稍后重试"));
+            return StatusCode(500, ApiResponse.Fail("生成HTML报告失败，请稍后重试"));
         }
     }
 }

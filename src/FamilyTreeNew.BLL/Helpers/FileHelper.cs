@@ -11,9 +11,18 @@ public static class FileHelper
     public static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
 
     /// <summary>
-    /// 最大文件大小（10MB）
+    /// 最大文件大小（默认10MB），可通过 Configure 方法从配置读取
     /// </summary>
-    public const long MaxImageFileSize = 10 * 1024 * 1024;
+    public static long MaxImageFileSize { get; private set; } = 10 * 1024 * 1024;
+
+    /// <summary>
+    /// 从配置中设置最大文件大小
+    /// </summary>
+    /// <param name="maxImageFileSize">最大文件大小（字节）</param>
+    public static void Configure(long maxImageFileSize)
+    {
+        MaxImageFileSize = maxImageFileSize > 0 ? maxImageFileSize : 10 * 1024 * 1024;
+    }
 
     /// <summary>
     /// 图片文件Magic Number（文件签名）映射表

@@ -14,13 +14,11 @@ namespace FamilyTreeNew.Api.Controllers;
 public class EventsController : ControllerBase
 {
     private readonly IEventService _eventService;
-    private readonly IEventTypeService _eventTypeService;
     private readonly ILogger<EventsController> _logger;
 
-    public EventsController(IEventService eventService, IEventTypeService eventTypeService, ILogger<EventsController> logger)
+    public EventsController(IEventService eventService, ILogger<EventsController> logger)
     {
         _eventService = eventService;
-        _eventTypeService = eventTypeService;
         _logger = logger;
     }
 
@@ -186,23 +184,4 @@ public class EventsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// 获取启用的事件类型列表
-    /// </summary>
-    /// <returns>启用的事件类型列表</returns>
-    [HttpGet("types")]
-    [ProducesResponseType(typeof(ApiResponse<List<EventTypeResponseDto>>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<List<EventTypeResponseDto>>>> GetTypes()
-    {
-        try
-        {
-            var result = await _eventTypeService.GetEnabledTypesAsync();
-            return Ok(ApiResponse<List<EventTypeResponseDto>>.Ok(result));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "获取事件类型失败");
-            return StatusCode(500, ApiResponse<List<EventTypeResponseDto>>.Fail("获取事件类型失败，请稍后重试"));
-        }
-    }
 }

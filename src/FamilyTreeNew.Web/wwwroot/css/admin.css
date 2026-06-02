@@ -1,31 +1,20 @@
+/* ============================================================
+ * admin.css - 后台管理系统样式
+ *
+ * 依赖 site.css 中的设计系统变量，所有颜色、间距、
+ * 圆角等均引用 CSS 变量以保持视觉一致性。
+ * ============================================================ */
+
 :root {
     --sidebar-width: 260px;
     --sidebar-collapsed-width: 70px;
     --topbar-height: 60px;
-    --primary-color: #4a6fa5;
-    --primary-dark: #3d5a80;
-    --secondary-color: #98c1d9;
-    --accent-color: #ee6c4d;
-    --bg-light: #f8f9fa;
-    --bg-dark: #293241;
-    --text-dark: #293241;
-    --text-muted: #6c757d;
-    --border-color: #dee2e6;
-    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     --transition-speed: 0.3s;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* 全局重置已在 site.css 中定义，此处不再重复 */
 
 body {
-    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--bg-light);
-    color: var(--text-dark);
     overflow-x: hidden;
 }
 
@@ -34,9 +23,10 @@ body {
     min-height: 100vh;
 }
 
+/* 侧边栏 - 深色实心背景 */
 .admin-sidebar {
     width: var(--sidebar-width);
-    background: linear-gradient(180deg, var(--bg-dark) 0%, #1a252f 100%);
+    background: var(--color-neutral-900);
     position: fixed;
     top: 0;
     left: 0;
@@ -51,23 +41,23 @@ body {
 }
 
 .sidebar-header {
-    padding: 20px;
+    padding: var(--space-5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-brand {
     display: flex;
     align-items: center;
-    color: white;
+    color: var(--text-inverse);
     text-decoration: none;
-    font-size: 20px;
+    font-size: var(--text-lg);
     font-weight: 600;
 }
 
 .sidebar-brand i {
-    font-size: 28px;
-    margin-right: 12px;
-    color: var(--secondary-color);
+    font-size: var(--text-xl);
+    margin-right: var(--space-3);
+    color: var(--color-primary-light);
 }
 
 .sidebar-nav {
@@ -82,28 +72,28 @@ body {
 .sidebar-nav .nav-link {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
+    padding: var(--space-3) 15px;
     color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     transition: all 0.2s ease;
 }
 
 .sidebar-nav .nav-link i {
-    font-size: 18px;
-    margin-right: 12px;
-    width: 24px;
+    font-size: var(--text-base);
+    margin-right: var(--space-3);
+    width: var(--space-6);
     text-align: center;
 }
 
 .sidebar-nav .nav-link:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: white;
+    color: var(--text-inverse);
 }
 
 .sidebar-nav .nav-link.active {
-    background: var(--primary-color);
-    color: white;
+    background: var(--color-primary);
+    color: var(--text-inverse);
 }
 
 .admin-content {
@@ -121,12 +111,12 @@ body {
 
 .admin-topbar {
     height: var(--topbar-height);
-    background: white;
+    background: var(--bg-white);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 var(--space-5);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -134,53 +124,53 @@ body {
 }
 
 .sidebar-toggle {
-    color: var(--text-muted);
-    font-size: 24px;
-    padding: 5px 10px;
+    color: var(--text-secondary);
+    font-size: var(--text-xl);
+    padding: var(--space-1) var(--space-2);
 }
 
 .sidebar-toggle:hover {
-    color: var(--primary-color);
+    color: var(--color-primary);
 }
 
 .topbar-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: var(--space-5);
 }
 
 .user-dropdown {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: var(--text-dark);
+    gap: var(--space-2);
+    color: var(--text-primary);
     text-decoration: none;
-    padding: 8px 12px;
-    border-radius: 8px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
     transition: all 0.2s ease;
 }
 
 .user-dropdown:hover {
     background: var(--bg-light);
-    color: var(--primary-color);
+    color: var(--color-primary);
 }
 
 .user-dropdown i {
-    font-size: 24px;
+    font-size: var(--text-xl);
 }
 
 .admin-main {
     flex: 1;
-    padding: 20px;
+    padding: var(--space-5);
 }
 
 .admin-footer {
-    background: white;
+    background: var(--bg-white);
     border-top: 1px solid var(--border-color);
-    padding: 15px 20px;
+    padding: 15px var(--space-5);
     text-align: center;
-    color: var(--text-muted);
-    font-size: 14px;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
 }
 
 .page-header {
@@ -188,44 +178,45 @@ body {
 }
 
 .page-title {
-    font-size: 24px;
+    font-size: var(--text-xl);
     font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 5px;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
 }
 
 .page-subtitle {
-    color: var(--text-muted);
-    font-size: 14px;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
 }
 
 .card {
-    background: white;
+    background: var(--bg-white);
     border: none;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5);
 }
 
 .card-header {
     background: transparent;
     border-bottom: 1px solid var(--border-color);
-    padding: 15px 20px;
+    padding: 15px var(--space-5);
 }
 
 .card-title {
-    font-size: 16px;
+    font-size: var(--text-base);
     font-weight: 600;
-    color: var(--text-dark);
+    color: var(--text-primary);
 }
 
 .card-body {
-    padding: 20px;
+    padding: var(--space-5);
 }
 
+/* 统计卡片 - 实心填充图标背景 */
 .stat-card {
-    background: white;
-    border-radius: 12px;
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -237,7 +228,7 @@ body {
 }
 
 .stat-card-body {
-    padding: 20px;
+    padding: var(--space-5);
     display: flex;
     align-items: center;
     gap: 15px;
@@ -246,41 +237,41 @@ body {
 .stat-icon {
     width: 60px;
     height: 60px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    color: white;
+    font-size: var(--text-xl);
+    color: var(--text-inverse);
 }
 
 .stat-card-primary .stat-icon {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--color-primary);
 }
 
 .stat-card-success .stat-icon {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    background: var(--color-success);
 }
 
 .stat-card-info .stat-icon {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: var(--color-info);
 }
 
 .stat-card-warning .stat-icon {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: var(--color-warning);
 }
 
 .stat-value {
-    font-size: 28px;
+    font-size: var(--text-xl);
     font-weight: 700;
-    color: var(--text-dark);
+    color: var(--text-primary);
     line-height: 1;
 }
 
 .stat-label {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-top: 5px;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-1);
 }
 
 .table {
@@ -289,8 +280,8 @@ body {
 
 .table th {
     font-weight: 600;
-    color: var(--text-muted);
-    font-size: 13px;
+    color: var(--text-secondary);
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-bottom-width: 1px;
@@ -301,95 +292,95 @@ body {
 }
 
 .btn {
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-weight: 500;
-    padding: 8px 16px;
+    padding: var(--space-2) var(--space-4);
     transition: all 0.2s ease;
 }
 
 .btn-primary {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .btn-primary:hover {
-    background: var(--primary-dark);
-    border-color: var(--primary-dark);
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
 }
 
 .btn-outline-primary {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .btn-outline-primary:hover {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .form-control, .form-select {
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border-color: var(--border-color);
     padding: 10px 15px;
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(74, 111, 165, 0.15);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
 }
 
 .form-label {
     font-weight: 500;
-    color: var(--text-dark);
-    margin-bottom: 6px;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
 }
 
 .form-check-input:checked {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .badge {
     font-weight: 500;
-    padding: 5px 10px;
-    border-radius: 6px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
 }
 
 .alert {
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     border: none;
-    padding: 15px 20px;
+    padding: 15px var(--space-5);
 }
 
 .alert-success {
-    background: #d4edda;
-    color: #155724;
+    background: var(--color-success-light);
+    color: var(--color-success-dark);
 }
 
 .alert-danger {
-    background: #f8d7da;
-    color: #721c24;
+    background: var(--color-error-light);
+    color: var(--color-error-dark);
 }
 
 .pagination {
-    gap: 5px;
+    gap: var(--space-1);
 }
 
 .page-link {
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: none;
-    color: var(--text-dark);
-    padding: 8px 15px;
+    color: var(--text-primary);
+    padding: var(--space-2) 15px;
 }
 
 .page-link:hover {
-    background: var(--primary-color);
-    color: white;
+    background: var(--color-primary);
+    color: var(--text-inverse);
 }
 
 .page-item.active .page-link {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .breadcrumb {
@@ -399,62 +390,193 @@ body {
 }
 
 .breadcrumb-item a {
-    color: var(--primary-color);
+    color: var(--color-primary);
     text-decoration: none;
 }
 
 .breadcrumb-item.active {
-    color: var(--text-muted);
+    color: var(--text-secondary);
 }
 
 .btn-group-sm > .btn {
-    padding: 5px 10px;
-    font-size: 14px;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-sm);
 }
 
 .list-group-item {
     border-color: var(--border-color);
-    padding: 12px 15px;
+    padding: var(--space-3) 15px;
 }
 
+/* 平板端 */
 @media (max-width: 991.98px) {
     .admin-sidebar {
         transform: translateX(-100%);
     }
-    
+
     .admin-sidebar.show {
         transform: translateX(0);
     }
-    
+
     .admin-content {
         margin-left: 0;
     }
-    
+
     .admin-sidebar.collapsed + .admin-content {
         margin-left: 0;
     }
 }
 
+/* 手机端 */
 @media (max-width: 767.98px) {
     .admin-main {
         padding: 15px;
     }
-    
+
     .page-title {
-        font-size: 20px;
+        font-size: var(--text-lg);
     }
-    
+
     .stat-card-body {
         padding: 15px;
     }
-    
+
     .stat-icon {
         width: 50px;
         height: 50px;
-        font-size: 24px;
+        font-size: var(--text-lg);
     }
-    
+
     .stat-value {
-        font-size: 24px;
+        font-size: var(--text-lg);
+    }
+
+    /* 表格移动端最小宽度，确保可横向滚动 */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        min-width: 600px;
+    }
+
+    /* 搜索表单移动端堆叠 */
+    .card-header form .row > div {
+        margin-bottom: var(--space-2);
+    }
+}
+
+/* 小屏手机端 */
+@media (max-width: 576px) {
+    .admin-topbar {
+        padding: 0 var(--space-3);
+    }
+
+    .topbar-right {
+        gap: var(--space-2);
+    }
+
+    .user-dropdown span {
+        display: none;
+    }
+
+    .sidebar-header {
+        padding: var(--space-3);
+    }
+
+    .sidebar-brand span {
+        display: none;
+    }
+}
+
+/* 暗色模式 */
+@media (prefers-color-scheme: dark) {
+    .admin-topbar {
+        background: var(--bg-white);
+        border-bottom-color: var(--border-color);
+    }
+
+    .admin-content {
+        background: var(--bg-light);
+    }
+
+    .card {
+        background: var(--bg-white);
+        border-color: var(--border-color);
+    }
+
+    .card-header {
+        border-bottom-color: var(--border-color);
+    }
+
+    .admin-footer {
+        background: var(--bg-white);
+        border-top-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .stat-card {
+        background: var(--bg-white);
+    }
+
+    .table {
+        color: var(--text-primary);
+    }
+
+    .table th {
+        color: var(--text-secondary);
+        border-bottom-color: var(--border-color);
+    }
+
+    .table td {
+        border-bottom-color: var(--border-color);
+    }
+
+    .form-control,
+    .form-select {
+        background-color: var(--bg-muted);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: var(--bg-muted);
+        border-color: var(--color-primary-light);
+        color: var(--text-primary);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-tertiary);
+    }
+
+    .page-link {
+        background: var(--bg-white);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .page-link:hover {
+        background: var(--color-primary);
+        color: var(--text-inverse);
+    }
+
+    .list-group-item {
+        border-color: var(--border-color);
+        background: var(--bg-white);
+    }
+
+    .dropdown-menu {
+        background: var(--bg-white);
+        border-color: var(--border-color);
+    }
+
+    .dropdown-item {
+        color: var(--text-primary);
+    }
+
+    .dropdown-item:hover {
+        background: var(--bg-light);
     }
 }

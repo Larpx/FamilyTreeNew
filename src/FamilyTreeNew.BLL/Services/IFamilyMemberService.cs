@@ -1,5 +1,4 @@
 using FamilyTreeNew.Models.DTOs;
-using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -57,4 +56,11 @@ public interface IFamilyMemberService
     /// <param name="parentId">父成员ID（可为null）</param>
     /// <returns>世代数</returns>
     Task<int> CalculateGenerationAsync(Guid? parentId);
+
+    /// <summary>
+    /// 使成员缓存失效
+    /// </summary>
+    /// <param name="familyTreeId">家谱ID</param>
+    /// <param name="memberId">成员ID（可选）</param>
+    void InvalidateCache(Guid familyTreeId, Guid? memberId = null);
 }

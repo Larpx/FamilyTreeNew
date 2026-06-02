@@ -7,11 +7,6 @@ using SqlSugar;
 
 namespace FamilyTreeNew.BLL.Services;
 
-public interface ISystemService
-{
-    Task<DatabaseStatusDto> GetDatabaseStatusAsync();
-}
-
 public class SystemService : ISystemService
 {
     private readonly SqlSugarContext _context;
@@ -57,13 +52,13 @@ public class SystemService : ISystemService
             status.Tables = tables;
             status.TotalRecords = tables.Sum(t => t.RecordCount);
 
-            _logger.LogInformation("Database status check completed successfully");
+            _logger.LogInformation("数据库状态检查完成");
         }
         catch (Exception ex)
         {
             status.IsConnected = false;
             status.ErrorMessage = "数据库连接异常，请查看系统日志";
-            _logger.LogError(ex, "Error checking database status");
+            _logger.LogError(ex, "检查数据库状态失败");
         }
 
         return status;
@@ -117,7 +112,7 @@ public class SystemService : ISystemService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Table {TableName} not found or error accessing it", tableName);
+                _logger.LogWarning(ex, "表 {TableName} 不存在或访问出错", tableName);
                 tables.Add(new TableInfoDto
                 {
                     TableName = tableName,

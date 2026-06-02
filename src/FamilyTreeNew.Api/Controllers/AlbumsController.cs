@@ -39,8 +39,9 @@ public class AlbumsController : ControllerBase
             var result = await _albumService.GetAlbumsAsync(query);
             return Ok(ApiResponse<PagedResult<AlbumDto>>.Ok(result));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "获取相册列表失败");
             return StatusCode(500, ApiResponse<PagedResult<AlbumDto>>.Fail("获取相册列表失败，请稍后重试"));
         }
     }
@@ -64,8 +65,9 @@ public class AlbumsController : ControllerBase
             }
             return Ok(ApiResponse<AlbumDetailDto>.Ok(result));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "获取相册详情失败，相册ID: {Id}", id);
             return StatusCode(500, ApiResponse<AlbumDetailDto>.Fail("获取相册详情失败，请稍后重试"));
         }
     }
@@ -99,8 +101,9 @@ public class AlbumsController : ControllerBase
             var result = await _albumService.CreateAlbumAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, ApiResponse<AlbumDto>.Ok(result, "相册创建成功"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "创建相册失败");
             return StatusCode(500, ApiResponse<AlbumDto>.Fail("创建相册失败，请稍后重试"));
         }
     }
@@ -133,8 +136,9 @@ public class AlbumsController : ControllerBase
             }
             return Ok(ApiResponse<AlbumDto>.Ok(result, "相册更新成功"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "更新相册失败，相册ID: {Id}", id);
             return StatusCode(500, ApiResponse<AlbumDto>.Fail("更新相册失败，请稍后重试"));
         }
     }
@@ -157,8 +161,9 @@ public class AlbumsController : ControllerBase
             }
             return Ok(ApiResponse.Ok("相册删除成功"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "删除相册失败，相册ID: {Id}", id);
             return StatusCode(500, ApiResponse.Fail("删除相册失败，请稍后重试"));
         }
     }

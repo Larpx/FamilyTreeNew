@@ -14,6 +14,12 @@ public static class ServiceCollectionExtensions
         {
             var jwtSettings = configuration.GetJwtSettings();
             services.AddSingleton(jwtSettings);
+
+            var maxImageFileSize = configuration.GetValue<long?>("FileUpload:MaxImageFileSizeBytes");
+            if (maxImageFileSize.HasValue)
+            {
+                FileHelper.Configure(maxImageFileSize.Value);
+            }
         }
 
         services.AddScoped<IFamilyService, FamilyService>();
@@ -39,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISourceCitationService, SourceCitationService>();
         services.AddScoped<IGedcomService, GedcomService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<PasswordValidator>();
         return services;
     }
 }

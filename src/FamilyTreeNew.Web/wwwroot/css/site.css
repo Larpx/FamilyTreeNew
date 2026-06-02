@@ -1,11 +1,11 @@
 /* ============================================================
  * site.css - 全局基础样式
- * 
+ *
  * 定义了网站的全局CSS变量、基础元素样式、导航栏、
  * 首页各区块、页脚、通用工具类和响应式布局。
- * 
+ *
  * 目录：
- * 1. CSS变量定义
+ * 1. CSS变量定义（设计系统）
  * 2. 全局重置与基础排版
  * 3. 导航栏
  * 4. 首页英雄区域
@@ -17,33 +17,112 @@
  * 10. 首页新版样式
  * 11. 表单浮动标签
  * 12. 响应式布局
+ * 13. 打印样式
+ * 14. 暗色模式
  * ============================================================ */
 
 /* ----------------------------------------------------------
- * 1. CSS变量定义
- * 
- * 全局颜色、阴影、过渡动画、毛玻璃效果的变量定义，
+ * 1. CSS变量定义（设计系统）
+ *
+ * 全局颜色、排版、间距、阴影、过渡动画的变量定义，
  * 所有组件通过引用这些变量保持视觉一致性。
  * ---------------------------------------------------------- */
 :root {
-    --primary-color: #2563EB;
-    --primary-light: #3B82F6;
-    --primary-dark: #1D4ED8;
-    --secondary-color: #F97316;
-    --accent-color: #10B981;
-    --text-color: #1E293B;
-    --text-light: #64748B;
-    --text-muted: #94A3B8;
-    --bg-light: #F8FAFC;
-    --bg-white: #FFFFFF;
-    --border-color: #E2E8F0;
-    --shadow-sm: 0 2px 8px rgba(37, 99, 235, 0.08);
-    --shadow-md: 0 4px 16px rgba(37, 99, 235, 0.12);
-    --shadow-lg: 0 8px 32px rgba(37, 99, 235, 0.16);
-    --transition-base: all 0.3s ease;
+    /* 颜色系统 */
+    --color-primary: #2563EB;
+    --color-primary-dark: #1d4ed8;
+    --color-primary-light: #3b82f6;
+    --color-secondary: #64748b;
+    --color-neutral-50: #f8f9fa;
+    --color-neutral-100: #f1f5f9;
+    --color-neutral-200: #e2e8f0;
+    --color-neutral-300: #cbd5e1;
+    --color-neutral-400: #94a3b8;
+    --color-neutral-500: #64748b;
+    --color-neutral-600: #475569;
+    --color-neutral-700: #334155;
+    --color-neutral-800: #1e293b;
+    --color-neutral-900: #0f172a;
+    --color-success: #10b981;
+    --color-success-light: #d1fae5;
+    --color-success-dark: #065f46;
+    --color-warning: #f59e0b;
+    --color-warning-light: #fef3c7;
+    --color-warning-dark: #d97706;
+    --color-error: #ef4444;
+    --color-error-light: #fee2e2;
+    --color-error-dark: #dc2626;
+    --color-info: #3b82f6;
+    --color-info-light: #dbeafe;
+
+    /* 背景色 */
+    --bg-white: #ffffff;
+    --bg-light: #f8f9fa;
+    --bg-muted: #f1f5f9;
+
+    /* 文本颜色 */
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    --text-inverse: #ffffff;
+
+    /* 边框颜色 */
+    --border-color: #e2e8f0;
+    --border-color-light: #f1f5f9;
+
+    /* 排版 */
+    --text-xs: 12px;
+    --text-sm: 14px;
+    --text-base: 16px;
+    --text-lg: 20px;
+    --text-xl: 24px;
+    --text-2xl: 32px;
+
+    /* 字体 */
+    --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-serif: 'Noto Serif SC', Georgia, serif;
+
+    /* 间距 (4px网格) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* 圆角 */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* 阴影 */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+
+    /* 过渡 */
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+
+    /* 毛玻璃效果 */
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: 1px solid rgba(255, 255, 255, 0.2);
     --glass-blur: 15px;
+
+    /* 兼容旧变量引用 */
+    --primary-color: var(--color-primary);
+    --primary-light: var(--color-primary-light);
+    --primary-dark: var(--color-primary-dark);
+    --secondary-color: var(--color-secondary);
+    --accent-color: var(--color-success);
+    --text-color: var(--text-primary);
+    --text-light: var(--text-secondary);
+    --text-muted: var(--text-tertiary);
+    --transition-base: all var(--transition-normal);
 }
 
 /* ----------------------------------------------------------
@@ -56,19 +135,19 @@
 }
 
 html {
-    font-size: 14px;
+    font-size: var(--text-sm);
     scroll-behavior: smooth;
 }
 
 @media (min-width: 768px) {
     html {
-        font-size: 16px;
+        font-size: var(--text-base);
     }
 }
 
 body {
-    font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: var(--text-color);
+    font-family: var(--font-sans);
+    color: var(--text-primary);
     background-color: var(--bg-light);
     line-height: 1.6;
     min-height: 100vh;
@@ -77,10 +156,10 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-sans);
     font-weight: 600;
     line-height: 1.3;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 main {
@@ -89,12 +168,12 @@ main {
 
 /* 焦点样式 - 用于按钮和表单元素的可访问性 */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--primary-color);
+    box-shadow: 0 0 0 0.1rem var(--bg-white), 0 0 0 0.25rem var(--color-primary);
 }
 
 /* ----------------------------------------------------------
  * 3. 导航栏
- * 
+ *
  * 毛玻璃效果的顶部导航栏，包含品牌图标和导航链接。
  * ---------------------------------------------------------- */
 .navbar {
@@ -109,7 +188,7 @@ main {
 .navbar-brand {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     text-decoration: none;
     transition: var(--transition-base);
 }
@@ -118,46 +197,42 @@ main {
     transform: translateY(-2px);
 }
 
-/* 品牌图标 - 渐变背景圆角方块 */
+/* 品牌图标 - 实心填充圆角方块 */
 .brand-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-    color: white;
-    font-family: 'Noto Serif SC', serif;
-    font-size: 1.25rem;
+    background: var(--color-primary);
+    color: var(--text-inverse);
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
     font-weight: 600;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     transition: var(--transition-base);
 }
 
 .brand-icon:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(67, 97, 238, 0.4);
+    box-shadow: var(--shadow-md);
 }
 
-/* 品牌名称 - 渐变文字效果 */
+/* 品牌名称 - 实心填充文字 */
 .brand-name {
-    font-family: 'Noto Serif SC', serif;
-    font-size: 1.35rem;
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
     font-weight: 700;
-    color: var(--primary-color);
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--color-primary);
 }
 
-/* 导航链接 - 底部渐变下划线动画 */
+/* 导航链接 - 底部下划线动画 */
 .nav-link {
-    color: var(--text-color) !important;
+    color: var(--text-primary) !important;
     font-weight: 500;
-    padding: 0.5rem 1rem !important;
-    border-radius: 8px;
+    padding: var(--space-2) var(--space-4) !important;
+    border-radius: var(--radius-md);
     transition: var(--transition-base);
     position: relative;
     overflow: hidden;
@@ -170,13 +245,13 @@ main {
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    background: var(--color-primary);
     transition: var(--transition-base);
 }
 
 .nav-link:hover {
-    color: var(--primary-color) !important;
-    background-color: rgba(67, 97, 238, 0.08);
+    color: var(--color-primary) !important;
+    background-color: rgba(37, 99, 235, 0.08);
     transform: translateY(-2px);
 }
 
@@ -186,8 +261,8 @@ main {
 
 /* ----------------------------------------------------------
  * 4. 首页英雄区域
- * 
- * 全屏渐变背景的首屏展示区域，包含标题、副标题、
+ *
+ * 实心填充背景的首屏展示区域，包含标题、副标题、
  * 描述文字和操作按钮。
  * ---------------------------------------------------------- */
 .hero-section {
@@ -195,9 +270,9 @@ main {
     min-height: 450px;
     display: flex;
     align-items: center;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    background: var(--color-primary);
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+    box-shadow: var(--shadow-lg);
 }
 
 /* SVG图案叠加层 - 浮动动画 */
@@ -222,7 +297,7 @@ main {
     position: relative;
     z-index: 1;
     text-align: center;
-    color: white;
+    color: var(--text-inverse);
     padding: 4rem 1rem;
     animation: fadeInUp 1s ease-out;
 }
@@ -239,20 +314,17 @@ main {
 }
 
 .hero-title {
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-sans);
     font-size: 3.5rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
     letter-spacing: 0.1em;
     text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(90deg, white, rgba(255, 255, 255, 0.8));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-inverse);
 }
 
 .hero-subtitle {
-    font-size: 1.5rem;
+    font-size: var(--text-lg);
     font-weight: 300;
     margin-bottom: 2rem;
     opacity: 0.95;
@@ -263,7 +335,7 @@ main {
 .hero-desc {
     max-width: 700px;
     margin: 0 auto 2.5rem;
-    font-size: 1.1rem;
+    font-size: var(--text-base);
     line-height: 1.8;
     opacity: 0.9;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -271,53 +343,52 @@ main {
 
 .hero-buttons {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-4);
     justify-content: center;
     flex-wrap: wrap;
 }
 
-/* 主要操作按钮 - 渐变背景 + 悬浮上移 */
+/* 主要操作按钮 - 实心填充 */
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+    background: var(--color-primary);
     border: none;
     padding: 0.75rem 2rem;
-    border-radius: 50px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: var(--text-base);
     transition: var(--transition-base);
-    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+    box-shadow: var(--shadow-sm);
     cursor: pointer;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: var(--color-primary-dark);
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+    box-shadow: var(--shadow-md);
 }
 
-/* 次要操作按钮 - 橙色渐变 */
+/* 次要操作按钮 - 轮廓样式 */
 .btn-secondary {
-    background: linear-gradient(135deg, var(--secondary-color), #FB923C);
-    border: none;
-    color: white;
+    background: transparent;
+    border: 2px solid var(--text-inverse);
+    color: var(--text-inverse);
     padding: 0.75rem 2rem;
-    border-radius: 50px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: var(--text-base);
     transition: var(--transition-base);
-    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
     cursor: pointer;
 }
 
 .btn-secondary:hover {
-    background: linear-gradient(135deg, #FB923C, var(--secondary-color));
+    background: var(--text-inverse);
+    color: var(--color-primary);
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
 }
 
 /* ----------------------------------------------------------
  * 5. 首页介绍区域
- * 
+ *
  * 三列卡片布局展示产品特色，毛玻璃效果卡片。
  * ---------------------------------------------------------- */
 .intro-section {
@@ -327,7 +398,7 @@ main {
     overflow: hidden;
 }
 
-/* 装饰性渐变圆形背景 */
+/* 装饰性背景 */
 .intro-section::before {
     content: '';
     position: absolute;
@@ -335,7 +406,7 @@ main {
     right: -10%;
     width: 50%;
     height: 200%;
-    background: linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(76, 201, 240, 0.05));
+    background: rgba(37, 99, 235, 0.03);
     border-radius: 50%;
     z-index: 0;
 }
@@ -343,7 +414,7 @@ main {
 .intro-card {
     background: var(--glass-bg);
     border: var(--glass-border);
-    border-radius: 20px;
+    border-radius: var(--radius-md);
     padding: 2.5rem;
     height: 100%;
     text-align: center;
@@ -358,54 +429,54 @@ main {
 .intro-card:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: var(--shadow-lg);
-    border-color: var(--primary-light);
+    border-color: var(--color-primary-light);
 }
 
-/* 介绍卡片图标 - 圆形渐变背景 */
+/* 介绍卡片图标 - 圆形背景 */
 .intro-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 100px;
     height: 100px;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(16, 185, 129, 0.2));
+    background: rgba(37, 99, 235, 0.1);
     border-radius: 50%;
     margin-bottom: 2rem;
-    color: var(--primary-color);
-    font-size: 2rem;
+    color: var(--color-primary);
+    font-size: var(--text-2xl);
     transition: var(--transition-base);
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.2);
+    box-shadow: var(--shadow-sm);
 }
 
 .intro-card:hover .intro-icon {
     transform: scale(1.1);
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: white;
-    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+    background: var(--color-primary);
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-md);
 }
 
 .intro-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-lg);
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--color-primary);
     margin-bottom: 1.25rem;
     transition: var(--transition-base);
 }
 
 .intro-card:hover .intro-title {
-    color: var(--primary-dark);
+    color: var(--color-primary-dark);
 }
 
 .intro-text {
-    color: var(--text-light);
-    font-size: 1rem;
+    color: var(--text-secondary);
+    font-size: var(--text-base);
     line-height: 1.8;
     transition: var(--transition-base);
 }
 
 .intro-card:hover .intro-text {
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 /* ----------------------------------------------------------
@@ -424,7 +495,7 @@ main {
     left: -10%;
     width: 50%;
     height: 200%;
-    background: linear-gradient(135deg, rgba(247, 37, 133, 0.05), rgba(76, 201, 240, 0.05));
+    background: rgba(37, 99, 235, 0.03);
     border-radius: 50%;
     z-index: 0;
 }
@@ -437,20 +508,16 @@ main {
 }
 
 .section-title {
-    font-family: 'Noto Serif SC', serif;
-    font-size: 2.5rem;
+    font-family: var(--font-serif);
+    font-size: var(--text-2xl);
     font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--color-primary);
+    margin-bottom: var(--space-4);
 }
 
 .section-subtitle {
-    color: var(--text-light);
-    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-size: var(--text-base);
     max-width: 600px;
     margin: 0 auto;
 }
@@ -459,7 +526,7 @@ main {
 .family-card {
     background: var(--glass-bg);
     border: var(--glass-border);
-    border-radius: 20px;
+    border-radius: var(--radius-md);
     overflow: hidden;
     transition: var(--transition-base);
     height: 100%;
@@ -475,7 +542,7 @@ main {
 .family-card:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: var(--shadow-lg);
-    border-color: var(--primary-light);
+    border-color: var(--color-primary-light);
 }
 
 .family-card-header {
@@ -486,36 +553,36 @@ main {
     align-items: center;
     flex-wrap: wrap;
     gap: 0.75rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8));
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .family-name {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.35rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-lg);
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--color-primary);
     margin: 0;
     transition: var(--transition-base);
 }
 
 .family-card:hover .family-name {
-    color: var(--primary-dark);
+    color: var(--color-primary-dark);
 }
 
 /* 日期标签 - 悬浮时变为填充色 */
 .family-date {
-    font-size: 0.9rem;
-    color: var(--primary-color);
+    font-size: var(--text-sm);
+    color: var(--color-primary);
     background-color: rgba(37, 99, 235, 0.1);
     padding: 0.35rem 1rem;
-    border-radius: 25px;
+    border-radius: var(--radius-sm);
     font-weight: 500;
     transition: var(--transition-base);
 }
 
 .family-card:hover .family-date {
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--text-inverse);
 }
 
 .family-card-body {
@@ -524,8 +591,8 @@ main {
 }
 
 .family-desc {
-    color: var(--text-light);
-    font-size: 1rem;
+    color: var(--text-secondary);
+    font-size: var(--text-base);
     line-height: 1.8;
     margin: 0;
     display: -webkit-box;
@@ -536,53 +603,38 @@ main {
 }
 
 .family-card:hover .family-desc {
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .family-card-footer {
     padding: 1.25rem 1.75rem;
     border-top: 1px solid var(--border-color);
-    background: linear-gradient(135deg, var(--bg-light), var(--bg-white));
+    background: var(--bg-light);
 }
 
-/* 查看按钮 - 光泽扫过动画 */
+/* 查看按钮 - 实心填充 */
 .btn-view {
     display: inline-block;
     padding: 0.75rem 2rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-    color: white;
+    background: var(--color-primary);
+    color: var(--text-inverse);
     text-decoration: none;
-    border-radius: 50px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
-    font-size: 1rem;
+    font-size: var(--text-base);
     transition: var(--transition-base);
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    box-shadow: var(--shadow-sm);
     position: relative;
     overflow: hidden;
 }
 
-.btn-view::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: var(--transition-base);
-}
-
-.btn-view:hover::before {
-    left: 100%;
-}
-
 .btn-view:hover {
-    background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
-    color: white;
+    background: var(--color-primary-dark);
+    color: var(--text-inverse);
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    box-shadow: var(--shadow-md);
 }
 
 /* ----------------------------------------------------------
@@ -592,25 +644,43 @@ main {
     text-align: center;
     padding: 4rem 2rem;
     background: var(--bg-white);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     border: 1px dashed var(--border-color);
 }
 
 .empty-icon {
-    color: var(--text-muted);
+    color: var(--text-tertiary);
     margin-bottom: 1.5rem;
 }
 
 .empty-title {
-    font-family: 'Noto Serif SC', serif;
-    font-size: 1.25rem;
-    color: var(--text-color);
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
 .empty-desc {
-    color: var(--text-light);
-    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    margin-bottom: 1.5rem;
+}
+
+.empty-action {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    background: var(--color-primary);
+    color: var(--text-inverse);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    font-size: var(--text-sm);
+    transition: var(--transition-base);
+}
+
+.empty-action:hover {
+    background: var(--color-primary-dark);
+    color: var(--text-inverse);
 }
 
 .pt-16 {
@@ -621,8 +691,8 @@ main {
  * 8. 页脚
  * ---------------------------------------------------------- */
 .footer {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
-    color: white;
+    background: var(--color-primary-dark);
+    color: var(--text-inverse);
     padding: 3rem 0;
     margin-top: 4rem;
 }
@@ -630,28 +700,25 @@ main {
 .footer-brand {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     text-decoration: none;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
 }
 
 .footer-icon {
     width: 36px;
     height: 36px;
-    font-size: 1.1rem;
+    font-size: var(--text-lg);
 }
 
 .footer-brand-name {
-    font-size: 1.25rem;
+    font-size: var(--text-lg);
     font-weight: 700;
-    background: linear-gradient(135deg, white, rgba(255, 255, 255, 0.8));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-inverse);
 }
 
 .footer-desc {
-    font-size: 1rem;
+    font-size: var(--text-base);
     opacity: 0.9;
     margin-bottom: 1.5rem;
 }
@@ -659,7 +726,7 @@ main {
 /* 社交链接 - 圆形按钮 */
 .footer-social {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-4);
 }
 
 .social-link {
@@ -670,26 +737,26 @@ main {
     height: 40px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
-    color: white;
+    color: var(--text-inverse);
     transition: var(--transition-base);
     text-decoration: none;
 }
 
 .social-link:hover {
-    background: white;
-    color: var(--primary-color);
+    background: var(--text-inverse);
+    color: var(--color-primary);
     transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+    box-shadow: var(--shadow-md);
 }
 
 .footer-info {
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     opacity: 0.85;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-2);
 }
 
 .footer-icp {
-    font-size: 0.85rem;
+    font-size: var(--text-xs);
     opacity: 0.75;
     margin-bottom: 0;
 }
@@ -700,12 +767,12 @@ main {
 
 /* 卡片悬浮效果 */
 .card-hover {
-    transition: all 0.3s ease;
+    transition: all var(--transition-normal);
 }
 
 .card-hover:hover {
     transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(67, 97, 238, 0.15);
+    box-shadow: var(--shadow-md);
 }
 
 /* 脉冲加载动画 */
@@ -728,10 +795,6 @@ main {
     animation: pulse 2s ease-in-out infinite;
 }
 
-html {
-    scroll-behavior: smooth;
-}
-
 /* 移动端点击高亮禁用 */
 * {
     -webkit-tap-highlight-color: transparent;
@@ -748,55 +811,73 @@ html {
     text-overflow: ellipsis;
 }
 
-.gradient-bg {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-    color: white;
+.solid-bg {
+    background: var(--color-primary);
+    color: var(--text-inverse);
 }
 
 .card-shadow {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-normal);
 }
 
 .card-shadow:hover {
-    box-shadow: 0 8px 25px rgba(67, 97, 238, 0.15);
+    box-shadow: var(--shadow-md);
+}
+
+/* 懒加载图片过渡效果 */
+.lazy-img {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.lazy-img.lazy-loaded {
+    opacity: 1;
+}
+
+.lazy-img.lazy-loading {
+    background: var(--bg-light);
+}
+
+.lazy-img.lazy-error {
+    background: var(--color-error-light);
 }
 
 /* ----------------------------------------------------------
  * 10. 首页新版样式
- * 
+ *
  * 更简洁现代的首页设计，使用径向渐变背景和
  * 统计面板展示数据概览。
  * ---------------------------------------------------------- */
 .home-page {
-    background: linear-gradient(180deg, #f8fbff 0%, #f3f7fc 100%);
+    background: var(--bg-light);
 }
 
 .home-hero {
     padding: 5.5rem 0 4rem;
-    background: radial-gradient(circle at right top, rgba(59, 130, 246, 0.18), transparent 45%),
-                radial-gradient(circle at left bottom, rgba(16, 185, 129, 0.12), transparent 35%);
+    background: radial-gradient(circle at right top, rgba(37, 99, 235, 0.08), transparent 45%),
+                radial-gradient(circle at left bottom, rgba(16, 185, 129, 0.06), transparent 35%);
 }
 
 .home-badge {
     display: inline-block;
     padding: 0.35rem 0.9rem;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: rgba(37, 99, 235, 0.12);
-    color: #1d4ed8;
+    color: var(--color-primary-dark);
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
 }
 
 .home-title {
     font-size: clamp(2rem, 4vw, 3rem);
-    margin-bottom: 1rem;
-    color: #0f172a;
+    margin-bottom: var(--space-4);
+    color: var(--color-neutral-900);
 }
 
 .home-description {
-    font-size: 1.05rem;
-    color: #475569;
+    font-size: var(--text-base);
+    color: var(--color-neutral-600);
     max-width: 680px;
     margin-bottom: 1.75rem;
 }
@@ -812,82 +893,82 @@ html {
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 0.65rem 1.25rem;
     font-weight: 600;
-    transition: all 0.25s ease;
+    transition: all var(--transition-normal);
 }
 
 .home-btn-primary {
-    background: #2563eb;
-    color: #fff;
+    background: var(--color-primary);
+    color: var(--text-inverse);
 }
 
 .home-btn-primary:hover {
-    background: #1d4ed8;
-    color: #fff;
+    background: var(--color-primary-dark);
+    color: var(--text-inverse);
 }
 
 .home-btn-outline {
-    border: 1px solid #cbd5e1;
-    color: #1e293b;
-    background: #fff;
+    border: 1px solid var(--color-neutral-300);
+    color: var(--color-neutral-800);
+    background: var(--bg-white);
 }
 
 .home-btn-outline:hover {
-    border-color: #2563eb;
-    color: #1d4ed8;
+    border-color: var(--color-primary);
+    color: var(--color-primary-dark);
 }
 
 /* 统计面板 - 半透明白色背景 */
 .home-stat-panel {
-    border-radius: 20px;
+    border-radius: var(--radius-md);
     padding: 1.6rem;
     background: rgba(255, 255, 255, 0.85);
-    border: 1px solid #dbeafe;
-    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+    border: 1px solid var(--color-info-light);
+    box-shadow: var(--shadow-md);
 }
 
 .home-stat-title {
-    font-size: 1.15rem;
-    margin-bottom: 1rem;
-    color: #1e293b;
+    font-size: var(--text-base);
+    margin-bottom: var(--space-4);
+    color: var(--color-neutral-800);
 }
 
 .home-stat-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
+    gap: var(--space-2);
 }
 
 .home-stat-item {
-    border-radius: 12px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
     padding: 0.85rem;
 }
 
 .home-stat-label {
     display: block;
-    color: #64748b;
-    font-size: 0.85rem;
+    color: var(--color-neutral-500);
+    font-size: var(--text-xs);
     margin-bottom: 0.35rem;
 }
 
 .home-stat-value {
-    color: #0f172a;
-    font-size: 1.35rem;
+    color: var(--color-neutral-900);
+    font-size: var(--text-lg);
 }
 
 .home-stat-value.small {
-    font-size: 1rem;
+    font-size: var(--text-base);
 }
 
 .home-stat-tip {
     margin-top: 0.9rem;
     margin-bottom: 0;
-    color: #475569;
-    font-size: 0.92rem;
+    color: var(--color-neutral-600);
+    font-size: var(--text-sm);
 }
 
 .home-value,
@@ -899,23 +980,23 @@ html {
 .home-value-card,
 .home-family-card {
     height: 100%;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
     padding: 1.35rem;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .home-value-card h3 {
-    font-size: 1.15rem;
+    font-size: var(--text-base);
     margin-bottom: 0.75rem;
-    color: #1e293b;
+    color: var(--color-neutral-800);
 }
 
 .home-value-card p,
 .home-family-card p {
     margin: 0;
-    color: #64748b;
+    color: var(--color-neutral-500);
 }
 
 .home-section-header {
@@ -925,48 +1006,48 @@ html {
 
 .home-section-header h2 {
     margin-bottom: 0.4rem;
-    font-size: 1.9rem;
-    color: #0f172a;
+    font-size: var(--text-xl);
+    color: var(--color-neutral-900);
 }
 
 .home-section-header p {
     margin: 0;
-    color: #64748b;
+    color: var(--color-neutral-500);
 }
 
 .home-family-head {
     display: flex;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--space-2);
     align-items: flex-start;
     margin-bottom: 0.9rem;
 }
 
 .home-family-head h3 {
     margin: 0;
-    font-size: 1.15rem;
-    color: #1e293b;
+    font-size: var(--text-base);
+    color: var(--color-neutral-800);
 }
 
 .home-family-head span {
-    font-size: 0.8rem;
-    color: #2563eb;
-    background: #eff6ff;
-    border-radius: 999px;
+    font-size: var(--text-xs);
+    color: var(--color-primary);
+    background: var(--color-info-light);
+    border-radius: var(--radius-sm);
     padding: 0.25rem 0.55rem;
     white-space: nowrap;
 }
 
 .home-family-link {
     display: inline-block;
-    margin-top: 1rem;
-    color: #1d4ed8;
+    margin-top: var(--space-4);
+    color: var(--color-primary-dark);
     text-decoration: none;
     font-weight: 600;
 }
 
 .home-family-link:hover {
-    color: #1e40af;
+    color: var(--color-primary-dark);
 }
 
 .home-more-wrap {
@@ -977,27 +1058,27 @@ html {
 /* 首页空状态 */
 .home-empty {
     text-align: center;
-    border-radius: 14px;
-    border: 1px dashed #cbd5e1;
-    background: #fff;
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--color-neutral-300);
+    background: var(--bg-white);
     padding: 2.2rem 1rem;
 }
 
 .home-empty h3 {
     margin-bottom: 0.5rem;
-    color: #1e293b;
+    color: var(--color-neutral-800);
 }
 
 .home-empty p {
     margin: 0;
-    color: #64748b;
+    color: var(--color-neutral-500);
 }
 
 /* ----------------------------------------------------------
  * 11. 表单浮动标签
  * ---------------------------------------------------------- */
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
+    color: var(--text-tertiary);
     text-align: end;
 }
 
@@ -1014,116 +1095,116 @@ html {
     .pt-16 {
         padding-top: 5rem;
     }
-    
+
     .navbar {
         padding: 0.5rem 0;
     }
-    
+
     .navbar-brand {
         gap: 0.3rem;
     }
-    
+
     .brand-icon {
         width: 32px;
         height: 32px;
-        font-size: 1rem;
+        font-size: var(--text-base);
     }
-    
+
     .brand-name {
-        font-size: 1.1rem;
+        font-size: var(--text-base);
     }
-    
+
     .nav-link {
-        padding: 0.5rem 0.75rem !important;
-        font-size: 0.9rem;
+        padding: var(--space-2) 0.75rem !important;
+        font-size: var(--text-sm);
     }
-    
+
     .nav-link i {
-        font-size: 0.85rem;
-        margin-right: 0.5rem;
+        font-size: var(--text-xs);
+        margin-right: var(--space-2);
     }
-    
+
     .hero-section {
         min-height: 380px;
     }
-    
+
     .hero-content {
         padding: 3rem 1rem;
     }
-    
+
     .hero-title {
         font-size: 2.5rem;
     }
-    
+
     .hero-subtitle {
-        font-size: 1.2rem;
+        font-size: var(--text-lg);
     }
-    
+
     .hero-desc {
-        font-size: 1rem;
+        font-size: var(--text-base);
     }
-    
+
     .hero-buttons {
         flex-direction: column;
         align-items: center;
     }
-    
+
     .btn-primary,
     .btn-secondary {
         width: 100%;
         max-width: 200px;
         text-align: center;
     }
-    
+
     .intro-section,
     .families-section {
         padding: 3rem 0;
     }
-    
+
     .section-title {
-        font-size: 2rem;
+        font-size: var(--text-xl);
     }
-    
+
     .intro-card {
         padding: 2rem;
     }
-    
+
     .intro-icon {
         width: 80px;
         height: 80px;
-        font-size: 1.5rem;
+        font-size: var(--text-lg);
     }
-    
+
     .intro-title {
-        font-size: 1.3rem;
+        font-size: var(--text-base);
     }
-    
+
     .family-card {
         margin-bottom: 1.5rem;
     }
-    
+
     .family-card-header {
         padding: 1.5rem;
     }
-    
+
     .family-name {
-        font-size: 1.2rem;
+        font-size: var(--text-base);
     }
-    
+
     .footer {
         text-align: center;
         padding: 2.5rem 0;
     }
-    
+
     .footer .text-md-end {
         text-align: center !important;
         margin-top: 2rem;
     }
-    
+
     .footer-brand {
         justify-content: center;
     }
-    
+
     .footer-social {
         justify-content: center;
     }
@@ -1150,86 +1231,408 @@ html {
     .pt-16 {
         padding-top: 4.5rem;
     }
-    
+
     .navbar-brand {
         gap: 0.25rem;
     }
-    
+
     .brand-icon {
         width: 28px;
         height: 28px;
-        font-size: 0.9rem;
+        font-size: var(--text-sm);
     }
-    
+
     .brand-name {
-        font-size: 1rem;
+        font-size: var(--text-base);
     }
-    
+
     .hero-section {
         min-height: 280px;
     }
-    
+
     .hero-content {
         padding: 2.5rem 1rem;
     }
-    
+
     .hero-title {
         font-size: 2rem;
     }
-    
+
     .hero-subtitle {
-        font-size: 1rem;
+        font-size: var(--text-base);
         letter-spacing: 0.1em;
     }
-    
+
     .hero-desc {
-        font-size: 0.85rem;
+        font-size: var(--text-sm);
     }
-    
+
     .section-title {
         font-size: 1.75rem;
     }
-    
+
     .section-subtitle {
-        font-size: 1rem;
+        font-size: var(--text-base);
     }
-    
+
     .intro-card {
         padding: 1.5rem;
     }
-    
+
     .intro-icon {
         width: 60px;
         height: 60px;
-        font-size: 1.25rem;
+        font-size: var(--text-lg);
     }
-    
+
     .intro-title {
-        font-size: 1.15rem;
+        font-size: var(--text-base);
     }
-    
+
     .intro-text {
-        font-size: 0.9rem;
+        font-size: var(--text-sm);
     }
-    
+
     .family-card-header {
         padding: 1.25rem;
     }
-    
+
     .family-name {
-        font-size: 1.1rem;
+        font-size: var(--text-base);
     }
-    
+
     .family-card-body {
         padding: 1.25rem;
     }
-    
+
     .family-desc {
-        font-size: 0.9rem;
+        font-size: var(--text-sm);
     }
-    
+
     .btn-view {
         padding: 0.6rem 1.5rem;
-        font-size: 0.9rem;
+        font-size: var(--text-sm);
+    }
+
+    /* 首页新版样式移动端适配 */
+    .home-title {
+        font-size: 1.75rem;
+    }
+
+    .home-description {
+        font-size: var(--text-sm);
+    }
+
+    .home-stat-panel {
+        padding: var(--space-4);
+    }
+
+    .home-family-head {
+        flex-direction: column;
+        gap: var(--space-1);
+    }
+
+    /* 表格移动端最小宽度，确保可横向滚动 */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        min-width: 600px;
+    }
+
+    /* 文字溢出保护 */
+    .text-truncate {
+        max-width: 100%;
+    }
+}
+
+/* ----------------------------------------------------------
+ * 13. 打印样式
+ * ---------------------------------------------------------- */
+@media print {
+    /* 隐藏非内容元素 */
+    .navbar,
+    .footer,
+    .hero-overlay,
+    .social-link,
+    .btn-primary,
+    .btn-secondary,
+    .btn-view,
+    .home-actions,
+    .sidebar-toggle,
+    .admin-sidebar,
+    .admin-topbar,
+    .admin-footer,
+    .chart-toolbar,
+    .legend-panel,
+    .zoom-controls,
+    .view-tabs,
+    .search-box,
+    .filter-group,
+    .pagination-container,
+    .home-stat-panel,
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 12pt;
+        font-family: 'Noto Serif SC', Georgia, serif;
+    }
+
+    /* 移除阴影和背景 */
+    * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    .hero-section {
+        background: none !important;
+        color: #000 !important;
+        min-height: auto;
+        padding: 1rem 0;
+    }
+
+    .hero-title,
+    .hero-subtitle,
+    .hero-desc {
+        color: #000 !important;
+    }
+
+    .intro-card,
+    .family-card,
+    .home-value-card,
+    .home-family-card,
+    .tree-card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        break-inside: avoid;
+        background: #fff !important;
+    }
+
+    .intro-card *,
+    .family-card *,
+    .tree-card * {
+        color: #000 !important;
+    }
+
+    /* 链接显示URL */
+    a {
+        color: #000 !important;
+        text-decoration: underline;
+    }
+
+    a[href]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.8em;
+        color: #555;
+    }
+
+    /* 排除不需要显示URL的链接 */
+    a[href^="#"]::after,
+    a[href^="javascript"]::after {
+        content: "";
+    }
+}
+
+/* ----------------------------------------------------------
+ * 14. 暗色模式
+ * ---------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-white: #1a1a2e;
+        --bg-light: #16213e;
+        --bg-muted: #1a1a2e;
+        --text-primary: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --text-tertiary: #64748b;
+        --text-inverse: #0f172a;
+        --border-color: #334155;
+        --border-color-light: #1e293b;
+        --glass-bg: rgba(26, 26, 46, 0.8);
+        --glass-border: 1px solid rgba(51, 65, 85, 0.5);
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+        --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    body {
+        background-color: var(--bg-light);
+        color: var(--text-primary);
+    }
+
+    /* 导航栏暗色适配 */
+    .navbar {
+        background: var(--glass-bg) !important;
+        border-bottom-color: rgba(51, 65, 85, 0.5);
+    }
+
+    .nav-link {
+        color: var(--text-primary) !important;
+    }
+
+    .nav-link:hover {
+        color: var(--color-primary-light) !important;
+        background-color: rgba(59, 130, 246, 0.15);
+    }
+
+    .brand-icon {
+        box-shadow: var(--shadow-sm);
+    }
+
+    .brand-name {
+        color: var(--color-primary-light);
+    }
+
+    /* 卡片暗色适配 */
+    .intro-card {
+        background: rgba(26, 26, 46, 0.85);
+        border-color: rgba(51, 65, 85, 0.5);
+    }
+
+    .intro-card:hover {
+        border-color: var(--color-primary-light);
+    }
+
+    .family-card {
+        background: rgba(26, 26, 46, 0.85);
+        border-color: rgba(51, 65, 85, 0.5);
+    }
+
+    .family-card:hover {
+        border-color: var(--color-primary-light);
+    }
+
+    .family-card-header {
+        background: rgba(26, 26, 46, 0.9);
+    }
+
+    .family-card-footer {
+        background: var(--bg-muted);
+    }
+
+    /* 按钮暗色适配 */
+    .btn-primary {
+        background: var(--color-primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--color-primary-light);
+    }
+
+    .btn-secondary {
+        border-color: var(--text-secondary);
+        color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+        background: var(--text-secondary);
+        color: var(--bg-light);
+    }
+
+    .btn-view {
+        background: var(--color-primary);
+    }
+
+    .btn-view:hover {
+        background: var(--color-primary-light);
+    }
+
+    /* 表单输入框暗色适配 */
+    .form-control,
+    .form-select {
+        background-color: var(--bg-muted);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: var(--bg-muted);
+        border-color: var(--color-primary-light);
+        color: var(--text-primary);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-tertiary);
+    }
+
+    .form-label {
+        color: var(--text-primary);
+    }
+
+    /* 页脚暗色适配 */
+    .footer {
+        background: #0f172a;
+    }
+
+    .social-link {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .social-link:hover {
+        background: var(--color-primary-light);
+        color: var(--text-inverse);
+    }
+
+    /* 空状态暗色适配 */
+    .empty-state {
+        background: var(--bg-white);
+        border-color: var(--border-color);
+    }
+
+    .home-empty {
+        background: var(--bg-white);
+        border-color: var(--color-neutral-600);
+    }
+
+    /* 首页新版样式暗色适配 */
+    .home-stat-panel {
+        background: rgba(26, 26, 46, 0.85);
+        border-color: var(--color-neutral-700);
+    }
+
+    .home-stat-item {
+        background: var(--bg-white);
+        border-color: var(--border-color);
+    }
+
+    .home-value-card,
+    .home-family-card {
+        background: var(--bg-white);
+        border-color: var(--border-color);
+    }
+
+    .home-badge {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--color-primary-light);
+    }
+
+    .home-title {
+        color: var(--text-primary);
+    }
+
+    .home-description {
+        color: var(--text-secondary);
+    }
+
+    .home-btn-outline {
+        background: var(--bg-white);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .home-btn-outline:hover {
+        border-color: var(--color-primary-light);
+        color: var(--color-primary-light);
+    }
+
+    .intro-section::before,
+    .families-section::before {
+        background: rgba(37, 99, 235, 0.05);
     }
 }

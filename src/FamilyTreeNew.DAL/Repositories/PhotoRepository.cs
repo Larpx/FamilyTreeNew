@@ -82,4 +82,10 @@ public interface IPhotoRepository
     /// </summary>
     /// <param name="albumId">相册ID</param>
     Task<Photo?> GetFirstPhotoByAlbumIdAsync(Guid albumId);
+
+    /// <summary>
+    /// 根据多个相册ID批量获取照片列表
+    /// </summary>
+    /// <param name="albumIds">相册ID列表</param>
+    Task<List<Photo>> GetByAlbumIdsAsync(List<Guid> albumIds);
 }

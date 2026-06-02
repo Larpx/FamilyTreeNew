@@ -86,7 +86,7 @@
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         <form asp-action="Delete" asp-route-id="@item.Id" method="post" 
-                                              onsubmit="return confirm('确定要删除这个管理员吗？');" style="display:inline;">
+                                              onsubmit="return confirm('确定要删除吗？此操作不可撤销。');" style="display:inline;">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="btn btn-outline-danger" title="删除">
                                                 <i class="bi bi-trash"></i>

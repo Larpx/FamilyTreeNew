@@ -113,7 +113,7 @@ public class FamilyMemberRepositoryTests
         typeof(IFamilyMemberRepository).Should().HaveMethod("InsertAsync", new[] { typeof(FamilyMember) });
         typeof(IFamilyMemberRepository).Should().HaveMethod("UpdateAsync", new[] { typeof(FamilyMember) });
         typeof(IFamilyMemberRepository).Should().HaveMethod("DeleteAsync", new[] { typeof(Guid) });
-        typeof(IFamilyMemberRepository).Should().HaveMethod("GetPagedByFamilyTreeAsync", new[] { typeof(Guid), typeof(int), typeof(int), typeof(string), typeof(int?), typeof(Guid?) });
+        typeof(IFamilyMemberRepository).Should().HaveMethod("GetPagedByFamilyTreeAsync", new[] { typeof(Guid?), typeof(int), typeof(int), typeof(string), typeof(int?), typeof(Guid?) });
         typeof(IFamilyMemberRepository).Should().HaveMethod("GetByFamilyTreeIdAsync", new[] { typeof(Guid) });
         typeof(IFamilyMemberRepository).Should().HaveMethod("HasChildrenAsync", new[] { typeof(Guid) });
         typeof(IFamilyMemberRepository).Should().HaveMethod("BulkInsertAsync", new[] { typeof(List<FamilyMember>) });

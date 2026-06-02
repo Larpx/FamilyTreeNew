@@ -3,30 +3,34 @@ using System.Security.Cryptography;
 using System.Text;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Configuration;
 
 namespace FamilyTreeNew.BLL.Services;
-
-public interface IVerificationService
-{
-    Task<VerificationResultDto> VerifyAnswerAsync(VerifyAnswerDto dto);
-    Task<FamilyTreeVerificationStatusDto> GetFamilyTreeVerificationStatusAsync(Guid familyTreeId);
-    string GenerateAccessToken(Guid familyTreeId, Guid questionId);
-    bool ValidateAccessToken(string token, Guid familyTreeId);
-}
 
 public class VerificationService : IVerificationService
 {
     private readonly DAL.Repositories.IVerificationQuestionRepository _questionRepository;
     private readonly DAL.Repositories.IFamilyTreeRepository _familyTreeRepository;
-    private static readonly ConcurrentDictionary<string, DateTime> _tokenCache = new();
-    private const int TokenExpirationHours = 24;
+    private static readonly ConcurrentDictionary<string, TokenEntry> _tokenCache = new();
+    private readonly int _tokenExpirationHours;
+
+    /// <summary>
+    /// 令牌缓存条目，包含关联的家谱ID和过期时间
+    /// </summary>
+    private class TokenEntry
+    {
+        public Guid FamilyTreeId { get; init; }
+        public DateTime Expiration { get; init; }
+    }
 
     public VerificationService(
         DAL.Repositories.IVerificationQuestionRepository questionRepository,
-        DAL.Repositories.IFamilyTreeRepository familyTreeRepository)
+        DAL.Repositories.IFamilyTreeRepository familyTreeRepository,
+        IConfiguration configuration)
     {
         _questionRepository = questionRepository;
         _familyTreeRepository = familyTreeRepository;
+        _tokenExpirationHours = configuration.GetValue("Verification:TokenExpirationHours", 24);
     }
 
     public async Task<VerificationResultDto> VerifyAnswerAsync(VerifyAnswerDto dto)
@@ -139,7 +143,11 @@ public class VerificationService : IVerificationService
         string rawData = $"{familyTreeId}_{questionId}_{DateTime.UtcNow.Ticks}_{Guid.NewGuid()}";
         string token = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(rawData)));
 
-        _tokenCache[token] = DateTime.UtcNow.AddHours(TokenExpirationHours);
+        _tokenCache[token] = new TokenEntry
+        {
+            FamilyTreeId = familyTreeId,
+            Expiration = DateTime.UtcNow.AddHours(_tokenExpirationHours)
+        };
 
         CleanExpiredTokens();
 
@@ -148,14 +156,19 @@ public class VerificationService : IVerificationService
 
     public bool ValidateAccessToken(string token, Guid familyTreeId)
     {
-        if (!_tokenCache.TryGetValue(token, out DateTime expiration))
+        if (!_tokenCache.TryGetValue(token, out TokenEntry? entry))
         {
             return false;
         }
 
-        if (DateTime.UtcNow > expiration)
+        if (DateTime.UtcNow > entry.Expiration)
         {
             _tokenCache.TryRemove(token, out _);
+            return false;
+        }
+
+        if (entry.FamilyTreeId != familyTreeId)
+        {
             return false;
         }
 
@@ -176,7 +189,7 @@ public class VerificationService : IVerificationService
     {
         foreach (var kvp in _tokenCache)
         {
-            if (DateTime.UtcNow > kvp.Value)
+            if (DateTime.UtcNow > kvp.Value.Expiration)
             {
                 _tokenCache.TryRemove(kvp.Key, out _);
             }

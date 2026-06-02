@@ -4,17 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
-public interface IVerificationQuestionService
-{
-    Task<List<VerificationQuestionDto>> GetAllAsync();
-    Task<VerificationQuestionDto?> GetByIdAsync(Guid id);
-    Task<List<VerificationQuestionDto>> GetByFamilyTreeIdAsync(Guid familyTreeId);
-    Task<VerificationQuestionDto> CreateAsync(CreateVerificationQuestionDto dto);
-    Task<VerificationQuestionDto?> UpdateAsync(Guid id, UpdateVerificationQuestionDto dto);
-    Task<bool> DeleteAsync(Guid id);
-    Task<bool> AddQuestionsToFamilyTreeAsync(Guid familyTreeId, List<CreateVerificationQuestionDto> questions);
-}
-
 /// <summary>
 /// 验证问题服务
 /// 管理家谱访问验证问题的增删改查

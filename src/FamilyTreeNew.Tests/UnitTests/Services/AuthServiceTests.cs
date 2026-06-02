@@ -6,6 +6,7 @@ using FamilyTreeNew.Models.Entities;
 using FamilyTreeNew.Models.Helpers;
 using FamilyTreeNew.Tests.Helpers;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 
@@ -14,19 +15,35 @@ namespace FamilyTreeNew.Tests.UnitTests.Services;
 public class AuthServiceTests
 {
     private readonly Mock<IAdminRepository> _mockAdminRepository;
-    private readonly Mock<IOperationLogRepository> _mockOperationLogRepository;
+    private readonly Mock<IOperationLogService> _mockOperationLogService;
     private readonly Mock<IJwtHelper> _mockJwtHelper;
+    private readonly PasswordValidator _passwordValidator;
     private readonly AuthService _authService;
 
     public AuthServiceTests()
     {
         _mockAdminRepository = new Mock<IAdminRepository>();
-        _mockOperationLogRepository = new Mock<IOperationLogRepository>();
+        _mockOperationLogService = new Mock<IOperationLogService>();
         _mockJwtHelper = new Mock<IJwtHelper>();
+
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            { "Security:PasswordMinLength", "8" },
+            { "Security:RequireUppercase", "true" },
+            { "Security:RequireLowercase", "true" },
+            { "Security:RequireDigit", "true" },
+            { "Security:RequireSpecialChar", "true" }
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings!)
+            .Build();
+        _passwordValidator = new PasswordValidator(configuration);
+
         _authService = new AuthService(
             _mockAdminRepository.Object,
-            _mockOperationLogRepository.Object,
-            _mockJwtHelper.Object);
+            _mockOperationLogService.Object,
+            _mockJwtHelper.Object,
+            _passwordValidator);
     }
 
     [Fact]
@@ -45,8 +62,8 @@ public class AuthServiceTests
             .Returns(DateTime.UtcNow.AddHours(2));
         _mockAdminRepository.Setup(x => x.UpdateLastLoginTimeAsync(admin.Id))
             .ReturnsAsync(1);
-        _mockOperationLogRepository.Setup(x => x.InsertAsync(It.IsAny<OperationLog>()))
-            .ReturnsAsync(1);
+        _mockOperationLogService.Setup(x => x.LogAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<string?>()))
+            .Returns(Task.CompletedTask);
 
         var request = new LoginRequestDto { Username = "testuser", Password = "Test@123456" };
         var result = await _authService.LoginAsync(request);
@@ -63,8 +80,8 @@ public class AuthServiceTests
     {
         _mockAdminRepository.Setup(x => x.GetByUsernameAsync("nonexistent"))
             .ReturnsAsync((Admin?)null);
-        _mockOperationLogRepository.Setup(x => x.InsertAsync(It.IsAny<OperationLog>()))
-            .ReturnsAsync(1);
+        _mockOperationLogService.Setup(x => x.LogAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<string?>()))
+            .Returns(Task.CompletedTask);
 
         var request = new LoginRequestDto { Username = "nonexistent", Password = "password" };
         var result = await _authService.LoginAsync(request);
@@ -80,8 +97,8 @@ public class AuthServiceTests
         var admin = TestDataFactory.CreateTestAdmin(isEnabled: false);
         _mockAdminRepository.Setup(x => x.GetByUsernameAsync("testuser"))
             .ReturnsAsync(admin);
-        _mockOperationLogRepository.Setup(x => x.InsertAsync(It.IsAny<OperationLog>()))
-            .ReturnsAsync(1);
+        _mockOperationLogService.Setup(x => x.LogAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<string?>()))
+            .Returns(Task.CompletedTask);
 
         var request = new LoginRequestDto { Username = "testuser", Password = "Test@123456" };
         var result = await _authService.LoginAsync(request);
@@ -98,8 +115,8 @@ public class AuthServiceTests
 
         _mockAdminRepository.Setup(x => x.GetByUsernameAsync("testuser"))
             .ReturnsAsync(admin);
-        _mockOperationLogRepository.Setup(x => x.InsertAsync(It.IsAny<OperationLog>()))
-            .ReturnsAsync(1);
+        _mockOperationLogService.Setup(x => x.LogAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<string?>()))
+            .Returns(Task.CompletedTask);
 
         var request = new LoginRequestDto { Username = "testuser", Password = "Test@123456" };
         var result = await _authService.LoginAsync(request);
@@ -118,8 +135,8 @@ public class AuthServiceTests
 
         _mockAdminRepository.Setup(x => x.GetByUsernameAsync("testuser"))
             .ReturnsAsync(admin);
-        _mockOperationLogRepository.Setup(x => x.InsertAsync(It.IsAny<OperationLog>()))
-            .ReturnsAsync(1);
+        _mockOperationLogService.Setup(x => x.LogAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<string?>()))
+            .Returns(Task.CompletedTask);
 
         var request = new LoginRequestDto { Username = "testuser", Password = "WrongPassword@123" };
         var result = await _authService.LoginAsync(request);
@@ -169,8 +186,8 @@ public class AuthServiceTests
             .ReturnsAsync(admin);
         _mockAdminRepository.Setup(x => x.UpdateAsync(It.IsAny<Admin>()))
             .ReturnsAsync(1);
-        _mockOperationLogRepository.Setup(x => x.InsertAsync(It.IsAny<OperationLog>()))
-            .ReturnsAsync(1);
+        _mockOperationLogService.Setup(x => x.LogAsync(It.IsAny<Guid?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<string?>()))
+            .Returns(Task.CompletedTask);
 
         var (success, message) = await _authService.ChangePasswordAsync(adminId, "OldPassword@123", "NewPass@456");
 

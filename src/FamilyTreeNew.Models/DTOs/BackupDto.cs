@@ -11,7 +11,7 @@ public class BackupDto
     public string FileName { get; set; } = string.Empty;
 
     /// <summary>
-    /// 备份文件路径
+    /// 备份文件名（仅文件名，不暴露完整路径）
     /// </summary>
     public string FilePath { get; set; } = string.Empty;
 

@@ -1,5 +1,4 @@
 using FamilyTreeNew.Models.DTOs;
-using FamilyTreeNew.Models.Entities;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -50,4 +49,10 @@ public interface IFamilyTreeService
     /// <param name="id">家谱ID</param>
     /// <returns>存在返回true</returns>
     Task<bool> ExistsAsync(Guid id);
+
+    /// <summary>
+    /// 使家谱缓存失效
+    /// </summary>
+    /// <param name="familyTreeId">家谱ID（可选）</param>
+    void InvalidateCache(Guid? familyTreeId = null);
 }

@@ -4,6 +4,8 @@ using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
 using FamilyTreeNew.Tests.Helpers;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,7 +19,9 @@ public class FamilyTreeServiceTests
     public FamilyTreeServiceTests()
     {
         _mockFamilyTreeRepository = new Mock<IFamilyTreeRepository>();
-        _familyTreeService = new FamilyTreeService(_mockFamilyTreeRepository.Object);
+        var memoryCache = new MemoryCache(new MemoryCacheOptions());
+        var logger = new Mock<ILogger<FamilyTreeService>>().Object;
+        _familyTreeService = new FamilyTreeService(_mockFamilyTreeRepository.Object, memoryCache, logger);
     }
 
     [Fact]

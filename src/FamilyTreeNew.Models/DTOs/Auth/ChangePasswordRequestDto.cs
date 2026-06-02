@@ -17,7 +17,7 @@ public class ChangePasswordRequestDto
     /// 新密码
     /// </summary>
     [Required(ErrorMessage = "新密码不能为空")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "新密码长度必须在6-100个字符之间")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "新密码长度必须在8-100个字符之间")]
     public string NewPassword { get; set; } = string.Empty;
 
     /// <summary>

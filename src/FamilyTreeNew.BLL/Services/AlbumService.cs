@@ -2,6 +2,7 @@ using FamilyTreeNew.BLL.Helpers;
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -12,11 +13,13 @@ public class AlbumService : IAlbumService
 {
     private readonly IAlbumRepository _albumRepository;
     private readonly IPhotoRepository _photoRepository;
+    private readonly ILogger<AlbumService> _logger;
 
-    public AlbumService(IAlbumRepository albumRepository, IPhotoRepository photoRepository)
+    public AlbumService(IAlbumRepository albumRepository, IPhotoRepository photoRepository, ILogger<AlbumService> logger)
     {
         _albumRepository = albumRepository;
         _photoRepository = photoRepository;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -25,13 +28,16 @@ public class AlbumService : IAlbumService
         var albums = await _albumRepository.GetPagedAsync(query.PageIndex, query.PageSize, query.FamilyTreeId, query.Keyword);
         var totalCount = await _albumRepository.GetCountAsync(query.FamilyTreeId, query.Keyword);
 
-        var albumDtos = new List<AlbumDto>();
-        foreach (var album in albums)
+        var albumIds = albums.Select(a => a.Id).ToList();
+        var allPhotos = await _photoRepository.GetByAlbumIdsAsync(albumIds);
+        var photosByAlbum = allPhotos.GroupBy(p => p.AlbumId).ToDictionary(g => g.Key, g => g.ToList());
+
+        var albumDtos = albums.Select(album =>
         {
-            var photos = await _photoRepository.GetByAlbumIdAsync(album.Id);
+            var photos = photosByAlbum.GetValueOrDefault(album.Id, new List<Photo>());
             var coverPhoto = photos.FirstOrDefault();
 
-            albumDtos.Add(new AlbumDto
+            return new AlbumDto
             {
                 Id = album.Id,
                 FamilyTreeId = album.FamilyTreeId,
@@ -41,8 +47,8 @@ public class AlbumService : IAlbumService
                 UpdatedAt = album.UpdatedAt,
                 PhotoCount = photos.Count,
                 CoverPhotoPath = coverPhoto?.ThumbnailPath ?? coverPhoto?.PhotoPath
-            });
-        }
+            };
+        }).ToList();
 
         return new PagedResult<AlbumDto>
         {
@@ -92,6 +98,7 @@ public class AlbumService : IAlbumService
         };
 
         await _albumRepository.InsertAsync(album);
+        _logger.LogInformation("创建相册，ID: {AlbumId}，家谱: {FamilyTreeId}", album.Id, dto.FamilyTreeId);
 
         return new AlbumDto
         {
@@ -118,6 +125,7 @@ public class AlbumService : IAlbumService
         album.UpdatedAt = DateTime.UtcNow;
 
         await _albumRepository.UpdateAsync(album);
+        _logger.LogInformation("更新相册，ID: {AlbumId}", id);
 
         var photos = await _photoRepository.GetByAlbumIdAsync(id);
         var coverPhoto = photos.FirstOrDefault();
@@ -159,6 +167,7 @@ public class AlbumService : IAlbumService
 
         await _photoRepository.DeleteByAlbumIdAsync(id);
         await _albumRepository.DeleteAsync(id);
+        _logger.LogInformation("删除相册，ID: {AlbumId}，关联照片数: {PhotoCount}", id, photos.Count);
 
         return true;
     }

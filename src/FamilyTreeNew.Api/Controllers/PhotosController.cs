@@ -40,8 +40,9 @@ public class PhotosController : ControllerBase
             var result = await _photoService.GetPhotosAsync(query);
             return Ok(ApiResponse<PagedResult<PhotoDto>>.Ok(result));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "获取照片列表失败");
             return StatusCode(500, ApiResponse<PagedResult<PhotoDto>>.Fail("获取照片列表失败，请稍后重试"));
         }
     }
@@ -65,8 +66,9 @@ public class PhotosController : ControllerBase
             }
             return Ok(ApiResponse<PhotoDto>.Ok(result));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "获取照片详情失败，照片ID: {Id}", id);
             return StatusCode(500, ApiResponse<PhotoDto>.Fail("获取照片详情失败，请稍后重试"));
         }
     }
@@ -126,12 +128,14 @@ public class PhotosController : ControllerBase
             var result = await _photoService.UploadPhotosAsync(dto.AlbumId, uploadItems, dto);
             return Ok(ApiResponse<List<PhotoDto>>.Ok(result, $"成功上传{result.Count}张照片"));
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            _logger.LogWarning(ex, "上传照片参数错误");
             return BadRequest(ApiResponse<List<PhotoDto>>.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "上传照片失败");
             return StatusCode(500, ApiResponse<List<PhotoDto>>.Fail("上传照片失败，请稍后重试"));
         }
     }
@@ -154,8 +158,9 @@ public class PhotosController : ControllerBase
             }
             return Ok(ApiResponse<PhotoDto>.Ok(result, "照片更新成功"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "更新照片失败，照片ID: {Id}", id);
             return StatusCode(500, ApiResponse<PhotoDto>.Fail("更新照片失败，请稍后重试"));
         }
     }
@@ -178,8 +183,9 @@ public class PhotosController : ControllerBase
             }
             return Ok(ApiResponse.Ok("照片删除成功"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "删除照片失败，照片ID: {Id}", id);
             return StatusCode(500, ApiResponse.Fail("删除照片失败，请稍后重试"));
         }
     }
@@ -212,12 +218,14 @@ public class PhotosController : ControllerBase
             }
             return Ok(ApiResponse<PhotoDto>.Ok(result, dto.SetAsAvatar ? "照片已关联成员并设置为头像" : "照片已关联成员"));
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            _logger.LogWarning(ex, "关联照片成员参数错误，照片ID: {Id}", id);
             return BadRequest(ApiResponse<PhotoDto>.Fail("操作失败，请稍后重试"));
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "关联照片成员失败，照片ID: {Id}", id);
             return StatusCode(500, ApiResponse<PhotoDto>.Fail("关联成员失败，请稍后重试"));
         }
     }

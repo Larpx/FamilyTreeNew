@@ -40,7 +40,22 @@ public partial class Program
         });
 
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath);
+            }
+
+            var modelsXmlFile = "FamilyTreeNew.Models.xml";
+            var modelsXmlPath = Path.Combine(AppContext.BaseDirectory, modelsXmlFile);
+            if (File.Exists(modelsXmlPath))
+            {
+                options.IncludeXmlComments(modelsXmlPath);
+            }
+        });
 
         builder.Services.AddResponseCompression(options =>
         {
@@ -100,7 +115,7 @@ public partial class Program
 
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("RequireAdminRole", policy => policy.RequireAuthenticatedUser());
+            options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
             options.AddPolicy("RequireUserRole", policy => policy.RequireAuthenticatedUser());
         });
 
@@ -132,7 +147,7 @@ public partial class Program
                     }
                     else
                     {
-                        policy.AllowAnyOrigin();
+                        policy.WithOrigins("https://localhost:5001", "https://localhost:5002", "http://localhost:5000");
                     }
                 }
 

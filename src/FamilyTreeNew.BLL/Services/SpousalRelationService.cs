@@ -1,6 +1,7 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
 
@@ -8,12 +9,15 @@ public class SpousalRelationService : ISpousalRelationService
 {
     private readonly ISpousalRelationRepository _spousalRelationRepository;
     private readonly IFamilyMemberRepository _familyMemberRepository;
+    private readonly ILogger<SpousalRelationService> _logger;
 
     public SpousalRelationService(ISpousalRelationRepository spousalRelationRepository,
-        IFamilyMemberRepository familyMemberRepository)
+        IFamilyMemberRepository familyMemberRepository,
+        ILogger<SpousalRelationService> logger)
     {
         _spousalRelationRepository = spousalRelationRepository;
         _familyMemberRepository = familyMemberRepository;
+        _logger = logger;
     }
 
     public async Task<List<SpousalRelationResponseDto>> GetByFamilyTreeIdAsync(Guid familyTreeId)
@@ -61,6 +65,7 @@ public class SpousalRelationService : ISpousalRelationService
         };
 
         await _spousalRelationRepository.InsertAsync(entity);
+        _logger.LogInformation("创建配偶关系，ID: {RelationId}，家谱: {FamilyTreeId}", entity.Id, dto.FamilyTreeId);
 
         var husband = await _familyMemberRepository.GetByIdAsync(entity.HusbandId);
         var wife = await _familyMemberRepository.GetByIdAsync(entity.WifeId);
@@ -82,6 +87,7 @@ public class SpousalRelationService : ISpousalRelationService
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _spousalRelationRepository.UpdateAsync(entity);
+        _logger.LogInformation("更新配偶关系，ID: {RelationId}", id);
 
         var husband = await _familyMemberRepository.GetByIdAsync(entity.HusbandId);
         var wife = await _familyMemberRepository.GetByIdAsync(entity.WifeId);
@@ -92,6 +98,7 @@ public class SpousalRelationService : ISpousalRelationService
     {
         if (!await _spousalRelationRepository.ExistsAsync(id)) return false;
         await _spousalRelationRepository.DeleteAsync(id);
+        _logger.LogInformation("删除配偶关系，ID: {RelationId}", id);
         return true;
     }
 

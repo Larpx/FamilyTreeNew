@@ -80,15 +80,4 @@ public class GedcomController : ControllerBase
             return StatusCode(500, ApiResponse.Fail("导入失败，请稍后重试"));
         }
     }
-
-    /// <summary>
-    /// GEDCOM导入请求DTO
-    /// </summary>
-    public class GedcomImportRequestDto
-    {
-        /// <summary>
-        /// GEDCOM文件内容
-        /// </summary>
-        public string Content { get; set; } = string.Empty;
-    }
 }

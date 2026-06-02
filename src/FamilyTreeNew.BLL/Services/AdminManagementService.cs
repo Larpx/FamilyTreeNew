@@ -3,25 +3,21 @@ using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
 using FamilyTreeNew.Models.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
-
-public interface IAdminManagementService
-{
-    Task<PagedResult<AdminDto>> GetPagedAsync(int pageIndex, int pageSize, string? keyword = null);
-    Task<AdminDto?> GetByIdAsync(Guid id);
-    Task<AdminDto> CreateAsync(CreateAdminDto dto);
-    Task<AdminDto?> UpdateAsync(Guid id, UpdateAdminDto dto);
-    Task<bool> DeleteAsync(Guid id);
-}
 
 public class AdminManagementService : IAdminManagementService
 {
     private readonly IAdminRepository _adminRepository;
+    private readonly PasswordValidator _passwordValidator;
+    private readonly ILogger<AdminManagementService> _logger;
 
-    public AdminManagementService(IAdminRepository adminRepository)
+    public AdminManagementService(IAdminRepository adminRepository, PasswordValidator passwordValidator, ILogger<AdminManagementService> logger)
     {
         _adminRepository = adminRepository;
+        _passwordValidator = passwordValidator;
+        _logger = logger;
     }
 
     public async Task<PagedResult<AdminDto>> GetPagedAsync(int pageIndex, int pageSize, string? keyword = null)
@@ -56,8 +52,7 @@ public class AdminManagementService : IAdminManagementService
             throw new InvalidOperationException("用户名已存在");
         }
 
-        var validationResult = PasswordValidator.Validate(dto.Password, minLength: 8, requireUppercase: true,
-            requireLowercase: true, requireDigit: true, requireSpecialChar: true);
+        var validationResult = _passwordValidator.Validate(dto.Password);
 
         if (!validationResult.IsValid)
         {
@@ -78,6 +73,7 @@ public class AdminManagementService : IAdminManagementService
         };
 
         await _adminRepository.InsertAsync(admin);
+        _logger.LogInformation("创建管理员，ID: {AdminId}，用户名: {Username}", admin.Id, admin.Username);
         return MapToDto(admin);
     }
 
@@ -101,6 +97,7 @@ public class AdminManagementService : IAdminManagementService
         admin.IsEnabled = dto.IsEnabled;
 
         await _adminRepository.UpdateAsync(admin);
+        _logger.LogInformation("更新管理员，ID: {AdminId}", id);
         return MapToDto(admin);
     }
 
@@ -111,8 +108,8 @@ public class AdminManagementService : IAdminManagementService
             return false;
         }
 
-        var admins = await _adminRepository.GetAllAsync();
-        if (admins.Count <= 1)
+        var totalCount = await _adminRepository.GetCountAsync();
+        if (totalCount <= 1)
         {
             throw new InvalidOperationException("至少需要保留一个系统管理员账号");
         }

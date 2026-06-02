@@ -86,7 +86,7 @@ docker compose logs -f
 | 字段 | 值 |
 |------|-----|
 | 用户名 | admin |
-| 密码 | admin123 |
+| 密码 | Admin@123456 |
 
 **重要**: 首次登录后请立即修改默认密码！
 
@@ -113,6 +113,8 @@ JWT_SECRET_KEY=your_jwt_secret_key_at_least_32_characters
 WEB_PORT=5002
 ```
 
+> 完整的环境变量列表请参考项目根目录的 `.env.example` 文件。
+
 ### 端口配置
 
 | 服务 | 默认端口 | 说明 |
@@ -130,6 +132,8 @@ WEB_PORT=5002
 ```
 Server=mysql;Port=3306;Database=FamilyTreeDb;User=familytree;Password=<MYSQL_PASSWORD>;CharSet=utf8mb4;
 ```
+
+Docker Compose 部署时，数据库初始化脚本位于 `mysql/init/01_init.sql`，会自动在 MySQL 容器首次启动时执行。
 
 ---
 

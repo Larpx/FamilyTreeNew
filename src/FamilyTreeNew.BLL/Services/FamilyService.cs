@@ -1,27 +1,21 @@
 using FamilyTreeNew.DAL.Repositories;
 using FamilyTreeNew.Models.DTOs;
 using FamilyTreeNew.Models.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTreeNew.BLL.Services;
-
-public interface IFamilyService
-{
-    Task<List<FamilyResponseDto>> GetAllFamiliesAsync();
-    Task<FamilyResponseDto?> GetFamilyByIdAsync(int id);
-    Task<FamilyResponseDto> CreateFamilyAsync(FamilyCreateRequestDto dto);
-    Task<FamilyResponseDto?> UpdateFamilyAsync(int id, FamilyUpdateRequestDto dto);
-    Task<bool> DeleteFamilyAsync(int id);
-}
 
 public class FamilyService : IFamilyService
 {
     private readonly IFamilyRepository _familyRepository;
     private readonly IFamilyMemberRepository _familyMemberRepository;
+    private readonly ILogger<FamilyService> _logger;
 
-    public FamilyService(IFamilyRepository familyRepository, IFamilyMemberRepository familyMemberRepository)
+    public FamilyService(IFamilyRepository familyRepository, IFamilyMemberRepository familyMemberRepository, ILogger<FamilyService> logger)
     {
         _familyRepository = familyRepository;
         _familyMemberRepository = familyMemberRepository;
+        _logger = logger;
     }
 
     public async Task<List<FamilyResponseDto>> GetAllFamiliesAsync()
@@ -49,6 +43,7 @@ public class FamilyService : IFamilyService
         };
 
         await _familyRepository.InsertAsync(entity);
+        _logger.LogInformation("创建家族，ID: {FamilyId}，名称: {FamilyName}", entity.Id, dto.FamilyName);
         return MapToDto(entity);
     }
 
@@ -64,6 +59,7 @@ public class FamilyService : IFamilyService
         entity.UpdatedAt = DateTime.UtcNow;
 
         await _familyRepository.UpdateAsync(entity);
+        _logger.LogInformation("更新家族，ID: {FamilyId}", id);
         return await MapToDtoAsync(entity);
     }
 
@@ -72,6 +68,7 @@ public class FamilyService : IFamilyService
         var entity = await _familyRepository.GetByIdAsync(id);
         if (entity == null) return false;
         await _familyRepository.DeleteAsync(id);
+        _logger.LogInformation("删除家族，ID: {FamilyId}", id);
         return true;
     }
 

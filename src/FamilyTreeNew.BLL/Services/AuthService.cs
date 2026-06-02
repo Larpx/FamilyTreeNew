@@ -6,27 +6,23 @@ using FamilyTreeNew.Models.Helpers;
 
 namespace FamilyTreeNew.BLL.Services;
 
-public interface IAuthService
-{
-    Task<LoginResponseDto> LoginAsync(LoginRequestDto request, string? ipAddress = null, string? userAgent = null);
-    Task<Admin?> GetAdminByIdAsync(Guid id);
-    Task<(bool Success, string Message)> ChangePasswordAsync(Guid adminId, string oldPassword, string newPassword);
-}
-
 public class AuthService : IAuthService
 {
     private readonly IAdminRepository _adminRepository;
-    private readonly IOperationLogRepository _operationLogRepository;
+    private readonly IOperationLogService _operationLogService;
     private readonly IJwtHelper _jwtHelper;
+    private readonly PasswordValidator _passwordValidator;
 
     public AuthService(
         IAdminRepository adminRepository,
-        IOperationLogRepository operationLogRepository,
-        IJwtHelper jwtHelper)
+        IOperationLogService operationLogService,
+        IJwtHelper jwtHelper,
+        PasswordValidator passwordValidator)
     {
         _adminRepository = adminRepository;
-        _operationLogRepository = operationLogRepository;
+        _operationLogService = operationLogService;
         _jwtHelper = jwtHelper;
+        _passwordValidator = passwordValidator;
     }
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request, string? ipAddress = null, string? userAgent = null)
@@ -35,7 +31,7 @@ public class AuthService : IAuthService
 
         if (admin == null)
         {
-            await LogOperationAsync(null, "登录", "认证", "登录失败：用户不存在", ipAddress, userAgent, false, "用户名不存在");
+            await _operationLogService.LogAsync(null, "登录", "认证", "登录失败：用户不存在", ipAddress, userAgent, false, "用户名不存在");
             return new LoginResponseDto
             {
                 Success = false,
@@ -45,7 +41,7 @@ public class AuthService : IAuthService
 
         if (!admin.IsEnabled)
         {
-            await LogOperationAsync(admin.Id, "登录", "认证", "登录失败：账户已禁用", ipAddress, userAgent, false, "账户已禁用");
+            await _operationLogService.LogAsync(admin.Id, "登录", "认证", "登录失败：账户已禁用", ipAddress, userAgent, false, "账户已禁用");
             return new LoginResponseDto
             {
                 Success = false,
@@ -55,7 +51,7 @@ public class AuthService : IAuthService
 
         if (string.IsNullOrEmpty(admin.PasswordSalt))
         {
-            await LogOperationAsync(admin.Id, "登录", "认证", "登录失败：密码未设置", ipAddress, userAgent, false, "密码盐值为空");
+            await _operationLogService.LogAsync(admin.Id, "登录", "认证", "登录失败：密码未设置", ipAddress, userAgent, false, "密码盐值为空");
             return new LoginResponseDto
             {
                 Success = false,
@@ -65,7 +61,7 @@ public class AuthService : IAuthService
 
         if (!PasswordHelper.VerifyPassword(request.Password, admin.Password, admin.PasswordSalt))
         {
-            await LogOperationAsync(admin.Id, "登录", "认证", "登录失败：密码错误", ipAddress, userAgent, false, "密码验证失败");
+            await _operationLogService.LogAsync(admin.Id, "登录", "认证", "登录失败：密码错误", ipAddress, userAgent, false, "密码验证失败");
             return new LoginResponseDto
             {
                 Success = false,
@@ -77,7 +73,7 @@ public class AuthService : IAuthService
         var tokenExpiration = _jwtHelper.GetTokenExpiration();
 
         await _adminRepository.UpdateLastLoginTimeAsync(admin.Id);
-        await LogOperationAsync(admin.Id, "登录", "认证", "登录成功", ipAddress, userAgent, true);
+        await _operationLogService.LogAsync(admin.Id, "登录", "认证", "登录成功", ipAddress, userAgent, true);
 
         return new LoginResponseDto
         {
@@ -114,8 +110,7 @@ public class AuthService : IAuthService
             return (false, "原密码错误");
         }
 
-        var validationResult = PasswordValidator.Validate(newPassword, minLength: 8, requireUppercase: true,
-            requireLowercase: true, requireDigit: true, requireSpecialChar: true);
+        var validationResult = _passwordValidator.Validate(newPassword);
 
         if (!validationResult.IsValid)
         {
@@ -127,34 +122,8 @@ public class AuthService : IAuthService
         admin.PasswordSalt = salt;
 
         await _adminRepository.UpdateAsync(admin);
-        await LogOperationAsync(adminId, "修改密码", "认证", "密码修改成功", null, null, true);
+        await _operationLogService.LogAsync(adminId, "修改密码", "认证", "密码修改成功", null, null, true);
 
         return (true, "密码修改成功");
-    }
-
-    private async Task LogOperationAsync(
-        Guid? adminId,
-        string operationType,
-        string module,
-        string? content,
-        string? ipAddress,
-        string? userAgent,
-        bool isSuccess,
-        string? errorMessage = null)
-    {
-        var log = new OperationLog
-        {
-            AdminId = adminId,
-            OperationType = operationType,
-            Module = module,
-            Content = content,
-            IpAddress = ipAddress,
-            UserAgent = userAgent,
-            IsSuccess = isSuccess,
-            ErrorMessage = errorMessage,
-            OperationTime = DateTime.UtcNow
-        };
-
-        await _operationLogRepository.InsertAsync(log);
     }
 }

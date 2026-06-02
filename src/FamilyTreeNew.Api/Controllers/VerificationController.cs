@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FamilyTreeNew.BLL.Services;
 using FamilyTreeNew.Models.DTOs;
@@ -10,6 +11,7 @@ namespace FamilyTreeNew.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class VerificationController : ControllerBase
 {
     private readonly IVerificationService _verificationService;
@@ -157,7 +159,7 @@ public class VerificationController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status500InternalServerError)]
-    public ActionResult<ApiResponse<bool>> ValidateToken([FromBody] ValidateTokenRequest request)
+    public ActionResult<ApiResponse<bool>> ValidateToken([FromBody] ValidateTokenRequestDto request)
     {
         try
         {
@@ -175,10 +177,4 @@ public class VerificationController : ControllerBase
             return StatusCode(500, ApiResponse<bool>.Fail("验证令牌失败"));
         }
     }
-}
-
-public class ValidateTokenRequest
-{
-    public string Token { get; set; } = string.Empty;
-    public Guid FamilyTreeId { get; set; }
 }

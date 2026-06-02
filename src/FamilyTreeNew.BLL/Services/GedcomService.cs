@@ -34,7 +34,7 @@ public class GedcomService : IGedcomService
         var familyTree = await _familyTreeRepository.GetByIdAsync(familyTreeId);
         if (familyTree == null)
         {
-            throw new Exception("家谱不存在");
+            throw new ArgumentException("家谱不存在");
         }
 
         var members = await _familyMemberRepository.GetByFamilyTreeIdAsync(familyTreeId);
