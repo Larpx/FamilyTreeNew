@@ -367,4 +367,21 @@ public class JwtHelperTests
 
         expiration.Should().BeAfter(DateTime.UtcNow);
     }
+
+    [Fact]
+    public void GenerateToken_IncludesAdminRoleClaim()
+    {
+        // SystemController 使用 RequireAdminRole 策略，需要 JWT 中包含 Admin 角色声明。
+        // 若缺少该声明，所有已认证用户（包括合法管理员）访问系统管理接口都会被拒绝。
+        var settings = TestDataFactory.CreateTestJwtSettings();
+        var jwtHelper = new JwtHelper(settings);
+
+        var token = jwtHelper.GenerateToken(Guid.NewGuid(), "testuser");
+        var principal = jwtHelper.ValidateToken(token);
+
+        principal.Should().NotBeNull();
+        var roleClaim = principal!.FindFirst(ClaimTypes.Role);
+        roleClaim.Should().NotBeNull();
+        roleClaim!.Value.Should().Be("Admin");
+    }
 }

@@ -71,6 +71,9 @@ public class JwtHelper : IJwtHelper
             new Claim(JwtRegisteredClaimNames.UniqueName, username),
             new Claim(ClaimTypes.Name, username),
             new Claim(ClaimTypes.NameIdentifier, adminId.ToString()),
+            // 系统中所有 Admin 实体均为管理员，颁发 Admin 角色声明，
+            // 满足 RequireAdminRole 策略，确保系统管理接口可被合法管理员访问
+            new Claim(ClaimTypes.Role, "Admin"),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
         };

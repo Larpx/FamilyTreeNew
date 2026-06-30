@@ -107,7 +107,10 @@ public class GedcomService : IGedcomService
 
             if (member.ParentId.HasValue)
             {
-                gedcom.AppendLine($"1 FAMC @F{member.ParentId.Value.ToString().Replace("-", "")}@");
+                // 使用父成员的 INDI 引用（@I...@）而非 FAM 引用（@F...@），
+                // 与 ImportFromGedcomAsync 中的 memberMap 查找逻辑保持一致，
+                // 确保导出再导入能正确还原父子关系
+                gedcom.AppendLine($"1 FAMC @I{member.ParentId.Value.ToString().Replace("-", "")}@");
             }
         }
 
