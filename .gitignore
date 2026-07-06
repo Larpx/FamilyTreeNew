@@ -70,3 +70,8 @@ NuGet.Config
 # OS
 Thumbs.db
 Desktop.ini
+
+# Dev
+.github/
+.trae/
+软件著作权申请资料/
